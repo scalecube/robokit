@@ -1,0 +1,11 @@
+language: node_js
+services:
+  - docker
+node_js:
+  - "12"
+  - "10"
+install:
+  - npm install
+
+after_success:
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" = "master" ]; then ./scripts/deploy.sh; fi

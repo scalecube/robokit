@@ -1,0 +1,12 @@
+{
+  "owner" : "scalecube", "repo": "status-checks", "pr_number":2, "sha":"81337af0a1141ebaf8881cf6009e2addbc8964c9",
+  "statuses": [{
+    "name" : "integration-testing",
+    "status": "pending",
+    "message"  : "initializing integration-testing"
+  },{
+    "name" : "performance-testing",
+    "status": "pending",
+    "message"  : "initializing performance-testing"
+  }]
+}
