@@ -3,13 +3,11 @@ const MongoClient = require('mongodb').MongoClient;
 class Repository {
 
     constructor() {
-        if (process.env.MONGO_DB_CONNECTION_STRING) {
-            new Promise((resolve, reject) => {
-                this.uri = process.env.MONGO_DB_CONNECTION_STRING;
-                this.dbName = process.env.MONGO_DB_DATABASE_NAME;
-                this.client = new MongoClient(this.uri, {useNewUrlParser: true, useUnifiedTopology: true});
-            });
-        }
+        new Promise((resolve, reject) => {
+            this.uri = process.env.MONGO_DB_CONNECTION_STRING;
+            this.dbName = process.env.MONGO_DB_DATABASE_NAME;
+            this.client = new MongoClient(this.uri, {useNewUrlParser: true, useUnifiedTopology: true});
+        });
         return this;
     }
 

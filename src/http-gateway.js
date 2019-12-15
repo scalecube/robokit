@@ -1,5 +1,5 @@
 const github = require("./github/github-service");
-var cors = require('cors')
+var cors = require('cors');
 const performanceService = require('./perfromance/performance-service');
 const express = require('express');
 const app = express();
