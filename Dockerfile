@@ -10,10 +10,10 @@ ENV YOUR_SERVER_URL=https://postman-echo.com/post
 ENV MONGO_DB_CONNECTION_STRING=""
 ENV MONGO_DB_DATABASE_NAME=github-gateway
 
-WORKDIR /usr/src/
+WORKDIR /usr/
 
 COPY src /usr/src/
-COPY package.json /usr/src/
+COPY package.json /usr/
 
 RUN npm install
 
