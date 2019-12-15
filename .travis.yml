@@ -6,6 +6,3 @@ node_js:
   - "10"
 install:
   - npm install
-
-after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$TRAVIS_BRANCH" = "master" ]; then sh ./scripts/deploy.sh; fi
