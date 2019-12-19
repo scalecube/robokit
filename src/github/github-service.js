@@ -1,6 +1,7 @@
 const Octokit = require("@octokit/rest");
 const WebhooksApi = require("@octokit/webhooks");
 const rp = require('request-promise');
+http = require("http");
 
 const webhooks = new WebhooksApi({
     secret: process.env.GITHUB_SECRET
@@ -108,14 +109,37 @@ webhooks.on("*", async ({ id, name, payload }) => {
         console.log(error);
     }
 });
+var http;
+httpHandler = (request, response,next) => {
+
+    if(request.url.startsWith("/traces/get")) {
+        const req = http.request({host: 'localhost', port: process.env.STATUS_API_PORT, path: request.url, method: 'GET'
+        } ,(res) => {
+            res.on('data', function (d) {
+                response.write(d);
+                response.end();
+            });
+            res.on('error', function (e) {
+                response.error(e);
+                response.end();
+            });
+        });
+
+        req.on('error', error => {
+            console.error(error)
+        })
+
+        req.end();
+    }else{
+        return webhooks.middleware(request,response,next);
+    }
+};
 
 if (process.env.NODE_ENV !== "test") {
-    require("http")
-        .createServer(webhooks.middleware)
+    http.createServer(httpHandler)
         .listen(process.env.GITHUB_API_PORT);
     console.log("process.env.GITHUB_API_PORT - Listening on port: " + process.env.GITHUB_API_PORT);
 };
-
 
 doPost = (msg) => {
     return rp({

@@ -24,6 +24,14 @@ app.post('/comment/create', (request, response) => {
     thenResponse(github.createComment(request.body),response);
 });
 
+app.get('/traces/get/:cid', (request, response) => {
+    performanceService.findReport(request.params.cid).then(r=>{
+        let result = [];
+        r.forEach(e => { result.push(e.data); });
+        response.send(result);
+    });
+});
+
 app.get('/traces/get/:cid/:filter', (request, response) => {
     performanceService.findReport(request.params.cid, JSON.parse( request.params.filter)).then(r=>{
         let result = [];
