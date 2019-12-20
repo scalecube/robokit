@@ -1,12 +1,16 @@
 const github = require("./github/github-service");
+const http = require("http");
+
 var cors = require('cors');
 const performanceService = require('./perfromance/performance-service');
 const express = require('express');
 const app = express();
 app.use(cors());
-const port = process.env.STATUS_API_PORT;
 app.use(express.json());
 
+
+
+const port = process.env.STATUS_API_PORT;
 ///////////////////////////////////////////////////////////////////////////////////////
 //
 //  HTTP Gateway API
@@ -51,6 +55,33 @@ app.listen(port, (err) => {
     console.log(`process.env.STATUS_API_PORT - server is listening on ${port}`)
 });
 
+
+httpHandler = (request, response,next) => {
+
+    if(request.url.startsWith("/traces/get/")) {
+        performanceService.findReport(request.url.replace("/traces/get/")).then(r=>{
+            let result = [];
+            r.forEach(e => { result.push(e.data); });
+            response.send(result);
+        });
+    }else{
+        return github.webhooks.middleware(request,response,next);
+    }
+};
+
+if (process.env.NODE_ENV !== "test") {
+    http.createServer(httpHandler)
+        .listen(process.env.GITHUB_API_PORT);
+    console.log("process.env.GITHUB_API_PORT - Listening on port: " + process.env.GITHUB_API_PORT);
+};
+
+doPost = (msg) => {
+    return rp({
+        method: 'POST', uri: process.env.YOUR_SERVER_URL,
+        body: msg,
+        json: true // Automatically stringifies the body to JSON
+    });
+};
 
 init = () => {
     performanceService.connect().then((r)=>{});

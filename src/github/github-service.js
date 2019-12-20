@@ -1,11 +1,5 @@
-const Octokit = require("@octokit/rest");
-const WebhooksApi = require("@octokit/webhooks");
-const rp = require('request-promise');
-http = require("http");
 
-const webhooks = new WebhooksApi({
-    secret: process.env.GITHUB_SECRET
-});
+const Octokit = require("@octokit/rest");
 
 const octokit = Octokit({
     secret: process.env.GITHUB_SECRET,
@@ -14,11 +8,31 @@ const octokit = Octokit({
     baseUrl: "https://api.github.com"
 });
 
+webhooks.on("*", async ({ id, name, payload }) => {
+    try {
+        if(name === 'pull_request') {
+            try {
+                github.onPullRequest({ octokit, payload });
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            doPost(payload).then((msg) => {
+                console.log(msg);
+            }).catch(function (err) {
+                console.error(error);
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+});
 
-const contexts = new Map();
-function get(key) {
-    return contexts.get(key);
-};
+
+const WebhooksApi = require("@octokit/webhooks");
+const webhooks = new WebhooksApi({
+    secret: process.env.GITHUB_SECRET
+});
 
 class GithubService {
 
@@ -26,6 +40,7 @@ class GithubService {
         this.octokitClient = new Octokit({
           auth: process.env.GITHUB_TOKEN
         });
+        this.webhooks = webhooks;
 
         this.statusUpdater = (octokit, owner, repo, sha) => (context, defaultDescription) => (state, description,target_url) => {
             return octokit.repos.createStatus({
@@ -89,58 +104,7 @@ class GithubService {
         return this.octokitClient.issues.createComment(msg);
     }
 }
-
-webhooks.on("*", async ({ id, name, payload }) => {
-    try {
-        if(name === 'pull_request') {
-            try {
-                github.onPullRequest({ octokit, payload });
-            } catch (error) {
-                console.log(error);
-            }
-        } else {
-            doPost(payload).then((msg) => {
-                console.log(msg);
-            }).catch(function (err) {
-                console.error(error);
-            });
-        }
-    } catch (error) {
-        console.log(error);
-    }
-});
-var http;
-httpHandler = (request, response,next) => {
-
-    if(request.url.startsWith("/traces/get")) {
-        const req = http.request({host: 'localhost', port: process.env.STATUS_API_PORT, path: request.url, method: 'GET'
-        } ,(res) => {
-            res.on('data', function (d) {
-                response.write(d);
-                response.end();
-            });
-            res.on('error', function (e) {
-                response.error(e);
-                response.end();
-            });
-        });
-
-        req.on('error', error => {
-            console.error(error)
-        })
-
-        req.end();
-    }else{
-        return webhooks.middleware(request,response,next);
-    }
-};
-
-if (process.env.NODE_ENV !== "test") {
-    http.createServer(httpHandler)
-        .listen(process.env.GITHUB_API_PORT);
-    console.log("process.env.GITHUB_API_PORT - Listening on port: " + process.env.GITHUB_API_PORT);
-};
-
+const rp = require('request-promise');
 doPost = (msg) => {
     return rp({
         method: 'POST', uri: process.env.YOUR_SERVER_URL,
@@ -148,5 +112,6 @@ doPost = (msg) => {
         json: true // Automatically stringifies the body to JSON
     });
 };
+
 const github = new GithubService();
 module.exports = github;
