@@ -70,9 +70,9 @@ class GithubService {
                     msg = example;
                     msg.sha = response.data.pull_request.head.sha;
                     msg.pull_request_url = response.data.pull_request.url;
-                    msg.owner = "scalecube";
-                    msg.repo = "github-gateway";
-                    msg.pr_number = "1";
+                    msg.owner = response.data.repository.owner.login;
+                    msg.repo = response.data.pull_request.head.repo.name;
+                    msg.pr_number = response.data.pull_request.number;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
                 this.update(msg);
