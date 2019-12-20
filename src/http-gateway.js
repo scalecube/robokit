@@ -8,7 +8,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
+const rp = require('request-promise');
+doPost = (msg) => {
+    return rp({
+        method: 'POST', uri: process.env.YOUR_SERVER_URL,
+        body: msg,
+        json: true // Automatically stringifies the body to JSON
+    });
+};
 
 const port = process.env.STATUS_API_PORT;
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -1,12 +1,15 @@
-
 const Octokit = require("@octokit/rest");
-
 const octokit = Octokit({
     secret: process.env.GITHUB_SECRET,
     auth: process.env.GITHUB_TOKEN,
     userAgent: "pullreq",
     baseUrl: "https://api.github.com"
 });
+const WebhooksApi = require("@octokit/webhooks");
+const webhooks = new WebhooksApi({
+    secret: process.env.GITHUB_SECRET
+});
+
 
 webhooks.on("*", async ({ id, name, payload }) => {
     try {
@@ -29,10 +32,6 @@ webhooks.on("*", async ({ id, name, payload }) => {
 });
 
 
-const WebhooksApi = require("@octokit/webhooks");
-const webhooks = new WebhooksApi({
-    secret: process.env.GITHUB_SECRET
-});
 
 class GithubService {
 
@@ -104,14 +103,6 @@ class GithubService {
         return this.octokitClient.issues.createComment(msg);
     }
 }
-const rp = require('request-promise');
-doPost = (msg) => {
-    return rp({
-        method: 'POST', uri: process.env.YOUR_SERVER_URL,
-        body: msg,
-        json: true // Automatically stringifies the body to JSON
-    });
-};
 
 const github = new GithubService();
 module.exports = github;
