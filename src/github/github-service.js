@@ -60,6 +60,7 @@ class GithubService {
         const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = pull_request;
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
+
         try {
             doPost(payload).then((response) => {
                 let msg;
