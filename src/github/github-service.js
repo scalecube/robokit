@@ -77,7 +77,7 @@ class GithubService {
                 }
                 this.update(msg);
             }).catch(function (err) {
-                console.error(err);
+                console.error(err + "");
             });
 
             console.log(payload.pull_request.url + " - " + sha);
