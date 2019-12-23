@@ -60,7 +60,7 @@ class GithubService {
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
         try {
-            router.route(payload,(msg) => {
+            this.router.route(payload,(msg) => {
                 if(process.env.DEBUG) {
 
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
