@@ -15,7 +15,7 @@ class WebhooksRouter {
 
         this.routes.forEach(route => {
             let owner = payload.repository.owner.login;
-            let repo = payload.pull_request.head.repo.name;
+            let repo = payload.repository.name;
             if(route.owner && route.owner   === owner ) {
                 if(route.repo == repo || !route.repo) {
                     httpClient.post(route.url, payload).then((msg) => {
