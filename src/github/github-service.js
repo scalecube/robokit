@@ -62,14 +62,16 @@ class GithubService {
         try {
             this.router.route(payload,(resp) => {
                 if(process.env.DEBUG) {
-                    resp = require("../examples/status-update.json");
+                    let result = require("../examples/status-update.json");
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
-                    msg.sha = resp.data.pull_request.head.sha;
-                    msg.pull_request_url = resp.data.pull_request.url;
-                    msg.owner = resp.data.repository.owner.login;
-                    msg.repo = resp.data.pull_request.head.repo.name;
-                    msg.pr_number = resp.data.pull_request.number;
+                    result.sha = resp.data.pull_request.head.sha;
+                    result.pull_request_url = resp.data.pull_request.url;
+                    result.owner = resp.data.repository.owner.login;
+                    result.repo = resp.data.pull_request.head.repo.name;
+                    result.pr_number = resp.data.pull_request.number;
+                    resp = result;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
+
                 }
                 this.update(resp);
             } ,(err) => {
