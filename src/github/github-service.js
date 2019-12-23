@@ -70,7 +70,6 @@ class GithubService {
                     msg.repo = resp.data.pull_request.head.repo.name;
                     msg.pr_number = resp.data.pull_request.number;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
-
                 }
                 this.update(msg);
             } ,(err) => {
