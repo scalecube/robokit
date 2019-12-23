@@ -2,24 +2,46 @@ const Repository = require('./repository.js');
 
 class PerformanceService {
 
-    constructor(){
-        this.repo = new Repository();
-    };
-
-    connect() {
-        return this.repo.connect("performance");
+    constructor() {
+        this.repo = new Map();
     }
 
-    addReport(cid, data) {
-        return this.repo.insert(cid, data);
+    getOrCreate(owner, repoName) {
+        let key = owner+"/"+repoName;
+        return new Promise((resolve,reject)=>{
+            if(!this.repo.has(key)) {
+                this.repo.set(key, new Repository(owner));
+                this.repo.get(key).connect(repoName).then(rep=>{
+                    resolve(this.repo.get(key));
+                });
+            } else {
+                resolve(this.repo.get(key));
+            }
+        });
     };
 
-    findReport(cid, filter) {
-        return this.repo.find(cid,filter);
+    addReport(owner,repoName,sha, data) {
+        return new Promise((resolve,reject)=>{
+            this.getOrCreate(owner,repoName).then(repo=>{
+               resolve(repo.insert(sha, data));
+            });
+        });
+    };
+
+    findReport(owner,repoName,sha, filter) {
+        return new Promise((resolve,reject)=>{
+            this.getOrCreate(owner,repoName).then(repo=>{
+                resolve(repo.find(sha,filter));
+            });
+        });
     }
 
-    listCommits(cid){
-        return this.repo.find(cid);
+    listCommits(owner,repoName) {
+        return new Promise((resolve,reject)=>{
+            this.getOrCreate(owner,repoName).then(repo=>{
+                resolve(repo.distinct("sha"));
+            });
+        });
     }
 };
 

@@ -2,5 +2,5 @@
   "owner": "scalecube",
   "repo": "status-checks",
   "issue_number": 1,
-  "body": "greetings mars ppl"
+  "body": "greetings ${owner} ppl of ${repo}"
 }
