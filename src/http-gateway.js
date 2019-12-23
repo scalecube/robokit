@@ -1,23 +1,16 @@
-const github = require("./github/github-service");
 const http = require("http");
+const cors = require('cors');
 
-var cors = require('cors');
-const performanceService = require('./perfromance/performance-service');
 const express = require('express');
+
+const github = require("./github/github-service");
+const performanceService = require('./perfromance/performance-service');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const rp = require('request-promise');
-doPost = (msg) => {
-    return rp({
-        method: 'POST', uri: process.env.YOUR_SERVER_URL,
-        body: msg,
-        json: true // Automatically stringifies the body to JSON
-    });
-};
-
-const port = process.env.STATUS_API_PORT;
+const port = process.env.INTERNAL_API_PORT;
 ///////////////////////////////////////////////////////////////////////////////////////
 //
 //  HTTP Gateway API
@@ -35,65 +28,92 @@ app.post('/comment/create', (request, response) => {
     thenResponse(github.createComment(request.body),response);
 });
 
-app.get('/traces/get/:cid', (request, response) => {
-    performanceService.findReport(request.params.cid).then(r=>{
+app.get('/traces/get/:owner/:repo/:sha', (request, response) => {
+    performanceService.findReport(request.params.owner,
+        request.params.repo,
+        request.params.sha).then(r=>{
         let result = [];
         r.forEach(e => { result.push(e.data); });
         response.send(result);
     });
 });
 
-app.get('/traces/get/:cid/:filter', (request, response) => {
-    performanceService.findReport(request.params.cid, JSON.parse( request.params.filter)).then(r=>{
+app.get('/traces/get/:owner/:repo/:sha/:filter', (request, response) => {
+    performanceService.findReport(request.params.owner,
+        request.params.repo,
+        request.params.sha,
+        JSON.parse( request.params.filter)).then(r=>{
         let result = [];
         r.forEach(e => { result.push(e.data); });
         response.send(result);
     });
 });
+
+app.get('/commit/list', (request, response) => {
+    thenResponse(performanceService.listCommits(),response);
+});
+
 
 app.post('/traces/add', (request, response) => {
-    thenResponse(performanceService.addReport(request.body.cid, request.body.traces),response);
+    thenResponse(performanceService.addReport(request.body.owner,
+        request.body.repo,
+        request.body.sha,
+        request.body.traces),
+        response);
+});
+
+app.post('/webhooks/create', (request, response) => {
+    thenResponse(github.createWebhook(request.body),response);
 });
 
 app.listen(port, (err) => {
     if (err) {
-        return console.log('process.env.STATUS_API_PORT - something bad happened', err)
+        return console.log('process.env.INTERNAL_API_PORT - something bad happened', err)
     }
-    console.log(`process.env.STATUS_API_PORT - server is listening on ${port}`)
+    console.log(`process.env.INTERNAL_API_PORT - server is listening on ${port}`)
 });
 
+///////////////////////////////////////////////////////////////////////////////////////
+//
+//  Github Gateway API
+//
+///////////////////////////////////////////////////////////////////////////////////////
 
 httpHandler = (request, response,next) => {
-
     if(request.url.startsWith("/traces/get/")) {
-        performanceService.findReport(request.url.replace("/traces/get/")).then(r=>{
+        let owner = request.url.split("/")[3];
+        let repo = request.url.split("/")[4];
+        let sha = request.url.split("/")[5];
+        performanceService.findReport(owner,repo,sha).then(r => {
             let result = [];
-            r.forEach(e => { result.push(e.data); });
-            response.send(result);
+            r.forEach(e => {
+                result.push(e.data);
+            });
+            writeResponse(result,response);
         });
-    }else{
+    } else if(request.url.startsWith("/commit/list")) {
+        let owner = request.url.split("/")[3];
+        let repo = request.url.split("/")[4];
+        performanceService.listCommits(owner,repo).then((r)=>{
+            writeResponse(r,response);
+        }).catch((err)=>{
+            console.log(err);
+        });
+    } else {
         return github.webhooks.middleware(request,response,next);
     }
 };
 
 if (process.env.NODE_ENV !== "test") {
     http.createServer(httpHandler)
-        .listen(process.env.GITHUB_API_PORT);
-    console.log("process.env.GITHUB_API_PORT - Listening on port: " + process.env.GITHUB_API_PORT);
-};
+        .listen(process.env.PUBLIC_API_PORT);
+    console.log("process.env.PUBLIC_API_PORT - Listening on port: " + process.env.PUBLIC_API_PORT);
+}
 
-doPost = (msg) => {
-    return rp({
-        method: 'POST', uri: process.env.YOUR_SERVER_URL,
-        body: msg,
-        json: true // Automatically stringifies the body to JSON
-    });
+writeResponse = (data,response) =>{
+    response.write(JSON.stringify(data));
+    response.end();
 };
-
-init = () => {
-    performanceService.connect().then((r)=>{});
-};
-init();
 
 const thenResponse = (p, response) => {
     p.then((r)=>{
@@ -113,5 +133,4 @@ const sendResponse = (response , result) => {
         response.send("PR URL is wrong/ not found or not waiting for update.");
     }
 };
-
 

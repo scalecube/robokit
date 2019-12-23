@@ -1,10 +1,12 @@
 const Octokit = require("@octokit/rest");
+const WebhooksRouter = require("./webhooks-router");
 const octokit = Octokit({
     secret: process.env.GITHUB_SECRET,
     auth: process.env.GITHUB_TOKEN,
     userAgent: "pullreq",
     baseUrl: "https://api.github.com"
 });
+
 const WebhooksApi = require("@octokit/webhooks");
 const webhooks = new WebhooksApi({
     secret: process.env.GITHUB_SECRET
@@ -20,22 +22,17 @@ webhooks.on("*", async ({ id, name, payload }) => {
                 console.log(error);
             }
         } else {
-            doPost(payload).then((msg) => {
-                console.log(msg);
-            }).catch(function (err) {
-                console.error(error);
-            });
+            github.route(payload);
         }
     } catch (error) {
         console.log(error);
     }
 });
 
-
-
 class GithubService {
 
     constructor() {
+        this.router = new WebhooksRouter();
         this.octokitClient = new Octokit({
           auth: process.env.GITHUB_TOKEN
         });
@@ -52,6 +49,7 @@ class GithubService {
             description: description || defaultDescription
           });
         };
+
     }
 
     async onPullRequest (options = {}) {
@@ -61,10 +59,9 @@ class GithubService {
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
         try {
-            doPost(payload).then((response) => {
-                let msg;
+            router.route(payload,(msg)=>{
                 if(process.env.DEBUG) {
-                    console.log(response);
+
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
                     const example = require("../examples/status-update.json");
                     msg = example;
@@ -76,7 +73,7 @@ class GithubService {
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
                 this.update(msg);
-            }).catch(function (err) {
+            } ,(err)=>{
                 console.error(err + "");
             });
 
@@ -105,6 +102,11 @@ class GithubService {
     createComment(msg) {
         return this.octokitClient.issues.createComment(msg);
     }
+
+    createWebhook(msg) {
+        return this.router.createWebhook(msg);
+    }
+
 }
 
 const github = new GithubService();
