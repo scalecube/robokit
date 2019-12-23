@@ -101,6 +101,19 @@ class GithubService {
     }
 
     createComment(msg) {
+        let body;
+
+        if(msg.body) {
+            body = msg.body;
+        } else if (msg.template_url){
+            body = require(msg.template_url);
+        }
+
+        Object.entries(msg).forEach((e)=>{
+            body = body.replace("${"+e[0]+"}",e[1])
+        });
+        msg.body = body;
+
         return this.octokitClient.issues.createComment(msg);
     }
 
