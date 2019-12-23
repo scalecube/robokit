@@ -61,7 +61,6 @@ class GithubService {
 
         try {
             this.router.route(payload,(resp) => {
-
                 if(process.env.DEBUG) {
                     resp = require("../examples/status-update.json");
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
