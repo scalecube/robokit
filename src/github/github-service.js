@@ -60,16 +60,15 @@ class GithubService {
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
         try {
-            this.router.route(payload,(msg) => {
+            this.router.route(payload,(resp) => {
                 if(process.env.DEBUG) {
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
-                    const example = require("../examples/status-update.json");
-                    msg = example;
-                    msg.sha = response.data.pull_request.head.sha;
-                    msg.pull_request_url = response.data.pull_request.url;
-                    msg.owner = response.data.repository.owner.login;
-                    msg.repo = response.data.pull_request.head.repo.name;
-                    msg.pr_number = response.data.pull_request.number;
+                    const msg = require("../examples/status-update.json");
+                    msg.sha = resp.data.pull_request.head.sha;
+                    msg.pull_request_url = resp.data.pull_request.url;
+                    msg.owner = resp.data.repository.owner.login;
+                    msg.repo = resp.data.pull_request.head.repo.name;
+                    msg.pr_number = resp.data.pull_request.number;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
 
                 }
