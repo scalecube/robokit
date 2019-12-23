@@ -14,7 +14,7 @@ class WebhooksRouter {
     route(payload, onRoute, onError) {
 
         this.routes.forEach(route => {
-            let owner = payload.repository.onmbwner.login;
+            let owner = payload.repository.owner.login;
             let repo = payload.pull_request.head.repo.name;
             if(route.owner && route.owner   === owner ) {
                 if(route.repo == repo || !route.repo) {
