@@ -22,7 +22,7 @@ webhooks.on("*", async ({ id, name, payload }) => {
                 console.log(error);
             }
         } else {
-            github.router.route(payload);
+            github.router.route(payload, (result)=>{},(error)=>{});
 
         }
     } catch (error) {
@@ -60,7 +60,7 @@ class GithubService {
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
         try {
-            router.route(payload,(msg)=>{
+            router.route(payload,(msg) => {
                 if(process.env.DEBUG) {
 
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
@@ -74,7 +74,7 @@ class GithubService {
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
                 this.update(msg);
-            } ,(err)=>{
+            } ,(err) => {
                 console.error(err + "");
             });
 
