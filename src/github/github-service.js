@@ -22,7 +22,7 @@ webhooks.on("*", async ({ id, name, payload }) => {
                 console.log(error);
             }
         } else {
-            github.route(payload);
+            github.router.route(payload);
         }
     } catch (error) {
         console.log(error);
