@@ -26,7 +26,6 @@ class WebhooksRouter {
                 }
             }
         });
-
     }
 
     loadRoutes() {
