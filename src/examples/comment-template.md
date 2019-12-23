@@ -1,4 +1,4 @@
-#This is a comment Template
+# This is a comment Template
 
 when sending a createComment request and passing parameters in the json request at run-time these values will be replaced with the content of the given values
 
@@ -7,7 +7,7 @@ when sending a createComment request and passing parameters in the json request 
   "owner": "scalecube",
   "repo": "status-checks",
   "issue_number": 1,
-  "body": "greetings ${owner} ppl of ${repo}",
+  "template_url": "https://raw.githubusercontent.com/scalecube/github-gateway/test1/src/examples/comment-template.md",
   "a-param": "some value"
 }
 ```
