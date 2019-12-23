@@ -61,9 +61,10 @@ class GithubService {
 
         try {
             this.router.route(payload,(resp) => {
+
                 if(process.env.DEBUG) {
+                    resp = require("../examples/status-update.json");
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
-                    const msg = require("../examples/status-update.json");
                     msg.sha = resp.data.pull_request.head.sha;
                     msg.pull_request_url = resp.data.pull_request.url;
                     msg.owner = resp.data.repository.owner.login;
@@ -71,7 +72,7 @@ class GithubService {
                     msg.pr_number = resp.data.pull_request.number;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
-                this.update(msg);
+                this.update(resp);
             } ,(err) => {
                 console.error(err + "");
             });
