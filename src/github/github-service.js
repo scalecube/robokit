@@ -1,6 +1,8 @@
 const Octokit = require("@octokit/rest");
 const WebhooksRouter = require("./webhooks-router");
 const httpClient = require("../http-client");
+const WebhooksApi = require("@octokit/webhooks");
+
 const octokit = Octokit({
     secret: process.env.GITHUB_SECRET,
     auth: process.env.GITHUB_TOKEN,
@@ -8,11 +10,9 @@ const octokit = Octokit({
     baseUrl: "https://api.github.com"
 });
 
-const WebhooksApi = require("@octokit/webhooks");
 const webhooks = new WebhooksApi({
     secret: process.env.GITHUB_SECRET
 });
-
 
 webhooks.on("*", async ({ id, name, payload }) => {
     try {
@@ -98,31 +98,24 @@ class GithubService {
     };
 
     updateComment(msg) {
-        return new Promise((resolve,reject) => {
-            if (msg.template_url) {
-                httpClient.get(msg.template_url).then(r=>{
-                    msg.body = r;
-                    msg.body = this._formatComment(msg);
-                    resolve( this.octokitClient.issues.updateComment(msg));
-                });
-            } else{
-                msg.body = this._formatComment(msg);
-                resolve( this.octokitClient.issues.updateComment(msg))
-            }
-        });
+        return this.commentAction(msg,this.octokitClient.issues.updateComment);
     }
 
     createComment(msg) {
+        return this.commentAction(msg,this.octokitClient.issues.createComment);
+    }
+
+    commentAction(msg, action) {
         return new Promise((resolve,reject) => {
             if (msg.template_url) {
                 httpClient.get(msg.template_url).then(r=>{
                     msg.body = r;
                     msg.body = this._formatComment(msg);
-                    resolve( this.octokitClient.issues.createComment(msg));
+                    resolve( action(msg));
                 });
             } else{
                 msg.body = this._formatComment(msg);
-                resolve( this.octokitClient.issues.createComment(msg))
+                resolve( action(msg))
             }
         });
     }

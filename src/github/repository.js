@@ -32,6 +32,7 @@ class Repository {
             });
         });
     }
+
     insert (data) {
         return new Promise((resolve, reject) => {
             this.collection.insertOne(data, (err, result) => {
