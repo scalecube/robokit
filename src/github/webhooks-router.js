@@ -34,7 +34,7 @@ class WebhooksRouter {
                 this.routes = all;
                 resolve();
             }).catch(err=>{
-                console.log(err);
+                console.log("loadRoutes failed: " + JSON.stringify(err));
             });
         });
     };
@@ -45,8 +45,8 @@ class WebhooksRouter {
             this.loadRoutes();
             resolve();
         }).catch(err=>{
-            console.log(err);
-        });;
+            console.log("createWebhook failed: "+ JSON.stringify(err));
+        });
     }
 }
 
