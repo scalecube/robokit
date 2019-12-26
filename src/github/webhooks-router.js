@@ -33,6 +33,8 @@ class WebhooksRouter {
             this.repo.findAll().then(all => {
                 this.routes = all;
                 resolve();
+            }).catch(err=>{
+                console.log(err);
             });
         });
     };
@@ -42,7 +44,9 @@ class WebhooksRouter {
             this.repo.insert(hook);
             this.loadRoutes();
             resolve();
-        });
+        }).catch(err=>{
+            console.log(err);
+        });;
     }
 }
 
