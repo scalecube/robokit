@@ -81,7 +81,7 @@ class Repository {
 
     distinct(field) {
         return new Promise((resolve, reject) => {
-          resolve(this.collection.distinct(field).sort({'_id': -1}));
+          resolve(this.collection.distinct(field));
         });
     }
 }
