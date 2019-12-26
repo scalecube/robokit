@@ -49,8 +49,10 @@ app.get('/traces/get/:owner/:repo/:sha/:filter', (request, response) => {
     });
 });
 
-app.get('/commit/list', (request, response) => {
-    thenResponse(performanceService.listCommits(),response);
+app.get('/commit/list/:owner/:repo/', (request, response) => {
+    thenResponse(performanceService.listCommits(
+        request.params.owner,
+        request.params.repo),response);
 });
 
 
