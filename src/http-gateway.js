@@ -16,6 +16,10 @@ const port = process.env.INTERNAL_API_PORT;
 //  HTTP Gateway API
 //
 ///////////////////////////////////////////////////////////////////////////////////////
+app.get('/ping/', (request, response) => {
+    sendResponse(response,{time: Date.now()})
+});
+
 app.post('/pulls/status/update', (request, response) => {
     sendResponse(response, github.update(request.body));
 });
