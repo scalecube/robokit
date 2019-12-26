@@ -17,7 +17,7 @@ const port = process.env.INTERNAL_API_PORT;
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 app.get('/ping/', (request, response) => {
-    sendResponse(response,{time: Date.now()})
+    response.send({time: Date.now()});
 });
 
 app.post('/pulls/status/update', (request, response) => {
