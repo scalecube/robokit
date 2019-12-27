@@ -17,9 +17,9 @@ const port = process.env.INTERNAL_API_PORT;
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 app.get('/ping/', (request, response) => {
+    console.log("ping request arrived from: "  + JSON.stringify(request));
     response.send({time: Date.now()});
 });
-
 
 app.post('/pulls/status/update', (request, response) => {
     sendResponse(response, github.update(request.body));
