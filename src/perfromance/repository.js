@@ -75,7 +75,7 @@ class Repository {
             this.collection.find(query).toArray(function(err, result) {
                 if (err) reject(err);
                 resolve(result);
-            }).sort({'_id': -1});
+            });
         });
     }
 
