@@ -8,7 +8,6 @@ class WebhooksRouter {
             this.repo = r;
             this.loadRoutes();
         });
-
     }
 
     route(payload, onRoute, onError) {
@@ -21,7 +20,7 @@ class WebhooksRouter {
                     httpClient.post(route.url, payload).then((msg) => {
                         onRoute(msg);
                     }).catch(function (err) {
-                        onError(error);
+                        onError(err);
                     });
                 }
             }

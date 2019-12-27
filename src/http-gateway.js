@@ -17,7 +17,7 @@ const port = process.env.INTERNAL_API_PORT;
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 app.get('/ping/', (request, response) => {
-    console.log("ping request arrived from:");
+    console.log("ping request arrived -> reply with pong.");
     response.send({time: Date.now()});
 });
 
