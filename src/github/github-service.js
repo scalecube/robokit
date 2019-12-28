@@ -15,6 +15,7 @@ const webhooks = new WebhooksApi({
 });
 
 webhooks.on("*", async ({ id, name, payload }) => {
+    console.log("request arrived name" + name );
     try {
         if(name === 'pull_request') {
             try {
