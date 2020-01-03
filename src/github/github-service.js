@@ -25,7 +25,7 @@ webhooks.on("*", async ({ id, name, payload }) => {
 
         if(name === 'pull_request') {
             try {
-                github.onPullRequest(event);
+                github.onPullRequest(event).catch(err=>console.error(err));
             } catch (error) {
                 console.log(error);
             }
@@ -86,7 +86,7 @@ class GithubService {
                 console.error(err + "");
             });
 
-            console.log(payload.pull_request.url + " - " + sha);
+            console.log(event.payload.pull_request.url + " - " + sha);
         } catch (e) {
             console.error(e);
         }
