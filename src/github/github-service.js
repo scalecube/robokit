@@ -64,8 +64,8 @@ class GithubService {
     }
 
     async onPullRequest (options = {}) {
-        const { octokit, payload } = options;
-        const { pull_request = {} } = payload;
+        const { octokit, event } = options;
+        const { pull_request = {} } = event.payload;
         const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = pull_request;
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
