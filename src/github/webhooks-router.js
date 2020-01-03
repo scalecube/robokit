@@ -10,14 +10,14 @@ class WebhooksRouter {
         });
     }
 
-    route(payload, onRoute, onError) {
+    route(event, onRoute, onError) {
 
         this.routes.forEach(route => {
-            let owner = payload.repository.owner.login;
-            let repo = payload.repository.name;
+            let owner = event.payload.repository.owner.login;
+            let repo = event.payload.repository.name;
             if(route.owner && route.owner   === owner ) {
                 if(route.repo == repo || !route.repo) {
-                    httpClient.post(route.url, payload).then((msg) => {
+                    httpClient.post(route.url, event).then((msg) => {
                         onRoute(msg);
                     }).catch(function (err) {
                         onError(err);

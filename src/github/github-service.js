@@ -17,16 +17,20 @@ const webhooks = new WebhooksApi({
 webhooks.on("*", async ({ id, name, payload }) => {
     console.log("request arrived name: " + name );
     try {
-        payload.name = name;
-        payload.id = id;
+        const event = {
+            id: id,
+            name : name,
+            payload: payload
+        };
+
         if(name === 'pull_request') {
             try {
-                github.onPullRequest({ octokit, payload });
+                github.onPullRequest({ octokit, event });
             } catch (error) {
                 console.log(error);
             }
         } else {
-            github.router.route(payload, (result)=>{},(error)=>{});
+            github.router.route(event, (result)=>{},(error)=>{});
 
         }
     } catch (error) {
