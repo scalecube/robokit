@@ -25,7 +25,7 @@ webhooks.on("*", async ({ id, name, payload }) => {
 
         if(name === 'pull_request') {
             try {
-                github.onPullRequest(event).catch(err=>console.error(err));
+                github.onPullRequest(event).catch((err) => console.error(err) );
             } catch (error) {
                 console.log(error);
             }
@@ -64,6 +64,7 @@ class GithubService {
     }
 
     async onPullRequest (event) {
+        console.log(JSON.stringify(event));
         const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = event.payload;
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
