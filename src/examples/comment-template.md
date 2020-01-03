@@ -14,6 +14,7 @@ when sending a createComment request and passing parameters in the json request 
   "url":"https://raw.githubusercontent.com/scalecube/github-gateway/test1/src/examples/comment-template.md",
   "data":"comment data example ${a-param}"
 }
+
 ```
 here is example a-param value: ${a-param} 
 
