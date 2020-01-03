@@ -53,6 +53,8 @@ class GithubService {
           });
         };
 
+
+
     }
 
     async onPullRequest (options = {}) {
@@ -106,9 +108,29 @@ class GithubService {
         return this.commentAction(msg,this.octokitClient.issues.createComment);
     }
 
+    content(repoName, path) {
+        return new Promise((resolve, reject) => {
+            octokit.request('GET /repos/'+repoName+'/contents/'+path)
+                .then(res=>{
+                    let buff = new Buffer(res.data.content, 'base64');
+                    resolve(buff.toString('ascii'));
+                }).catch((err)=>{
+                    reject(err);
+                });
+        });
+    }
+
     commentAction(msg, action) {
         return new Promise((resolve,reject) => {
-            if (msg.template_url) {
+            if(msg.path){
+                this.content(msg.owner + "/" + msg.repo, msg.path).then(r => {
+                    msg.body = r;
+                    msg.body = this._formatComment(msg);
+                    resolve( action(msg));
+                }).catch((err) => {
+                    console.error(err);
+                });
+            }else if (msg.url) {
                 httpClient.get(msg.template_url).then(r=>{
                     msg.body = r;
                     msg.body = this._formatComment(msg);

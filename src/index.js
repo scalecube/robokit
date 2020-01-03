@@ -6,7 +6,7 @@ if(!process.env.PUBLIC_API_PORT) console.log("required GITHUB_API_PORT enviromen
 if(!process.env.INTERNAL_API_PORT) console.log("required STATUS_API_PORT enviroment variable is missing" );
 if(!process.env.MONGO_DB_CONNECTION_STRING) console.log("required MONGO_DB_CONNECTION_STRING enviroment variable is missing" );
 
-console.log("GITHUB_TOKEN: " + process.env.GITHUB_TOKEN.substring(0,6));
+console.log("GITHUB_TOKEN: " + process.env.GITHUB_TOKEN);
 console.log("GITHUB_SECRET: " + process.env.GITHUB_SECRET);
 console.log("PUBLIC_API_PORT: " + process.env.PUBLIC_API_PORT);
 console.log("INTERNAL_API_PORT: " + process.env.INTERNAL_API_PORT);
