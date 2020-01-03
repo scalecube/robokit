@@ -25,7 +25,7 @@ webhooks.on("*", async ({ id, name, payload }) => {
 
         if(name === 'pull_request') {
             try {
-                github.onPullRequest({ octokit, event });
+                github.onPullRequest(event);
             } catch (error) {
                 console.log(error);
             }
@@ -63,10 +63,8 @@ class GithubService {
 
     }
 
-    async onPullRequest (options = {}) {
-        const { octokit, event } = options;
-        const { pull_request = {} } = event.payload;
-        const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = pull_request;
+    async onPullRequest (event) {
+        const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = event.payload;
         const statusAPI = this.statusUpdater(octokit, login, name, sha);
 
         try {
