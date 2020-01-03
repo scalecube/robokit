@@ -112,7 +112,7 @@ class GithubService {
         return new Promise((resolve, reject) => {
             octokit.request('GET /repos/'+repoName+'/contents/'+path)
                 .then(res=>{
-                    let buff = new Buffer(res.data.content, 'base64');
+                    let buff = Buffer.from(res.data.content, 'base64');
                     resolve(buff.toString('ascii'));
                 }).catch((err)=>{
                     reject(err);
