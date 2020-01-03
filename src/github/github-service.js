@@ -66,6 +66,7 @@ class GithubService {
     async onPullRequest (event) {
         try {
             this.router.route(event,(resp) => {
+
                 console.log("router response: " + JSON.stringify(resp));
                 if(process.env.DEBUG) {
                     let result = require("../examples/status-update.json");
@@ -80,7 +81,7 @@ class GithubService {
                 }
                 this.update(resp);
             } ,(err) => {
-                console.error(err + "");
+                console.error(err);
             });
         } catch (e) {
             console.error(e);
@@ -88,15 +89,21 @@ class GithubService {
     };
 
     update (msg) {
-        const target_url="https://api.github.com/repos/"+ msg.owner +"/"+ msg.repo + "/pulls/" + msg.pr_number;
-        const statusAPI = this.statusUpdater(octokit, msg.owner, msg.repo, msg.sha);
+        try {
+            let result = 'ok';
 
-        let result = 'ok';
-        msg.statuses.forEach(element => {
-            const updateProjectStatus = statusAPI(element.name, element.status);
-            updateProjectStatus(element.status, element.message, target_url);
-        });
-        return result;
+            const target_url="https://api.github.com/repos/"+ msg.owner +"/"+ msg.repo + "/pulls/" + msg.pr_number;
+            const statusAPI = this.statusUpdater(octokit, msg.owner, msg.repo, msg.sha);
+
+            msg.statuses.forEach(element => {
+                const updateProjectStatus = statusAPI(element.name, element.status);
+                updateProjectStatus(element.status, element.message, target_url);
+            });
+            return result;
+        } catch (e) {
+            console.error(e);
+            return e;
+        }
     };
 
     updateComment(msg) {
