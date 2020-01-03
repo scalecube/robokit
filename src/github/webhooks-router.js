@@ -6,12 +6,13 @@ class WebhooksRouter {
     constructor() {
         new Repository("github-gateway").connect("webhooks").then(r=>{
             this.repo = r;
-            this.loadRoutes();
+            this.loadRoutes().then(routes => {
+                console.log("routes loaded: " +JSON.stringify(routes));
+            });
         });
     }
 
     route(event, onRoute, onError) {
-
         this.routes.forEach(route => {
             let owner = event.payload.repository.owner.login;
             let repo = event.payload.repository.name;
@@ -31,7 +32,7 @@ class WebhooksRouter {
         return new Promise((resolve, reject) => {
             this.repo.findAll().then(all => {
                 this.routes = all;
-                resolve();
+                resolve(all);
             }).catch(err=>{
                 console.log("loadRoutes failed: " + JSON.stringify(err));
             });
