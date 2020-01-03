@@ -17,6 +17,8 @@ const webhooks = new WebhooksApi({
 webhooks.on("*", async ({ id, name, payload }) => {
     console.log("request arrived name: " + name );
     try {
+        payload.name = name;
+        payload.id = id;
         if(name === 'pull_request') {
             try {
                 github.onPullRequest({ octokit, payload });
