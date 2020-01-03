@@ -129,6 +129,7 @@ class GithubService {
                     resolve( action(msg));
                 }).catch((err) => {
                     console.error(err);
+                    reject(err);
                 });
             }else if (msg.url) {
                 httpClient.get(msg.template_url).then(r=>{
