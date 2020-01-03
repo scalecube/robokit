@@ -64,10 +64,9 @@ class GithubService {
     }
 
     async onPullRequest (event) {
-        const sha =  event.payload.pull_request.head.sha;
-
         try {
             this.router.route(event,(resp) => {
+                console.log("router response: " + JSON.stringify(resp))
                 if(process.env.DEBUG) {
                     let result = require("../examples/status-update.json");
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
@@ -83,8 +82,6 @@ class GithubService {
             } ,(err) => {
                 console.error(err + "");
             });
-
-            console.log(event.payload.pull_request.url + " - " + sha);
         } catch (e) {
             console.error(e);
         }
