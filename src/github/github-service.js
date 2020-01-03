@@ -64,9 +64,7 @@ class GithubService {
     }
 
     async onPullRequest (event) {
-        console.log(JSON.stringify(event));
-        const { head: { sha, repo: { name, owner: { login } = {}, clone_url } = {} } = {} } = event.payload;
-        const statusAPI = this.statusUpdater(octokit, login, name, sha);
+        const sha =  event.payload.pull_request.head.sha;
 
         try {
             this.router.route(event,(resp) => {
@@ -80,7 +78,6 @@ class GithubService {
                     result.pr_number = resp.data.pull_request.number;
                     resp = result;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
-
                 }
                 this.update(resp);
             } ,(err) => {
