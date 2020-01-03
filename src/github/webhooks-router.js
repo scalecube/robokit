@@ -17,7 +17,7 @@ class WebhooksRouter {
             let owner = event.payload.repository.owner.login;
             let repo = event.payload.repository.name;
             if(route.owner && route.owner   === owner ) {
-                if(route.repo == repo || !route.repo) {
+                if(route.repo === repo || !route.repo) {
                     httpClient.post(route.url, event).then((msg) => {
                         onRoute(msg);
                     }).catch(function (err) {
