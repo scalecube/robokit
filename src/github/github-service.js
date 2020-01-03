@@ -79,7 +79,7 @@ class GithubService {
                     resp = result;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
-                this.update(resp);
+                this.update(JSON.parse(resp));
             } ,(err) => {
                 console.error(err);
             });
@@ -91,13 +91,16 @@ class GithubService {
     update (msg) {
         try {
             let result = 'ok';
-
             const target_url="https://api.github.com/repos/"+ msg.owner +"/"+ msg.repo + "/pulls/" + msg.pr_number;
             const statusAPI = this.statusUpdater(octokit, msg.owner, msg.repo, msg.sha);
 
             msg.statuses.forEach(element => {
                 const updateProjectStatus = statusAPI(element.name, element.status);
-                updateProjectStatus(element.status, element.message, target_url);
+                updateProjectStatus(element.status, element.message, target_url).then((res) => {
+                    console.log(res);
+                }).catch((err)=>{
+                    console.log(err);
+                });
             });
             return result;
         } catch (e) {
