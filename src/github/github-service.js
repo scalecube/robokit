@@ -66,7 +66,7 @@ class GithubService {
     async onPullRequest (event) {
         try {
             this.router.route(event,(resp) => {
-                console.log("router response: " + JSON.stringify(resp))
+                console.log("router response: " + JSON.stringify(resp));
                 if(process.env.DEBUG) {
                     let result = require("../examples/status-update.json");
                     /// DELETE THESE LINES!!! DEBUGGING!!!! DEBUGGING!!!!
