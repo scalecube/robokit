@@ -79,7 +79,7 @@ class GithubService {
                     resp = result;
                     /// DELETE THESE LINES!!! DEBUGGING!!!!DEBUGGING!!!!
                 }
-                this.update(JSON.parse(resp));
+                this.update(resp);
             } ,(err) => {
                 console.error(err);
             });
@@ -99,7 +99,7 @@ class GithubService {
                 updateProjectStatus(element.status, element.message, target_url).then((res) => {
                     console.log(res);
                 }).catch((err)=>{
-                    console.log(err);
+                    console.log(err);nb
                 });
             });
             return result;
