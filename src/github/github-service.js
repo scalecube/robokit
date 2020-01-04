@@ -97,7 +97,11 @@ class GithubService {
             msg.statuses.forEach(element => {
                 const updateProjectStatus = statusAPI(element.name, element.status);
                 updateProjectStatus(element.status, element.message, target_url).then((res) => {
-                    console.log(res);
+                    if(res.status === 201){
+                        console.log("status checks created on github.");
+                    } else {
+                        console.log("status checks was not created on github. a response returned: " + JSON.stringify(res));
+                    }
                 }).catch((err)=>{
                     console.log(err);nb
                 });
