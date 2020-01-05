@@ -14,7 +14,6 @@ You can automate these checks with GitHub using status checks and GitHub actions
 `status-checks` is a gateway that accept webhooks request from github and proxy these request to your server / http endpoint you provide.
 your server runs tasks and update regarding the status of these tasks.
 
-
 when there was a commit on a pull request, `status-checks` will trigger api call to your server.
 your server may respond with the list of tasks and checks it is planning to execute in 'pending' state.
 as the tasks progress they can call back the status of the jobs currently running.
