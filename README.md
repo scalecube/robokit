@@ -35,6 +35,7 @@ status-checks expects the following environment variables so it can perform its 
 
 example .env file:
 
+
 ```
 GITHUB_TOKEN=<YOUR GITHUB TOKEN>
 GITHUB_SECRET=<YOUR GITHUB SECRET>
