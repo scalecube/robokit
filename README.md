@@ -60,7 +60,6 @@ example = {
     target_url : "http://scalecube.io"
   }]
 }
-
 ```
 
 ![image](https://user-images.githubusercontent.com/1706296/70513398-32a5c800-1b3a-11ea-9813-9c7f876117a0.png)
