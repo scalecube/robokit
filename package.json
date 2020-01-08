@@ -4,7 +4,7 @@
   "description": "Small platform that supports functions as github status checks",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node ./github-gateway/index.js",
     "get-version": "awk -F'\"' '/\"version\": \".+\"/{ print $4; exit; }' package.json"
   },
   "keywords": [
@@ -24,7 +24,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "log-update": "^3.2.0",
-    "mongodb": "^3.4.0"
+    "mongodb": "^3.4.0",
+    "smee-client": "^1.1.0"
   },
   "devDependencies": {
     "docker-publish": "^2.4.2",

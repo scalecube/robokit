@@ -16,7 +16,7 @@ const port = process.env.INTERNAL_API_PORT;
 //  HTTP Gateway API
 //
 ///////////////////////////////////////////////////////////////////////////////////////
-app.get('/ping/', (request, response) => {
+app.get('/server/ping/', (request, response) => {
     console.log("ping request arrived -> reply with pong.");
     response.send({time: Date.now()});
 });
@@ -33,21 +33,13 @@ app.post('/comment/create', (request, response) => {
     thenResponse(github.createComment(request.body),response);
 });
 
-app.get('/traces/get/:owner/:repo/:sha', (request, response) => {
-    performanceService.findReport(request.params.owner,
-        request.params.repo,
-        request.params.sha).then(r=>{
-        let result = [];
-        r.forEach(e => { result.push(e.data); });
-        response.send(result);
-    });
-});
-
-app.get('/traces/get/:owner/:repo/:sha/:filter', (request, response) => {
+app.get('/traces/get/:owner/:repo/:sha/:filter?', (request, response) => {
+    let filter;
+    if(request.params.filter) filter = JSON.parse(request.params.filter);
     performanceService.findReport(request.params.owner,
         request.params.repo,
         request.params.sha,
-        JSON.parse( request.params.filter)).then(r=>{
+        filter).then(r=>{
         let result = [];
         r.forEach(e => { result.push(e.data); });
         response.send(result);
@@ -69,8 +61,19 @@ app.post('/traces/add', (request, response) => {
         response);
 });
 
-app.post('/webhooks/create', (request, response) => {
-    thenResponse(github.createWebhook(request.body),response);
+app.post('/webhooks/save', (request, response) => {
+    thenResponse(github.saveWebhook(request.body),response);
+});
+
+app.get('/webhooks/:owner?/:repo?', (request, response) => {
+    let msg;
+    if(request.params.owner && request.params.repo){
+        msg = {
+            owner: request.params.owner,
+            repo: request.params.repo
+        };
+    };
+    thenResponse(github.findWebhook(msg),response);
 });
 
 app.listen(port, (err) => {
@@ -107,7 +110,11 @@ httpHandler = (request, response,next) => {
             console.log(err);
         });
     } else {
-        return github.webhooks.middleware(request,response,next);
+        return github.webhooks.middleware(request,response,next).then((res) => {
+            console.log(res);
+        }).catch((err) => {
+            console.log(err);
+        });
     }
 };
 
@@ -128,7 +135,7 @@ const thenResponse = (p, response) => {
     }).catch((err)=>{
         console.error(err);
         response.status(500);
-        response.send(err);
+        response.send(err.message);
     });
 };
 

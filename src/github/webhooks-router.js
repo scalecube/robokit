@@ -30,7 +30,7 @@ class WebhooksRouter {
 
     loadRoutes() {
         return new Promise((resolve, reject) => {
-            this.repo.findAll().then(all => {
+            this.repo.find().then(all => {
                 this.routes = all;
                 resolve(all);
             }).catch(err=>{
@@ -39,14 +39,20 @@ class WebhooksRouter {
         });
     };
 
-    createWebhook (hook) {
+    saveWebhook (hook) {
         return new Promise((resolve, reject) => {
-            this.repo.insert(hook);
-            this.loadRoutes();
-            resolve();
-        }).catch(err=>{
-            console.log("createWebhook failed: "+ JSON.stringify(err));
+            this.repo.save(hook).then((docs) => {
+                    console.log(docs);
+                    this.loadRoutes();
+                    resolve(docs);
+            }).catch((err) => {
+                reject(new Error("update webhook failed!. did you provide wrong _id?"));
+            });
         });
+    }
+
+    findWebhooks(query) {
+        return  this.repo.find(query);
     }
 }
 

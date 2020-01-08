@@ -40,10 +40,10 @@ webhooks.on("*", async ({ id, name, payload }) => {
 
 class GithubService {
 
-    constructor() {
+    constructor(auth) {
         this.router = new WebhooksRouter();
         this.octokitClient = new Octokit({
-          auth: process.env.GITHUB_TOKEN
+          auth: auth
         });
         this.webhooks = webhooks;
 
@@ -164,11 +164,15 @@ class GithubService {
         });
         return body;
     }
-    createWebhook(msg) {
-        return this.router.createWebhook(msg);
+
+    saveWebhook(msg) {
+        return this.router.saveWebhook(msg);
     }
 
+    findWebhook(msg) {
+        return this.router.findWebhooks(msg);
+    }
 }
 
-const github = new GithubService();
+const github = new GithubService(process.env.GITHUB_TOKEN);
 module.exports = github;

@@ -1,3 +1,4 @@
+const ObjectID = require('mongodb').ObjectID;
 const MongoClient = require('mongodb').MongoClient;
 
 class Repository {
@@ -37,18 +38,39 @@ class Repository {
         return new Promise((resolve, reject) => {
             this.collection.insertOne(data, (err, result) => {
                 if (err) reject(err);
+                data._id = result.insertedId;
+                resolve(data);
+            });
+        });
+    }
+
+    find(msg) {
+        return new Promise((resolve, reject) => {
+            this.collection.find(msg).toArray(function(err, result) {
+                if (err) reject(err);
                 resolve(result);
             });
         });
     }
 
-    findAll() {
+    update(data) {
         return new Promise((resolve, reject) => {
-            this.collection.find().toArray(function(err, result) {
+            let id = ObjectID(data._id);
+            delete data._id;
+            this.collection.updateOne({_id: id }, data, {} , (err, result) => {
                 if (err) reject(err);
-                resolve(result);
+                data._id = result.insertedId;
+                resolve(data);
             });
         });
+    }
+
+    save(data) {
+        if(data._id) {
+            return this.update(data);
+        } else {
+            return this.insert(data);
+        }
     }
 }
 
