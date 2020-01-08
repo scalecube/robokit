@@ -19,7 +19,6 @@ describe('My Probot app', () => {
       done()
     })
   })
-  GitHubAPI
   beforeEach(() => {
     nock.disableNetConnect()
     probot = new Probot({ id: 123, cert: mockCert })
