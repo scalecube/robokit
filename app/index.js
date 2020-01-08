@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv/types').config()
 
 if (!process.env.GITHUB_TOKEN) console.log('required GITHUB_TOKEN enviroment variable is missing')
 if (!process.env.GITHUB_SECRET) console.log('required GITHUB_SECRET enviroment variable is missing')

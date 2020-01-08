@@ -25,6 +25,19 @@ as the tasks progress they can call back the status of the jobs currently runnin
 - [@octokit/rest](https://github.com/octokit/rest.js)
 - [@octokit/webhooks](https://github.com/octokit/webhooks.js)
 
+
+## Setup
+
+> A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
+
+```sh
+# Install dependencies
+npm install
+
+# Run the bot
+npm start
+```
+
 ## Getting started
 1. `status-checks` expects a github token and secret so it can integrate with github api.
 2. you need to configure a webhook in github to call `status-checks` when there is pull-request check.

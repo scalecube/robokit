@@ -1,6 +1,0 @@
-{
-  "owner": "scalecube",
-  "repo": "github-gateway",
-  "issue_number": 1,
-  "body": "greetings ${owner} ppl of ${repo}"
-}
