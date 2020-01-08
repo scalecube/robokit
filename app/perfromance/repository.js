@@ -3,11 +3,11 @@ const MongoClient = require('mongodb').MongoClient
 class Repository {
   constructor (dbName) {
     new Promise((resolve, reject) => {
-      this.uri = process.env.MONGO_DB_CONNECTION_STRING
-      this.dbName = dbName
-      this.client = new MongoClient(this.uri, { useNewUrlParser: true, useUnifiedTopology: true })
-    })
-    return this
+      this.uri = process.env.MONGO_DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/admin";
+      this.dbName = dbName;
+      this.client = new MongoClient(this.uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    });
+    return this;
   }
 
   connect (collectionName) {
