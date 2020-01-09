@@ -37,7 +37,6 @@ as the tasks progress they can call back the status of the jobs currently runnin
 
 status-checks expects the following environment variables so it can perform its actions:
 
-
 example .env file:
 
 ```
