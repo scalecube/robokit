@@ -7,7 +7,6 @@ Continuous integration is a great way to make sure our quality does not drop and
 GitHub have done a great job allowing us to integrate with the platform and run various checks before code gets merged. 
 You can automate these checks with GitHub using status checks and GitHub actions.
 
-
 ## This solution
 
 ![image](https://user-images.githubusercontent.com/1706296/70527292-38a8a280-1b54-11ea-9eff-7401614c4c42.png)
