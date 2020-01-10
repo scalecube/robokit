@@ -1,5 +1,6 @@
+
 {
-  "owner" : "scalecube", "repo": "github-gateway", "pr_number":1, "sha":"81337af0a1141ebaf8881cf6009e2addbc8964c9",
+  "path" : "/pulls/update/status/:owner/:repo/:sha",
   "statuses": [{
     "name" : "integration-testing",
     "status": "pending",
