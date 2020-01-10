@@ -3,6 +3,9 @@ FROM node:12.3.1
 LABEL maintainer="http://scalecube.io"
 
 ENV MONGO_DB_CONNECTION_STRING=""
+ENV APP_ID=""
+ENV PRIVATE_KEY=""
+ENV WEBHOOK_SECRET=""
 
 WORKDIR /usr/
 
