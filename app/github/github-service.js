@@ -38,8 +38,10 @@ class GithubService {
         owner: msg.owner,
         repo: msg.repo,
         head_sha: msg.sha,
+
         name: check.name,
         status: check.status,
+        conclusion: check.conclusion,
         output: check.output
       }).then((result)=>{
         console.log(result);
