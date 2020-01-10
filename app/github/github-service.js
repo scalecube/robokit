@@ -33,16 +33,19 @@ class GithubService {
     }
   }
   createCheckRun(github, msg) {
-    msg.checks.forEach(async check => {
-      let run = await github.checks.create({
+    msg.checks.forEach(check => {
+      github.checks.create({
         owner: msg.owner,
         repo: msg.repo,
         head_sha: msg.sha,
         name: check.name,
         status: check.status,
         output: check.output
-      });
-      console.log(run);
+      }).then((result)=>{
+        console.log(result);
+      }).catch((err)=>{
+        console.error(err);
+      });;
     });
   }
   updateStatus (context, msg) {
@@ -60,7 +63,6 @@ class GithubService {
       }).catch((err)=>{
         console.error(err);
       });
-
     })
   };
 
