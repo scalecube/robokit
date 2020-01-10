@@ -13,5 +13,5 @@ COPY env /usr/.env
 
 RUN npm install
 
-EXPOSE 3000
+EXPOSE 7777:3000
 CMD [ "npm", "start" ]
