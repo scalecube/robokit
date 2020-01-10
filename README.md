@@ -9,6 +9,7 @@ You can automate these checks with GitHub using status checks and GitHub actions
 
 ## This solution
 
+
 ![image](https://user-images.githubusercontent.com/1706296/70527292-38a8a280-1b54-11ea-9eff-7401614c4c42.png)
 
 `status-checks` is a gateway that accept webhooks request from github and proxy these request to your server / http endpoint you provide.
