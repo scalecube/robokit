@@ -16,9 +16,7 @@
   "scripts": {
     "dev": "./node_modules/.bin/nodemon",
     "start": "./node_modules/.bin/probot run ./index.js",
-    "lint": "./node_modules/.bin/standard --fix",
-    "test": "./node_modules/.bin/jest && standard",
-    "test:watch": "./node_modules/.bin/jest --watch --notify --notifyMode=change --coverage"
+    "lint": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -28,7 +26,6 @@
     "request-promise": "^4.2.5"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
     "nock": "^11.4.0",
     "nodemon": "^2.0.0",
     "smee-client": "^1.1.0",
