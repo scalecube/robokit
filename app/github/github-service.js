@@ -51,7 +51,6 @@ class GithubService {
     });
   }
   updateStatus (context, msg) {
-
     if(msg.statuses) msg.statuses.forEach(async element => {
       context.repos.createStatus({
         owner: msg.owner,
