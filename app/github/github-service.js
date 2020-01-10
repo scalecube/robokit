@@ -20,7 +20,31 @@ class GithubService {
       console.error(e)
     }
   };
-
+  async onCheckSuite(context) {
+    try {
+      this.router.route(context, (resp) => {
+        console.log('router response: ' + JSON.stringify(resp));
+        this.createCheckRun(context.github, resp);
+      }, (err) => {
+        console.error(err)
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  createCheckRun(github, msg) {
+    msg.checks.forEach(async check => {
+      let run = await github.checks.create({
+        owner: msg.owner,
+        repo: msg.repo,
+        head_sha: msg.sha,
+        name: check.name,
+        status: check.status,
+        output: check.output
+      });
+      console.log(run);
+    });
+  }
   updateStatus (context, msg) {
     msg.statuses.forEach(async element => {
       context.repos.createStatus({
@@ -48,13 +72,12 @@ class GithubService {
     return this.commentAction(msg, context.issues.createComment)
   }
 
-  content (repoName, path) {
+  content (owner,repo, path) {
     return new Promise((resolve, reject) => {
-
-      this.app.request('GET /repos/' + repoName + '/contents/' + path)
+      let ctx = this.cache.get(owner,repo);
+      ctx.request('GET /repos/' + owner+ "/" + repo + '/contents/' + path)
         .then(res => {
-          const buff = Buffer.from(res.data.content, 'base64');
-          resolve(buff.toString('ascii'))
+          resolve(Buffer.from(res.data.content, 'base64').toString('ascii'));
         }).catch((err) => {
           reject(err);
         })
@@ -64,7 +87,7 @@ class GithubService {
   commentAction (msg, action) {
     return new Promise((resolve, reject) => {
       if (msg.path) {
-        this.content(msg.owner + '/' + msg.repo, msg.path).then(r => {
+        this.content(msg.owner ,msg.repo, msg.path).then(r => {
           msg.body = r;
           msg.body = this._formatComment(msg);
           resolve(action(msg))
@@ -100,6 +123,9 @@ class GithubService {
   findWebhook (msg) {
     return this.router.findWebhooks(msg)
   }
+
+
+
 }
 
 module.exports = GithubService;

@@ -9,8 +9,9 @@ WORKDIR /usr/
 COPY app /usr/app/
 COPY package.json /usr/
 COPY index.js /usr/
+COPY env /usr/.env
 
 RUN npm install
 
-EXPOSE ${GITHUB_API_PORT} ${STATUS_API_PORT}
+EXPOSE 3000
 CMD [ "npm", "start" ]

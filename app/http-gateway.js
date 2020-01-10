@@ -10,7 +10,7 @@ class ApiGateway {
     this.performanceService = require('./perfromance/performance-service');
     this.router = app.route();
     this.router.use(cors());
-    this.router.use(express.json())
+    this.router.use(express.json());
     this.start(this.router);
   }
 
@@ -43,7 +43,7 @@ class ApiGateway {
       }
     });
 
-    this.router.post('/comment/create/:owner/:repo/issue_number/', (request, response) => {
+    this.router.post('/comment/create/:owner/:repo/:issue_number/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
@@ -131,6 +131,10 @@ class ApiGateway {
     return this.githubService.onPullRequest(context);
   }
 
+  onCheckSuite(context) {
+    return this.githubService.onCheckSuite(context);
+  }
+
   thenResponse (p, response) {
     p.then((r) => {
       response.send(r)
@@ -149,5 +153,7 @@ class ApiGateway {
       response.send('PR URL is wrong/ not found or not waiting for update.')
     }
   };
+
+
 }
 module.exports = ApiGateway;

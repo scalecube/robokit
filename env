@@ -1,0 +1,4 @@
+WEBHOOK_PROXY_URL=https://smee.io/f74sOaXacyxBsDQs
+
+# Use `trace` to get verbose logging or `info` to show less
+LOG_LEVEL=debug

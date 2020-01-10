@@ -29,6 +29,10 @@ module.exports = app => {
     return context.github.issues.createComment(issueComment);
   });
 
+  app.on('check_suite', async context => {
+    return api.onCheckSuite(context);
+  });
+
   app.on('pull_request.synchronize', async context => {
     return api.onPullRequest(context);
   });

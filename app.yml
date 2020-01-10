@@ -14,7 +14,7 @@
 # Uncomment the event names below to enable them.
 default_events:
 # - check_run
-# - check_suite
+- check_suite
 # - commit_comment
 # - create
 # - delete
