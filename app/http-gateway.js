@@ -68,8 +68,6 @@ class ApiGateway {
       }
     });
 
-
-
     this.router.get('/commits/:owner/:repo/', (request, response) => {
       this.thenResponse(this.performanceService.listCommits(
         request.params.owner,

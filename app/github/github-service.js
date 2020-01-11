@@ -87,8 +87,12 @@ class GithubService {
 
   commentAction (msg, action) {
     return new Promise((resolve, reject) => {
-      if (msg.path) {
-        this.content(msg.owner ,msg.repo, msg.path).then(r => {
+      if (msg.template) { // create comment from a template managed by this github app.
+        if(!msg.template.owner || !msg.template.repo){
+          msg.template.owner = msg.owner;
+          msg.template.repo = msg.repo;
+        }
+        this.content(msg.template.owner ,msg.template.repo, msg.template.path).then(r => {
           msg.body = r;
           msg.body = this._formatComment(msg);
           resolve(action(msg))
@@ -96,13 +100,13 @@ class GithubService {
           console.error(err);
           reject(err);
         })
-      } else if (msg.url) {
+      } else if (msg.url) { // create comment from external source
         httpClient.get(msg.template_url).then(r => {
           msg.body = r;
           msg.body = this._formatComment(msg);
           resolve(action(msg));
         })
-      } else {
+      } else { // create comment from simple text 'body'
         msg.body = this._formatComment(msg);
         resolve(action(msg));
       }
