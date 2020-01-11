@@ -25,7 +25,6 @@ as the tasks progress they can call back the status of the jobs currently runnin
 - [@octokit/rest](https://github.com/octokit/rest.js)
 - [@octokit/webhooks](https://github.com/octokit/webhooks.js)
 
-
 ## Setup
 
 > A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
