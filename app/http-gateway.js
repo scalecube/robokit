@@ -101,18 +101,16 @@ class ApiGateway {
       response);
     });
 
-    this.router.post('/webhooks/save', (request, response) => {
+    this.router.post('/webhooks/:owner?/:repo?', (request, response) => {
+      if (request.params.owner) { request.body.owner = request.params.owner }
+      if(request.params.repo)   { request.body.repo = request.params.repo   }
       this.thenResponse(this.githubService.saveWebhook(request.body), response);
     });
 
     this.router.get('/webhooks/:owner?/:repo?', (request, response) => {
-      let msg;
-      if (request.params.owner && request.params.repo) {
-        msg = {
-          owner: request.params.owner,
-          repo: request.params.repo
-        }
-      }
+      let msg = {};
+      if (request.params.owner) { msg.owner = request.params.owner }
+      if(request.params.repo)   { msg.repo = request.params.repo   }
       this.thenResponse(this.githubService.findWebhook(msg), response);
     });
 
