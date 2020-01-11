@@ -26,19 +26,20 @@ class ApiGateway {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-        this.sendResponse(response, this.githubService.updateStatus(ctx, request.body));
+        this.thenResponse(this.githubService.updateStatus(ctx, request.body),response);
       } else {
         this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
       }
     });
 
     this.router.post('/checks/update/status/:owner/:repo/:sha', (request, response) => {
+      console.log("### update status request: " + JSON.stringify(request.body));
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-        this.sendResponse(response, this.githubService.createCheckRun(ctx, request.body));
+        this.thenResponse(this.githubService.createCheckRun(ctx, request.body),response);
       } else {
         this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
       }

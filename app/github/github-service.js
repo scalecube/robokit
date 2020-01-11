@@ -33,8 +33,9 @@ class GithubService {
     }
   }
   createCheckRun(github, msg) {
+    let all = [];
     msg.checks.forEach(check => {
-      github.checks.create({
+      all.push(github.checks.create({
         owner: msg.owner,
         repo: msg.repo,
         head_sha: msg.sha,
@@ -43,16 +44,15 @@ class GithubService {
         status: check.status,
         conclusion: check.conclusion,
         output: check.output
-      }).then((result)=>{
-        console.log(result);
-      }).catch((err)=>{
-        console.error(err);
-      });;
+      }));
     });
+    return Promise.all(all);
   }
+
   updateStatus (context, msg) {
+    let all = [];
     if(msg.statuses) msg.statuses.forEach(async element => {
-      context.repos.createStatus({
+      all.push(context.repos.createStatus({
         owner: msg.owner,
         repo: msg.repo,
         sha: msg.sha,
@@ -60,12 +60,9 @@ class GithubService {
         context: element.name,
         target_url: element.target_url,
         description: element.message
-      }).then((result)=>{
-        console.log(result);
-      }).catch((err)=>{
-        console.error(err);
-      });
-    })
+      }))
+    });
+    return Promise.all(all);
   };
 
   updateComment (context, msg) {
