@@ -74,7 +74,7 @@ class ApiGateway {
         request.params.repo), response)
     });
 
-    this.router.get('/traces/get/:owner/:repo/:sha/:filter?', (request, response) => {
+    this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
       let filter;
       if (request.params.filter) filter = JSON.parse(request.params.filter)
       this.performanceService.findReport(request.params.owner,
