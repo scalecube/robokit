@@ -20,7 +20,7 @@ class ApiGateway {
       response.send({ time: Date.now() })
     });
 
-    this.router.post('/pulls/update/status/:owner/:repo/:sha', (request, response) => {
+    this.router.post('/pulls/status/:owner/:repo/:sha', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
@@ -32,7 +32,7 @@ class ApiGateway {
       }
     });
 
-    this.router.post('/checks/update/status/:owner/:repo/:sha', (request, response) => {
+    this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log("### update status request: " + JSON.stringify(request.body));
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
@@ -45,7 +45,7 @@ class ApiGateway {
       }
     });
 
-    this.router.post('/comment/update/:owner/:repo/', (request, response) => {
+    this.router.post('/comment/:owner/:repo/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
@@ -56,7 +56,7 @@ class ApiGateway {
       }
     });
 
-    this.router.post('/comment/create/:owner/:repo/:issue_number/', (request, response) => {
+    this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
