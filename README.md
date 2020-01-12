@@ -18,7 +18,6 @@ when there was a commit on a pull request, `status-checks` will trigger api call
 your server may respond with the list of tasks and checks it is planning to execute in 'pending' state.
 as the tasks progress they can call back the status of the jobs currently running.
 
-
 ## Tools
 
 - [@octokit/rest](https://github.com/octokit/rest.js)
