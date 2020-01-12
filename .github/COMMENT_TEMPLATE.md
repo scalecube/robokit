@@ -4,11 +4,11 @@ when sending a createComment request and passing parameters in the json request 
 
 ```json
 {
-  "owner":"scalecube",
-  "repo":"github-gateway",
-  "issue_number":1,
+  "owner":"${owner}",
+  "repo":"${repo}",
+  "issue_number":${issue_number},
   
-  "a-param":"some value",
+  "a-param":"${a-param}",
   
   "path":"src/examples/comment-template.md",
   "url":"https://raw.githubusercontent.com/scalecube/github-gateway/test1/src/examples/comment-template.md",
