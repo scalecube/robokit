@@ -46,7 +46,7 @@ jobs:
         helm package ./github-gateway
     - name: POST Helm package
       run: |
-        for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER}}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
+        for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
   trigger_deploy:
 
     needs:
