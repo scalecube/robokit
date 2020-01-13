@@ -17,5 +17,5 @@ nodeSelector:
 service:
   internalFirstPort: ${{ secrets.FIRST_PORT }}
   internalSecondPort: ${{ secrets.SECOND_PORT }}
-  annotations: external-dns.alpha.kubernetes.io/hostname: ${{ secrets.SERVICE_ANNOTATIONS }}
+  annotations: external-dns.alpha.kubernetes.io/hostname: scalecube-7777.exchange.om2.com.,scalecube-7778.exchange.om2.com.
   type: NodePort
