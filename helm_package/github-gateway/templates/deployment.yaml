@@ -19,7 +19,7 @@ spec:
     metadata:
       labels:
         app: github-gateway
-	  release: {{ .Release.Name | quote }}
+          release: {{ .Release.Name | quote }}
     spec:
       containers:
       - env:
