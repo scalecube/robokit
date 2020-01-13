@@ -1,0 +1,21 @@
+image:
+  repository: ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}
+  tag: master
+  pullPolicy: Always
+
+env:
+  timestamp: 111111
+
+podTemplate:
+  annotations: {}
+
+  labels: {}
+
+nodeSelector:
+  environment: dev
+
+service:
+  internalFirstPort: ${{ secrets.FIRST_PORT }}
+  internalFirstPort: ${{ secrets.SECOND_PORT}}
+  annotations: { external-dns.alpha.kubernetes.io/hostname: ${{ secrets.SERVICE_ANNOTATIONS }} }
+  type: NodePort
