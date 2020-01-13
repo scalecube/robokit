@@ -16,6 +16,6 @@ nodeSelector:
 
 service:
   internalFirstPort: ${{ secrets.FIRST_PORT }}
-  internalFirstPort: ${{ secrets.SECOND_PORT}}
+  internalFirstPort: ${{ secrets.SECOND_PORT }}
   annotations: { external-dns.alpha.kubernetes.io/hostname: ${{ secrets.SERVICE_ANNOTATIONS }} }
   type: NodePort
