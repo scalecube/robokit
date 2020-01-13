@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: github-gateway
-      release: {{ .Release.Name | quote }}
+    release: {{ .Release.Name | quote }}
     chart: github-gateway
     namespace: scalecube-gw
   name: github-gateway-depl
@@ -14,12 +14,12 @@ spec:
   selector:
     matchLabels:
       app: github-gateway
-        release: {{ .Release.Name | quote }}
+      release: {{ .Release.Name | quote }}
   template:
     metadata:
       labels:
         app: github-gateway
-          release: {{ .Release.Name | quote }}
+        release: {{ .Release.Name | quote }}
     spec:
       containers:
       - env:
