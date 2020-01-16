@@ -1,5 +1,5 @@
 image:
-  repository: ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}
+  repository: {}
   tag: master
   pullPolicy: Always
 
@@ -15,7 +15,7 @@ nodeSelector:
   environment: dev
 
 service:
-  internalFirstPort: ${{ secrets.FIRST_PORT }}
-  internalSecondPort: ${{ secrets.SECOND_PORT }}
-  annotations: { external-dns.alpha.kubernetes.io/hostname: scalecube-7777.exchange.om2.com.,scalecube-7778.exchange.om2.com. }
+  internalFirstPort: {}
+  internalSecondPort: {}
+  annotations: {}
   type: NodePort
