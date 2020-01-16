@@ -24,7 +24,7 @@ jobs:
         password: ${{ secrets.D_PASS }}
     - name: push github-gateway container to registry
       run: |
-        docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
+        sudo docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
   create_helm:
     runs-on: ubuntu-latest
 
