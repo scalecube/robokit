@@ -1,5 +1,7 @@
 image:
-  repository: {}
+  repository:
+    user: {}
+    name: {}
   tag: master
   pullPolicy: Always
 
