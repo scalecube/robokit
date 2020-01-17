@@ -1,7 +1,7 @@
 image:
   repository:
-    user: {}
-    name: {}
+    user: ""
+    name: ""
   tag: master
   pullPolicy: Always
 
@@ -17,9 +17,9 @@ nodeSelector:
   environment: dev
 
 service:
-  internalFirstPort: {}
-  internalSecondPort: {}
+  internalFirstPort: ""
+  internalSecondPort: ""
   annotations:
-    urla: {}
-    urlb: {}
+    urla: ""
+    urlb: ""
   type: NodePort
