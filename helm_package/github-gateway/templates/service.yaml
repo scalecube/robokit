@@ -7,10 +7,8 @@ metadata:
     release: {{ .Release.Name }}
   name: github-gateway-svc
   namespace: scalecube-gw
-{{- if .Values.service.annotations }}
   annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
-{{- end }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.service.annotations.urla }},{{ .Values.service.annotations.urlb }}
 spec:
   ports:
   - name: port-{{ .Values.service.internalFirstPort  | toString }}
