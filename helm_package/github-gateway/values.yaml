@@ -19,7 +19,5 @@ nodeSelector:
 service:
   internalFirstPort: ""
   internalSecondPort: ""
-  annotations:
-    urla: ""
-    urlb: ""
+  annotations: {}
   type: NodePort
