@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ .Values.helm.chart }}
+    app: {{ .Values.helm.app }}
+    release: {{ .Release.Name | quote }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.helm.app }} 
+      release: {{ .Release.Name | quote }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.helm.app }}
+        release: {{ .Release.Name | quote }}
+      annotations:
+{{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      nodeSelector:
+{{- range $key, $value := .Values.nodeSelector }}
+  {{ indent 6 $key }}: {{ $value }}
+{{- end }}
+      imagePullSecrets:
+      - name: regsecret
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+{{- range $pkey, $pval := .Values.env }}
+        - name: {{ $pkey }}
+          value: {{ $pval | quote }}
+{{- end }}
+        ports:
+        - name: port-{{ .Values.service.internalPort | toString }}
+          containerPort: {{ .Values.service.internalPort }}
