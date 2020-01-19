@@ -1,0 +1,23 @@
+image:
+  repository:
+    user: ""
+    name: ""
+  tag: master
+  pullPolicy: Always
+
+env:
+  timestamp: 111111
+
+podTemplate:
+  annotations: {}
+
+  labels: {}
+
+nodeSelector:
+  environment: dev
+
+service:
+  internalFirstPort: ""
+  internalSecondPort: ""
+  annotations: {}
+  type: NodePort
