@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.helm.app }}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: {{ }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ .Values.service.name }}
+          servicePort: {{ .Values.service.internalPort }}
