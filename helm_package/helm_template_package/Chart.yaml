@@ -1,0 +1,8 @@
+name: helm_package_template
+version: 0.0.1
+description: Helm chart helm_package_template
+maintainers:
+  - name: Serhii Kolomiiets
+    email: serhii.kolomiiets@jivygroup.com
+appVersion: 0.1
+apiVersion: v1
