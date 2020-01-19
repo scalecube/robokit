@@ -1,0 +1,31 @@
+image:
+  repository: 
+  tag: 
+  pullPolicy: Always
+
+env:
+  timestamp: 
+
+podTemplate:
+  annotations: {}
+
+  labels: {}
+
+nodeSelector:
+  environment: dev
+
+service:
+  name:
+  internalPort: 
+  annotations: {}
+  type: NodePort
+
+helm:
+  chart:
+  app:
+
+deployment:
+  name:
+
+ingress:
+  name:
