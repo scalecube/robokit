@@ -1,0 +1,8 @@
+name: github-gateway
+version: 0.0.1
+description: Helm chart github-gateway
+maintainers:
+  - name: Serhii Lypnytskyi
+    email: serhii.lypnytskiy@jivygroup.com
+appVersion: 0.1
+apiVersion: v1

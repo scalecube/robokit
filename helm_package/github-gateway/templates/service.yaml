@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: github-gateway
+    app: github-gateway
+    release: {{ .Release.Name }}
+  name: github-gateway-svc
+  namespace: scalecube-gw
+{{- if .Values.service.annotations }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  ports:
+  - name: port-{{ .Values.service.internalFirstPort  | toString }}
+    port: {{ .Values.service.internalFirstPort }}
+    protocol: TCP
+    targetPort: port-{{ .Values.service.internalFirstPort  | toString }}
+  - name: port-{{ .Values.service.internalSecondPort | toString }}
+    port: {{ .Values.service.internalSecondPort }}
+    protocol: TCP
+    targetPort: port-{{ .Values.service.internalSecondPort | toString }}
+  selector:
+    app: github-gateway
+  sessionAffinity: None
+  type: {{ .Values.service.type }}
