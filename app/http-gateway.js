@@ -1,5 +1,6 @@
 const GithubService = require('./github/github-service');
 const cors = require('cors');
+const yaml = require('js-yaml');
 const express = require('express');
 
 class ApiGateway {
@@ -126,7 +127,7 @@ class ApiGateway {
       });
     });
 
-    this.router.get('/commit/list/:owner/:repo/', (request, response) => {
+    this.router.get('/commits/:owner/:repo/', (request, response) => {
       this.performanceService.listCommits(request.params.owner,
         request.params.repo).then((r) => {
         writeResponse(r, response)
@@ -136,12 +137,30 @@ class ApiGateway {
     });
   }
 
+  execute(func,context){
+    return this.githubService.content(context.payload.repository.owner.login,
+        context.payload.repository.name,
+        "deploy.yml").then( (yml) => {
+
+      context.deploy = yaml.load(yml);
+      return func(context);
+
+    }).catch(e => {
+
+      return func(context);
+
+    });
+  }
   onPullRequest(context) {
-    return this.githubService.onPullRequest(context);
+    return this.execute(this.githubService.onPullRequest, context);
   }
 
   onCheckSuite(context) {
-    return this.githubService.onCheckSuite(context);
+    return this.execute(this.githubService.onCheckSuite, context);
+  }
+
+  createPullRequest(ctx) {
+    this.githubService.createPullRequest(ctx);
   }
 
   thenResponse (p, response) {
@@ -162,7 +181,6 @@ class ApiGateway {
       response.send('PR URL is wrong/ not found or not waiting for update.')
     }
   };
-
 
 }
 module.exports = ApiGateway;

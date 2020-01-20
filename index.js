@@ -19,6 +19,10 @@ module.exports = app => {
     return api.onPullRequest(context);
   });
 
+  app.on('installation', async context => {
+    console.log("installation event:" + JSON.stringify(context));
+  });
+
   console.log("Server Started.");
 };
 

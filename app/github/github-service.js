@@ -1,4 +1,5 @@
 const WebhooksRouter = require('./webhooks-router');
+var fs = require('fs').Stats;
 
 class GithubService {
 
@@ -9,17 +10,18 @@ class GithubService {
   }
 
   async onPullRequest (context) {
-    try {
-      this.router.route(context, (resp) => {
-        console.log('router response: ' + JSON.stringify(resp));
-        this.updateStatus(context.github, resp);
-      }, (err) => {
-        console.error(err)
-      })
-    } catch (e) {
-      console.error(e)
-    }
-  };
+      try {
+        this.router.route(context, (resp) => {
+          console.log('router response: ' + JSON.stringify(resp));
+          this.updateStatus(context.github, resp);
+        }, (err) => {
+          console.error(err)
+        })
+      } catch (e) {
+        console.error(e)
+      }
+  }
+
   async onCheckSuite(context) {
     try {
       this.router.route(context, (resp) => {
@@ -32,6 +34,7 @@ class GithubService {
       console.error(e)
     }
   }
+
   createCheckRun(github, msg) {
     let all = [];
     msg.checks.forEach(check => {
@@ -73,12 +76,16 @@ class GithubService {
     return this.commentAction(msg, context.issues.createComment)
   }
 
-  content (owner,repo, path) {
+  content (owner,repo, path, base64) {
     return new Promise((resolve, reject) => {
       let ctx = this.cache.get(owner,repo);
-      ctx.request('GET /repos/' + owner+ "/" + repo + '/contents/' + path)
+      if(ctx) ctx.request('GET /repos/' + owner+ "/" + repo + '/contents/' + path)
         .then(res => {
-          resolve(Buffer.from(res.data.content, 'base64').toString('ascii'));
+          if(!base64)
+            resolve(Buffer.from(res.data.content, 'base64').toString('ascii'));
+          else{
+            resolve(res.data.content);
+          }
         }).catch((err) => {
           reject(err);
         })
@@ -113,6 +120,87 @@ class GithubService {
     })
   }
 
+  createPullRequest(ctx) {
+
+    this.openPullRequest(ctx,{
+      source:{
+        owner: "jivygroup",
+        repo: "cicd-template",
+        files: "template-index.json"
+      },
+      pr : {
+        body: 'Install ci-cd template files on the repository this will enable CI and packaging',
+        title: 'Install ci-cd template files'
+      },
+      branch: "install-CI-files"
+    });
+  }
+
+  async openPullRequest (context, request) {
+    const branch = request.branch; // your branch's name
+    const reference = await context.github.gitdata.getRef(context.repo({ ref: 'heads/master' })); // get the reference for the master branch
+    const sha =reference.data.object.sha; // reference master sha.
+
+    let ref = await this._getOrCreateRef(context,branch,reference.data.object.sha);
+    let resp = await this.content(request.source.owner, request.source.repo, request.source.files,false);
+    let files = JSON.parse(resp);
+
+    files.forEach(async (file) =>{
+      let content = await this.content(request.source.owner, request.source.repo, file,true);
+      try {
+      const result = await context.github.repos.createOrUpdateFile(context.repo({
+        path: file, // the path to your config file
+        message: `adds ${file}`, // a commit message
+        content,
+        branch,
+        sha: sha
+      })); // create your config file
+      } catch (e) {
+        console.info(e.message);
+      }
+      try{
+        return await context.github.pullRequests.create(context.repo({
+          title: request.pr.title, // the title of the PR
+          head: branch,
+          base: 'master', // where you want to merge your changes
+          body: request.pr.body, // the body of your PR,
+          maintainer_can_modify: true // allows maintainers to edit your app's PR
+        }));
+      } catch (err) {
+        console.error(err)
+      }
+    });
+  };
+  async _getOrCreateRef(context,branch,sha){
+    let repo = context.payload.repository.name;
+    let owner = context.payload.repository.owner.login;
+    let reference;
+
+    let get = await context.github.gitdata.listRefs({
+      owner,
+      repo
+    }).then(result => {
+      result.data.forEach(ref=>{
+        if(ref.ref === `refs/heads/${ branch }`){
+          reference = ref;
+          sha = sha;
+        }
+      });
+      if(!reference) {
+        // create a reference in git for your branch
+        context.github.gitdata.createRef(context.repo({
+          ref: `refs/heads/${branch}`,
+          sha: sha
+        })).then(result => {
+          reference = result;
+        }).catch(err => {
+          console.error(err);
+        }) // create a reference in git for your branch
+      }
+    }); // create a reference in git for your branch
+
+    return reference;
+  }
   _formatComment (msg) {
     let body = msg.body;
     Object.entries(msg).forEach((e) => {
@@ -128,9 +216,6 @@ class GithubService {
   findWebhook (msg) {
     return this.router.findWebhooks(msg)
   }
-
-
-
 }
 
 module.exports = GithubService;

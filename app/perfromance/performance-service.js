@@ -19,6 +19,14 @@ class PerformanceService {
     })
   };
 
+  createTemplate(owner,repo,name,data){
+    return new Promise((resolve, reject) => {
+      this.getOrCreate("scalecube", "github-gateway").then(repo => {
+        resolve(repo.insert(name, data))
+      })
+    })
+  }
+
   addReport (owner, repoName, sha, data) {
     return new Promise((resolve, reject) => {
       this.getOrCreate(owner, repoName).then(repo => {

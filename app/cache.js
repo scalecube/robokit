@@ -13,7 +13,7 @@ class Cache {
         });
 
         app.on('*', async context => {
-            console.log("EVENT NAME: " + context.name);
+            console.log("####### EVENT NAME: " + context.name);
             this.set(context.payload.repository.owner.login , context.payload.repository.name ,context.github);
         });
     }
