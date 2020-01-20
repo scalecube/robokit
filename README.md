@@ -2,6 +2,7 @@
 
 Code quality is important. To help with code quality we have various tasks / scripts / apps and bots that we need to run to assert our quality does not drop.
 
+
 Continuous integration is a great way to make sure our quality does not drop and we have confidence with our software.
 
 GitHub have done a great job allowing us to integrate with the platform and run various checks before code gets merged. 
