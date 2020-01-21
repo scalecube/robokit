@@ -138,28 +138,32 @@ class ApiGateway {
     });
   }
 
-  async execute(context){
-    let deploy = await this.githubService.content(context.payload.repository.owner.login,
-        context.payload.repository.name,
-        "deploy.yml");
+  async deployYaml(context){
+    try {
+      let deploy = await this.githubService.content(context.payload.repository.owner.login,
+          context.payload.repository.name,
+          "deploy.yml");
 
-    if(deploy) context.deploy = yaml.load(deploy);
+      if(deploy) context.deploy = yaml.load(deploy);
+    } catch(err) {
+      console.error(err);
+    }
     return context;
   }
 
   async onPullRequest(context) {
-    let ctx = await this.execute(context);
+    let ctx = await this.deployYaml(context);
     return this.githubService.onPullRequest(ctx);
   }
 
   async onCheckSuite(context) {
-    let ctx = await this.execute(context);
+    let ctx = await this.deployYaml(context);
     return this.githubService.onCheckSuite(ctx);
   }
 
 
   async onCheckRun(context) {
-    let ctx = await this.execute(context);
+    let ctx = await this.deployYaml(context);
     return this.githubService.onCheckSuite(ctx);
   }
 

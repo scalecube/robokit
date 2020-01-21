@@ -8,7 +8,7 @@ class GithubService {
     this.cache = cache;
   }
 
-  onPullRequest (self,context) {
+  onPullRequest (context) {
       try {
         this.router.route(context, (resp) => {
 
