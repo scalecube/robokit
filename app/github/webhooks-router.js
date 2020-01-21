@@ -2,6 +2,7 @@ const httpClient = require('../http-client');
 const Repository = require('./repository');
 
 class WebhooksRouter {
+
   constructor () {
     new Repository('github-gateway').connect('webhooks').then(r => {
       this.repo = r;

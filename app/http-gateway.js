@@ -137,20 +137,17 @@ class ApiGateway {
     });
   }
 
-  execute(func,context){
-    return this.githubService.content(context.payload.repository.owner.login,
+  async execute(func,context){
+    let deploy = await this.githubService.content(context.payload.repository.owner.login,
         context.payload.repository.name,
-        "deploy.yml").then( (yml) => {
+        "deploy.yml");
 
-      context.deploy = yaml.load(yml);
-      return func(context);
+    if(deploy)
+        context.deploy = yaml.load(deploy);
 
-    }).catch(e => {
-
-      return func(context);
-
-    });
+      return func(this.router,context);
   }
+
   onPullRequest(context) {
     return this.execute(this.githubService.onPullRequest, context);
   }

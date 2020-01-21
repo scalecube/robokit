@@ -1,5 +1,4 @@
 const WebhooksRouter = require('./webhooks-router');
-var fs = require('fs').Stats;
 
 class GithubService {
 
@@ -9,11 +8,11 @@ class GithubService {
     this.cache = cache;
   }
 
-  async onPullRequest (context) {
+  async onPullRequest (router,context) {
       try {
-        this.router.route(context, (resp) => {
+        router.route(context, (resp) => {
           console.log('router response: ' + JSON.stringify(resp));
-          this.updateStatus(context.github, resp);
+          return this.updateStatus(context.github, resp);
         }, (err) => {
           console.error(err)
         })
@@ -22,9 +21,9 @@ class GithubService {
       }
   }
 
-  async onCheckSuite(context) {
+  async onCheckSuite(router,context) {
     try {
-      this.router.route(context, (resp) => {
+      router.route(context, (resp) => {
         console.log('router response: ' + JSON.stringify(resp));
         return this.createCheckRun(context.github, resp);
       }, (err) => {
