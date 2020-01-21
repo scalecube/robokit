@@ -10,14 +10,11 @@ env:
   APP_ID: ""
   PRIVATE_KEY: ""
   WEBHOOK_SECRET: ""
-  PUBLIC_API_PORT: ""
-  INTERNAL_API_PORT: ""
-  MONGO_DB_CONNECTION_STRING: ""
   PORT: ""
+  MONGO_DB_CONNECTION_STRING: ""
   WEBHOOK_PROXY_URL: ""
   LOG_LEVEL: ""
   
-
 podTemplate:
   annotations: {}
 
