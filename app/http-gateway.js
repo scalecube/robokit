@@ -145,7 +145,7 @@ class ApiGateway {
     if(deploy)
         context.deploy = yaml.load(deploy);
 
-      return func(this.router,context);
+      return func(this,this.router,context);
   }
 
   onPullRequest(context) {

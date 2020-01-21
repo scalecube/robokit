@@ -8,11 +8,11 @@ class GithubService {
     this.cache = cache;
   }
 
-  async onPullRequest (router,context) {
+  onPullRequest (self,context) {
       try {
-        router.route(context, (resp) => {
+        self.router.route(context, (resp) => {
           console.log('router response: ' + JSON.stringify(resp));
-          return this.updateStatus(context.github, resp);
+          return self.updateStatus(context.github, resp);
         }, (err) => {
           console.error(err)
         })
@@ -21,11 +21,11 @@ class GithubService {
       }
   }
 
-  async onCheckSuite(router,context) {
+  onCheckSuite(router,context) {
     try {
-      router.route(context, (resp) => {
+      self.router.route(context, (resp) => {
         console.log('router response: ' + JSON.stringify(resp));
-        return this.createCheckRun(context.github, resp);
+        return self.createCheckRun(context.github, resp);
       }, (err) => {
         console.error(err)
       })
