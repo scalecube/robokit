@@ -40,6 +40,7 @@ class ApiGateway {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
+
         this.thenResponse(this.githubService.createCheckRun(ctx, request.body),response);
       } else {
         this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
@@ -155,6 +156,7 @@ class ApiGateway {
     let ctx = await this.execute(context);
     return this.githubService.onCheckSuite(ctx);
   }
+
 
   async onCheckRun(context) {
     let ctx = await this.execute(context);

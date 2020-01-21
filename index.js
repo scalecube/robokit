@@ -11,6 +11,10 @@ module.exports = app => {
   app.log('Starting the T+Bot service.');
   const api = new ApiGateway(app,cache);
 
+  app.on('schedule.repository', context => {
+    cache.set(context.payload.repository.owner.login , context.payload.repository.name ,context.github);
+  });
+
   app.on('check_suite', 'check_run', async context => {
     return api.onCheckSuite(context);
   });
@@ -21,6 +25,14 @@ module.exports = app => {
 
   app.on('installation', async context => {
     console.log("installation event:" + JSON.stringify(context));
+  });
+
+  app.on('*', async context => {
+    console.log("####### EVENT NAME: " + context.name);
+    if(context.payload.check_run && context.payload.check_run.name.toLowerCase().includes("Travis CI - Pull Request")){
+      console.log(context.payload.check_run.name);
+    }
+    cache.set(context.payload.repository.owner.login , context.payload.repository.name ,context.github);
   });
 
   console.log("Server Started.");

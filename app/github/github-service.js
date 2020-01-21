@@ -26,7 +26,11 @@ class GithubService {
     try {
         this.router.route(context, (resp) => {
           console.log('<<< ###  router response: \n' + JSON.stringify(resp));
-          return this.createCheckRun(context.github, resp);
+          if(resp && Array.isArray(resp.checks)) {
+            return this.createCheckRun(context.github, resp);
+          } else {
+            return Promise.resolve("OK");
+          }
       }, (err) => {
         console.error(err)
       })
@@ -37,6 +41,7 @@ class GithubService {
 
   createCheckRun(github, msg) {
     let all = [];
+
     msg.checks.forEach(check => {
       all.push(github.checks.create({
         owner: msg.owner,
@@ -49,6 +54,7 @@ class GithubService {
         output: check.output
       }));
     });
+
     return Promise.all(all);
   }
 
