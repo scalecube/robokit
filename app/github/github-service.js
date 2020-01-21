@@ -21,7 +21,7 @@ class GithubService {
       }
   }
 
-  onCheckSuite(router,context) {
+  onCheckSuite(self, router,context) {
     try {
       self.router.route(context, (resp) => {
         console.log('router response: ' + JSON.stringify(resp));
