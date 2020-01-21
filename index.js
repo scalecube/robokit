@@ -11,11 +11,7 @@ module.exports = app => {
   app.log('Starting the T+Bot service.');
   const api = new ApiGateway(app,cache);
 
-  app.on('check_run', async context => {
-    return api.onCheckRun(context);
-  });
-
-  app.on('check_suite', async context => {
+  app.on('check_suite', 'check_run', async context => {
     return api.onCheckSuite(context);
   });
 
