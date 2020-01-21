@@ -25,10 +25,11 @@ class GithubService {
   onCheckSuite(context) {
     try {
         this.router.route(context, (resp) => {
-          console.log('<<< ###  router response: \n' + JSON.stringify(resp));
           if(resp && Array.isArray(resp.checks)) {
+            console.log('<<< ###  router response: \n' + JSON.stringify(resp));
             return this.createCheckRun(context.github, resp);
           } else {
+            console.log('<<< ###  router response: \n' + resp);
             return Promise.resolve("OK");
           }
       }, (err) => {
