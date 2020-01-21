@@ -7,7 +7,14 @@ image:
 
 env:
   timestamp: 111111
-
+  APP_ID: ""
+  PRIVATE_KEY: ""
+  WEBHOOK_SECRET: ""
+  PORT: ""
+  MONGO_DB_CONNECTION_STRING: ""
+  WEBHOOK_PROXY_URL: ""
+  LOG_LEVEL: ""
+  
 podTemplate:
   annotations: {}
 
