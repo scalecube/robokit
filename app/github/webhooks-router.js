@@ -1,10 +1,10 @@
-const httpClient = require('../http-client')
-const Repository = require('./repository')
+const httpClient = require('../http-client');
+const Repository = require('./repository');
 
 class WebhooksRouter {
   constructor () {
     new Repository('github-gateway').connect('webhooks').then(r => {
-      this.repo = r
+      this.repo = r;
       this.loadRoutes().then(routes => {
         console.log('routes loaded: ' + JSON.stringify(routes))
       })
@@ -55,4 +55,4 @@ class WebhooksRouter {
   }
 }
 
-module.exports = WebhooksRouter
+module.exports = WebhooksRouter;

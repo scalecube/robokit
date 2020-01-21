@@ -26,7 +26,7 @@ class GithubService {
     try {
       this.router.route(context, (resp) => {
         console.log('router response: ' + JSON.stringify(resp));
-        this.createCheckRun(context.github, resp);
+        return this.createCheckRun(context.github, resp);
       }, (err) => {
         console.error(err)
       })
