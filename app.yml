@@ -13,7 +13,7 @@
 # The list of events the GitHub App subscribes to.
 # Uncomment the event names below to enable them.
 default_events:
-# - check_run
+- check_run
 - check_suite
 # - commit_comment
 # - create

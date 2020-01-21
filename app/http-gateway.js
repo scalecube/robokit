@@ -156,6 +156,11 @@ class ApiGateway {
     return this.githubService.onCheckSuite(ctx);
   }
 
+  async onCheckRun(context) {
+    let ctx = await this.execute(context);
+    return this.githubService.onCheckSuite(ctx);
+  }
+
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
   }
@@ -178,6 +183,7 @@ class ApiGateway {
       response.send('PR URL is wrong/ not found or not waiting for update.')
     }
   };
+
 
 }
 module.exports = ApiGateway;

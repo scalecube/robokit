@@ -10,7 +10,7 @@ class GithubService {
 
   onPullRequest (self,context) {
       try {
-        self.router.route(context, (resp) => {
+        this.router.route(context, (resp) => {
 
           console.log('<<< ### router response: \n' + JSON.stringify(resp));
           this.updateStatus(context.github, resp);
