@@ -11,8 +11,9 @@ class GithubService {
   onPullRequest (self,context) {
       try {
         self.router.route(context, (resp) => {
-          console.log('router response: ' + JSON.stringify(resp));
-          return self.updateStatus(context.github, resp);
+
+          console.log('<<< ### router response: \n' + JSON.stringify(resp));
+          this.updateStatus(context.github, resp);
         }, (err) => {
           console.error(err)
         })
@@ -21,16 +22,16 @@ class GithubService {
       }
   }
 
-  onCheckSuite(self, router,context) {
+  onCheckSuite(context) {
     try {
-      self.router.route(context, (resp) => {
-        console.log('router response: ' + JSON.stringify(resp));
-        return self.createCheckRun(context.github, resp);
+        this.router.route(context, (resp) => {
+          console.log('<<< ###  router response: \n' + JSON.stringify(resp));
+          return this.createCheckRun(context.github, resp);
       }, (err) => {
         console.error(err)
       })
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
   }
 
