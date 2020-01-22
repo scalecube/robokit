@@ -8,31 +8,42 @@ const Cache = require('./app/cache');
 module.exports = app => {
   const cache = new Cache(app);
 
-  app.log('Starting the T+Bot service.');
+  app.log('Starting the TxBot service.');
   const api = new ApiGateway(app,cache);
 
   app.on('schedule.repository', context => {
+    console.log("####### ON: " + context.name);
     cache.set(context.payload.repository.owner.login , context.payload.repository.name ,context.github);
-  });
-
-  app.on('check_suite', 'check_run', async context => {
-    return api.onCheckSuite(context);
-  });
-
-  app.on('pull_request.synchronize', async context => {
-    return api.onPullRequest(context);
   });
 
   app.on('installation', async context => {
     console.log("installation event:" + JSON.stringify(context));
   });
 
-  app.on('*', async context => {
+  app.on('check_suite', async context => {
+    return api.onCheckSuite(context);
+  });
+
+  app.on('check_run', async context => {
+    return api.onCheckSuite(context);
+  });
+
+  app.on([
+      'pull_request.synchronize',
+      'pull_request.labeled',
+      'pull_request.unlabeled',
+      'pull_request.opened',
+      'pull_request.closed',
+      'pull_request.reopened'], async context => {
+
+    return api.onPullRequest(context);
+  });
+
+  app.on([
+      'issue_comment',
+      'issues',
+      'push'], async context => {
     console.log("####### EVENT NAME: " + context.name);
-    if(context.payload.check_run && context.payload.check_run.name.toLowerCase().includes("Travis CI - Pull Request")){
-      console.log(context.payload.check_run.name);
-    }
-    cache.set(context.payload.repository.owner.login , context.payload.repository.name ,context.github);
   });
 
   console.log("Server Started.");
