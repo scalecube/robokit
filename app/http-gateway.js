@@ -35,7 +35,7 @@ class ApiGateway {
     });
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
-      console.log("### update status request: " + JSON.stringify(request.body));
+      console.log("### checks status request: " + JSON.stringify(request.body));
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
