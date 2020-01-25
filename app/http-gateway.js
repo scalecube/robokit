@@ -225,8 +225,7 @@ class ApiGateway {
   }
 
 
-  async ciCompleted(context, name,owner, repo,branchName,issue_number){
-    let labels = await this.labels(owner, repo, issue_number);
+  async ciCompleted(context, name,labels,branchName,issue_number){
     return (context.payload.check_run.name == name &&
         context.payload.action == 'completed') &&
         (context.payload.check_run.conclusion == 'success') &&
@@ -235,7 +234,7 @@ class ApiGateway {
 
   }
   async onCheckRun(context) {
-    console.log(context.payload.check_run.name);
+    console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_run.head_sha;
@@ -245,7 +244,8 @@ class ApiGateway {
     if (context.payload.check_run.pull_requests) {
       issue_number = context.payload.check_run.pull_requests[0].number;
     }
-    if (await this.ciCompleted(context,"create_helm",owner, repo,branchName,issue_number)) {
+    let labels = await this.labels(owner, repo, issue_number);
+    if (this.ciCompleted(context,"create_helm",labels,branchName,issue_number)) {
       let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
         title: "Robo-kit is Deploying branch: " + branchName,
