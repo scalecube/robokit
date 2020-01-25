@@ -254,7 +254,7 @@ class GithubService {
 
   route(owner,repo,context) {
     this.router.route(owner,repo,context, (resp) => {
-        if((resp) && resp instanceof 'String') {
+        if((resp) && resp instanceof String) {
           console.log('<<< ###  router response: \n' + resp);
         } else if(resp !== undefined){
           console.log('<<< ###  router response: \n' + JSON.stringify(resp));
