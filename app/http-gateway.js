@@ -180,6 +180,7 @@ class ApiGateway {
         // TRIGGER CD SERVER DEPLOY AND THEN:
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
       }
+
       if(check_run)
         this.githubService.createCheckRun(context, check_run);
     }
