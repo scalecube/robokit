@@ -189,18 +189,27 @@ class ApiGateway {
       if (context.payload.action == 'requested') {
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
         check_run.checks[0].output = {
-              title: "Deploying branch: '" + branchName + "'",
+              title: "Deploy is Waiting for status checks",
               summary: "deploy will start when check suite completes",
               text: "waiting for CI to complete successfully"
           }
-      } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == 'success') {
-        // CI COMPLETED WITH SUCCESS
-        // TRIGGER CD SERVER DEPLOY AND THEN:
-        check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
-        check_run.checks[0].output = {
-          title: "Deploying branch: '" + branchName + "'",
-              summary: "Triggered a Continues-Deployment pipeline",
-              text: "Waiting for Continues deployment status updates"
+      } else if(context.payload.action == 'completed') {
+        if (context.payload.check_suite.conclusion == 'success') {
+          // CI COMPLETED WITH SUCCESS
+          // TRIGGER CD SERVER DEPLOY AND THEN:
+          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
+          check_run.checks[0].output = {
+            title: "Robo-kit is Deploying branch: " + branchName,
+            summary: "Triggered a Continues-Deployment pipeline",
+            text: "Waiting for Continues deployment status updates"
+          }
+        } else {
+          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
+          check_run.checks[0].output = {
+            title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
+            summary: "Cancelled a Continues-Deployment pipeline",
+            text: "the deployment is cancelled because CI failed"
+          }
         }
       }
 
@@ -259,7 +268,7 @@ class ApiGateway {
   }
 
   checkStatus(owner,repo,sha, name, status) {
-    if(status=='completed') {
+    if (status == 'completed') {
       return {
         owner: owner,
         repo: repo,
@@ -270,7 +279,20 @@ class ApiGateway {
           conclusion: "success"
         }]
       }
-    } else
+
+    } else if (status == 'cancelled') {
+      return {
+        owner: owner,
+        repo: repo,
+        sha: sha,
+        checks: [{
+          name: name,
+          status: "completed",
+          conclusion: "cancelled"
+        }]
+      }
+
+    } else {
       return {
         owner: owner,
         repo: repo,
@@ -279,7 +301,9 @@ class ApiGateway {
           name: name,
           status: status
         }]
+      }
     }
   }
 }
+
 module.exports = ApiGateway;
