@@ -10,7 +10,9 @@ class GithubService {
 
   onPullRequest (context) {
       try {
-        this.router.route(context, (resp) => {
+        const owner = ctx.payload.repository.owner.login;
+        const repo = ctx.payload.repository.name;
+        this.router.route(owner,repo,context, (resp) => {
 
           console.log('<<< ### router response: \n' + JSON.stringify(resp));
           this.updateStatus(context.github, resp);
@@ -24,7 +26,9 @@ class GithubService {
 
   onCheckSuite(context) {
     try {
-        this.router.route(context, (resp) => {
+        const owner = ctx.payload.repository.owner.login;
+        const repo = ctx.payload.repository.name;
+        this.router.route(owner,repo,context, (resp) => {
           if(resp && Array.isArray(resp.checks)) {
             console.log('<<< ###  router response: \n' + JSON.stringify(resp));
             return this.createCheckRun(context.github, resp);
@@ -248,8 +252,8 @@ class GithubService {
     return this.router.findWebhooks(msg)
   }
 
-  route(context) {
-    this.router.route(context, (resp) => {
+  route(owner,repo,context) {
+    this.router.route(owner,repo,context, (resp) => {
         if((resp) && resp instanceof 'String') {
           console.log('<<< ###  router response: \n' + resp);
         } else if(resp !== undefined){
