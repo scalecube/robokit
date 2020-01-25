@@ -350,5 +350,4 @@ class ApiGateway {
     }
   }
 }
-
 module.exports = ApiGateway;
