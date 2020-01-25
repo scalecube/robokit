@@ -183,6 +183,7 @@ class ApiGateway {
     }
   }
 
+
   async onCheckRun(context) {
     if(context.payload.check_run.name == cfg.deploy.name){
 
