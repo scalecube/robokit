@@ -150,6 +150,7 @@ class ApiGateway {
   async onPullRequest(context) {
     return this.githubService.onPullRequest(context);
   }
+
   isLabeled(labels, name) {
     let result = false;
     if(labels && Array.isArray(labels)) {
