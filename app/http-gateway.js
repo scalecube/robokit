@@ -240,7 +240,7 @@ class ApiGateway {
     let branchName = this.checkRunBranchName(context);
     let issue_number;
 
-    if (context.payload.check_suite.pull_requests[0]) {
+    if (context.payload.check_run.pull_requests) {
       issue_number = context.payload.check_run.pull_requests[0].number;
     }
     if (this.ciCompleted(context,"create_helm")) {
