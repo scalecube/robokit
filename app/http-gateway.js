@@ -215,10 +215,13 @@ class ApiGateway {
   }
 
 
-
+  ciCompleted(){
+    retrun (context.payload.check_run.name == "create_helm" && context.payload.action == 'completed')
+  }
   async onCheckRun(context) {
-    if (context.payload.check_run.name == "" && context.payload.action == 'completed') {
-      if (context.payload.check_suite.conclusion == 'success') {
+    console.log(context.payload.check_run.name);
+    if (this.ciCompleted()) {
+      if (context.payload.check_run.conclusion == 'success') {
         // IF ITS A PULL REQUEST WITH LABEL {cfg.deploy.label.name} OR branch is master or develop
         if ((branchName == 'develop' || branchName == 'master') ||
             (issue_number && this.isLabeled(labels, cfg.deploy.label.name))) {
