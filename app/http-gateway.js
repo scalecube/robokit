@@ -186,7 +186,7 @@ class ApiGateway {
     if(this.isLabeled(labels, cfg.deploy.label.name)) {
       if (context.payload.action == 'requested') {
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
-        check_run.output = {
+        check_run.checks[0].output = {
               title: "Deploy " + branchName + " to the cloud",
               summary: "deploy will start when check suite completes",
               text: "waiting for CI to complete successfully"
@@ -195,7 +195,7 @@ class ApiGateway {
         // CI COMPLETED WITH SUCCESS
         // TRIGGER CD SERVER DEPLOY AND THEN:
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
-        check_run.output = {
+        check_run.checks[0].output = {
           title: "Deploy " + branchName + " to the cloud",
               summary: "Triggered Continues deployment Server deploy pipeline",
               text: "Waiting for Continues deployment status updates"
