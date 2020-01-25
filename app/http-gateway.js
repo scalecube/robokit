@@ -171,7 +171,7 @@ class ApiGateway {
     } else if (context.payload.check_suite.head_branch=='master'){
       return 'master';
     } else{
-      return "pull request:" + context.payload.check_suite.pull_requests[0].number;
+      return "pr-" + context.payload.check_suite.pull_requests[0].number;
     }
   }
   async onCheckSuite(context) {
@@ -180,14 +180,16 @@ class ApiGateway {
     let sha = context.payload.check_suite.head_sha;
     let issue_number = context.payload.check_suite.pull_requests[0].number;
     let branchName = this.checkSuiteBranchName(context);
-    let check_run;
 
+    // Fetching branch labels
     let labels = await this.labels(owner,repo,issue_number);
+
+    let check_run;
     if(this.isLabeled(labels, cfg.deploy.label.name)) {
       if (context.payload.action == 'requested') {
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
         check_run.checks[0].output = {
-              title: "Deploy " + branchName + " to the cloud",
+              title: "Deploying the branch: '" + branchName,
               summary: "deploy will start when check suite completes",
               text: "waiting for CI to complete successfully"
           }
@@ -196,8 +198,8 @@ class ApiGateway {
         // TRIGGER CD SERVER DEPLOY AND THEN:
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
         check_run.checks[0].output = {
-          title: "Deploy " + branchName + " to the cloud",
-              summary: "Triggered Continues deployment Server deploy pipeline",
+          title: "Deploying the branch: '" + branchName,
+              summary: "Triggered a Continues-Deployment pipeline",
               text: "Waiting for Continues deployment status updates"
         }
       }
