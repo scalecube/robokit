@@ -2,6 +2,7 @@ const GithubService = require('./github/github-service');
 const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
+const cfg = require('./config');
 
 class ApiGateway {
   constructor (app, cache) {
@@ -138,6 +139,62 @@ class ApiGateway {
     });
   }
 
+  async labels(owner,repo,issue_number){
+    try {
+      return await this.githubService.labels(owner,repo,issue_number);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  async onPullRequest(context) {
+    return this.githubService.onPullRequest(context);
+  }
+  isLabeled(labels, name) {
+    let result = false;
+    if(labels && Array.isArray(labels)) {
+      labels.forEach(label => {
+        if(label.name == name){
+          result = true;
+          return true;
+        }
+      });
+    }
+    return result;
+  }
+
+  async onCheckSuite(context) {
+    let labels = await this.labels(
+        context.payload.repository.owner.login,
+        context.payload.repository.name,
+        context.payload.check_suite.pull_requests[0].number);
+
+    if(this.isLabeled(labels, cfg.deploy.label.name)) {
+      if (context.payload.action == 'requested') {
+        let body = this.checkStatus(context,cfg.deploy.name, "queued");
+        this.githubService.createCheckRun(context, body);
+
+      } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == "success") {
+        // THIS MEANS CI COMPLETED WITH SUCCESS
+        // TRIGGER CD SERVER DEPLOY AND THEN:
+        let body = this.checkStatus(context,context,cfg.deploy.name, "in_progress");
+        this.githubService.createCheckRun(context, body);
+
+      }
+    }
+  }
+
+  async onCheckRun(context) {
+    if(context.payload.check_run.name == cfg.deploy.name){
+
+    }
+    return this.githubService.onCheckSuite(context);
+  }
+
+  createPullRequest(ctx) {
+    this.githubService.createPullRequest(ctx);
+  }
+
   async deployYaml(context){
     try {
       let deploy = await this.githubService.content(context.payload.repository.owner.login,
@@ -149,26 +206,6 @@ class ApiGateway {
       console.error(err);
     }
     return context;
-  }
-
-  async onPullRequest(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onPullRequest(ctx);
-  }
-
-  async onCheckSuite(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onCheckSuite(ctx);
-  }
-
-
-  async onCheckRun(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onCheckSuite(ctx);
-  }
-
-  createPullRequest(ctx) {
-    this.githubService.createPullRequest(ctx);
   }
 
   thenResponse (p, response) {
@@ -191,5 +228,42 @@ class ApiGateway {
   };
 
 
+  route(context) {
+    this.githubService.route(context);
+  }
+
+  checkStatus(context, name, status) {
+    if(status=='completed') {
+      return {
+        owner: context.payload.repository.owner.login,
+        repo: context.payload.repository.name,
+        sha: context.payload.check_suite.head_sha,
+        checks: [{
+          name: name,
+          status: status,
+          conclusion: "success",
+          output: {
+            title: "Deploy branch to the cloud",
+            summary: "deploy will start when check suite completes",
+            text: "waiting for CI to complete successfully"
+          }
+        }]
+      }
+    } else
+      return {
+        owner: context.payload.repository.owner.login,
+        repo:  context.payload.repository.name,
+        sha:   context.payload.check_suite.head_sha,
+        checks: [{
+          name: name,
+          status: status,
+          output: {
+            title: "Deploy branch to the cloud",
+            summary: "deploy will start when check suite completes",
+            text: "waiting for CI to complete successfully"
+          }
+        }]
+    }
+  }
 }
 module.exports = ApiGateway;

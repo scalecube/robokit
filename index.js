@@ -25,7 +25,7 @@ module.exports = app => {
   });
 
   app.on('check_run', async context => {
-    return api.onCheckSuite(context);
+    return api.onCheckRun(context);
   });
 
   app.on([
@@ -43,7 +43,7 @@ module.exports = app => {
       'issue_comment',
       'issues',
       'push'], async context => {
-    console.log("####### EVENT NAME: " + context.name);
+    api.route(context);
   });
 
   console.log("Server Started.");
