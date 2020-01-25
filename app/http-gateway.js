@@ -181,6 +181,7 @@ class ApiGateway {
         let body = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
         this.githubService.createCheckRun(context, body);
       }
+
     }
   }
 
