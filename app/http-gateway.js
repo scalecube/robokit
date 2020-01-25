@@ -164,20 +164,21 @@ class ApiGateway {
   }
 
   async onCheckSuite(context) {
-    let labels = await this.labels(
-        context.payload.repository.owner.login,
-        context.payload.repository.name,
-        context.payload.check_suite.pull_requests[0].number);
+    let owner = context.payload.repository.owner.login;
+    let repo = context.payload.repository.name;
+    let sha = context.payload.check_suite.head_sha;
+    let issue_number = context.payload.check_suite.pull_requests[0].number;
 
+    let labels = await this.labels(owner,repo,issue_number);
     if(this.isLabeled(labels, cfg.deploy.label.name)) {
       if (context.payload.action == 'requested') {
-        let body = this.checkStatus(context,cfg.deploy.name, "queued");
+        let body = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
         this.githubService.createCheckRun(context, body);
 
       } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == "success") {
-        // THIS MEANS CI COMPLETED WITH SUCCESS
+        // CI COMPLETED WITH SUCCESS
         // TRIGGER CD SERVER DEPLOY AND THEN:
-        let body = this.checkStatus(context,cfg.deploy.name, "in_progress");
+        let body = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
         this.githubService.createCheckRun(context, body);
       }
     }
@@ -232,12 +233,12 @@ class ApiGateway {
     this.githubService.route(context);
   }
 
-  checkStatus(context, name, status) {
+  checkStatus(owner,repo,sha, name, status) {
     if(status=='completed') {
       return {
-        owner: context.payload.repository.owner.login,
-        repo: context.payload.repository.name,
-        sha: context.payload.check_suite.head_sha,
+        owner: owner,
+        repo: repo,
+        sha: sha,
         checks: [{
           name: name,
           status: status,
@@ -251,9 +252,9 @@ class ApiGateway {
       }
     } else
       return {
-        owner: context.payload.repository.owner.login,
-        repo:  context.payload.repository.name,
-        sha:   context.payload.check_suite.head_sha,
+        owner: owner,
+        repo: repo,
+        sha: sha,
         checks: [{
           name: name,
           status: status,
