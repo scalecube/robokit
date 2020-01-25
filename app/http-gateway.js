@@ -170,8 +170,10 @@ class ApiGateway {
       return 'develop';
     } else if (context.payload.check_suite.head_branch=='master'){
       return 'master';
-    } else{
+    } else if(context.payload.check_suite.pull_requests){
       return "pr-" + context.payload.check_suite.pull_requests[0].number;
+    } else{
+      return undefined;
     }
   }
 
