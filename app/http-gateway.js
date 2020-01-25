@@ -180,6 +180,7 @@ class ApiGateway {
         let body = this.checkStatus(context,context,cfg.deploy.name, "in_progress");
         this.githubService.createCheckRun(context, body);
       }
+
     }
   }
 
