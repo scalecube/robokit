@@ -60,6 +60,7 @@ class ApiGateway {
       }
     });
 
+
     this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
