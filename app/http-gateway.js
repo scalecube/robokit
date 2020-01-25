@@ -215,35 +215,46 @@ class ApiGateway {
   }
 
 
-  ciCompleted(context){
-    return (context.payload.check_run.name == "create_helm" && context.payload.action == 'completed')
+  ciCompleted(context, name){
+    return (context.payload.check_run.name == name &&
+        context.payload.action == 'completed') &&
+        (context.payload.check_run.conclusion == 'success')
   }
   async onCheckRun(context) {
     console.log(context.payload.check_run.name);
-    if (this.ciCompleted(context)) {
-      if (context.payload.check_run.conclusion == 'success') {
-        // IF ITS A PULL REQUEST WITH LABEL {cfg.deploy.label.name} OR branch is master or develop
-        if ((branchName == 'develop' || branchName == 'master') ||
-            (issue_number && this.isLabeled(labels, cfg.deploy.label.name))) {
+    let owner = context.payload.repository.owner.login;
+    let repo = context.payload.repository.name;
+    let sha = context.payload.check_suite.head_sha;
+    let branchName = this.checkSuiteBranchName(context);
+    let issue_number;
 
-          this.route(owner, repo, {
-            owner: owner,
-            repo: repo,
-            sha: sha,
-            tag: branchName,
-            pr_num: issue_number
-          })
-        }
-        // CI COMPLETED WITH SUCCESS
-        // TRIGGER CD SERVER DEPLOY AND THEN:
-        let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
-        check_run.checks[0].output = {
-          title: "Robo-kit is Deploying branch: " + branchName,
-          summary: "Triggered a Continues-Deployment pipeline",
-          text: "Waiting for Continues deployment status updates"
-        }
-        return this.githubService.onCheckSuite(context);
+    if (context.payload.check_suite.pull_requests[0]) {
+      issue_number = context.payload.check_run.pull_requests[0].number;
+    }
+    if (this.ciCompleted(context,"create_helm")) {
+      // Fetching branch labels
+      let labels = await this.labels(owner, repo, issue_number);
+      // IF ITS A PULL REQUEST WITH LABEL {cfg.deploy.label.name} OR branch is master or develop
+      if ((branchName == 'develop' || branchName == 'master') ||
+          (issue_number && this.isLabeled(labels, cfg.deploy.label.name))) {
+
+        this.route(owner, repo, {
+          owner: owner,
+          repo: repo,
+          sha: sha,
+          tag: branchName,
+          pr_num: issue_number
+        })
       }
+      // CI COMPLETED WITH SUCCESS
+      // TRIGGER CD SERVER DEPLOY AND THEN:
+      let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
+      check_run.checks[0].output = {
+        title: "Robo-kit is Deploying branch: " + branchName,
+        summary: "Triggered a Continues-Deployment pipeline",
+        text: "Waiting for Continues deployment status updates"
+      };
+      return this.githubService.onCheckSuite(context);
     }
   }
 
