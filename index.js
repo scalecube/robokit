@@ -25,7 +25,7 @@ module.exports = app => {
   });
 
   app.on('check_run', async context => {
-    //  return api.onCheckRun(context);
+    return api.onCheckRun(context);
   });
 
   app.on([
