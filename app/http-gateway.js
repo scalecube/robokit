@@ -225,10 +225,10 @@ class ApiGateway {
   }
 
 
-  async ciCompleted(check_run, name, action, conclusion,
+  ciCompleted(check_run, name, action, conclusion,
                     labeled,branchName,issue_number){
-    if (check_run == name && action == 'completed' && conclusion== 'success') {
-        return (branchName == 'develop' || branchName == 'master') || (issue_number && labeled)
+    if ( (check_run == name) & (action == 'completed') & (conclusion== 'success')) {
+        return (branchName == 'develop' | branchName == 'master') | (issue_number && labeled)
     }
     return false;
   }
