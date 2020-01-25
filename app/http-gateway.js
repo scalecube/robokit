@@ -174,6 +174,7 @@ class ApiGateway {
       return "pr-" + context.payload.check_suite.pull_requests[0].number;
     }
   }
+
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
