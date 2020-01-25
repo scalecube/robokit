@@ -234,7 +234,7 @@ class ApiGateway {
 
 
       if(check_run)
-        this.githubService.createCheckRun(context, check_run);
+        this.githubService.createCheckRun(context.github, check_run);
     }
   }
 
