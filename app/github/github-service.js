@@ -67,7 +67,7 @@ class GithubService {
       }));
     });
 
-    return await all;
+    return await Promise.all(all);
   }
 
   updateStatus (context, msg) {
