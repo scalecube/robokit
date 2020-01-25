@@ -248,7 +248,7 @@ class ApiGateway {
     let labels = await this.labels(owner, repo, issue_number);
     let labeled =this.isLabeled(labels, cfg.deploy.label.name);
 
-    if (this.ciCompleted(context.payload.check_run.name,"create_helm",
+    if (this.ciCompleted(context.payload.check_run.name,"trigger_deploy",
         context.payload.action,context.payload.check_run.conclusion,
         labeled,branchName,issue_number)) {
 
