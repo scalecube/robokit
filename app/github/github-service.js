@@ -46,41 +46,28 @@ class GithubService {
 
   async createCheckRun(github, msg) {
     let all = [];
-
     msg.checks.forEach(async check => {
+      let req = {
+        owner: msg.owner,
+        repo: msg.repo,
+        head_sha: msg.sha,
+        name: check.name,
+        status: check.status,
+        output: check.output
+      };
+
       if(check.conclusion) {
-        all.push(await github.checks.create({
-          owner: msg.owner,
-          repo: msg.repo,
-          head_sha: msg.sha,
-
-          name: check.name,
-          status: check.status,
-          conclusion: check.conclusion,
-          output: check.output
-        }).then(res=>{
-          console.log(res);
-        }).catch(err=>{
-          console.error(e);
-        }));
-      } else {
-        all.push(await github.checks.create({
-          owner: msg.owner,
-          repo: msg.repo,
-          head_sha: msg.sha,
-
-          name: check.name,
-          status: check.status,
-          output: check.output
-        }).then(res=>{
-          console.log(res);
-        }).catch(err=>{
-          console.error(e);
-        }));
+        req.conclusion = check.conclusion;
       }
+
+      all.push(github.checks.create().then(res=>{
+        console.log(res);
+      }).catch(err=>{
+        console.error(e);
+      }));
     });
 
-    return all;
+    return await all;
   }
 
   updateStatus (context, msg) {
