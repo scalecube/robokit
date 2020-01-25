@@ -40,20 +40,32 @@ class GithubService {
     }
   }
 
-  createCheckRun(github, msg) {
+  createCheckRun(context, msg) {
     let all = [];
 
     msg.checks.forEach(check => {
-      all.push(github.checks.create({
-        owner: msg.owner,
-        repo: msg.repo,
-        head_sha: msg.sha,
+      if(check.conclusion) {
+        all.push(context.github.checks.create({
+          owner: msg.owner,
+          repo: msg.repo,
+          head_sha: msg.sha,
 
-        name: check.name,
-        status: check.status,
-        conclusion: check.conclusion,
-        output: check.output
-      }));
+          name: check.name,
+          status: check.status,
+          conclusion: check.conclusion,
+          output: check.output
+        }));
+      } else {
+        all.push(context.github.checks.create({
+          owner: msg.owner,
+          repo: msg.repo,
+          head_sha: msg.sha,
+
+          name: check.name,
+          status: check.status,
+          output: check.output
+        }));
+      }
     });
 
     return Promise.all(all);
@@ -81,6 +93,18 @@ class GithubService {
 
   createComment (context, msg) {
     return this.commentAction(msg, context.issues.createComment)
+  }
+
+  labels(owner,repo,issue_number) {
+    return new Promise((resolve, reject) => {
+      let ctx = this.cache.get(owner,repo);
+      if(ctx) ctx.request('GET /repos/' + owner+ "/" + repo + '/issues/' + issue_number +'/labels')
+          .then(res => {
+            resolve(res.data);
+          }).catch((err) => {
+            reject(err);
+          })
+    })
   }
 
   content (owner,repo, path, base64) {
@@ -222,6 +246,20 @@ class GithubService {
 
   findWebhook (msg) {
     return this.router.findWebhooks(msg)
+  }
+
+  route(context) {
+    this.router.route(context, (resp) => {
+        if((resp) && resp instanceof 'String') {
+          console.log('<<< ###  router response: \n' + resp);
+        } else if(resp !== undefined){
+          console.log('<<< ###  router response: \n' + JSON.stringify(resp));
+        } else{
+          console.log('<<< ###  router response: \n' + resp);
+        }
+    }, (err) => {
+      console.error(err)
+    });
   }
 }
 

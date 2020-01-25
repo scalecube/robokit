@@ -2,6 +2,7 @@ const GithubService = require('./github/github-service');
 const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
+const cfg = require('./config');
 
 class ApiGateway {
   constructor (app, cache) {
@@ -46,6 +47,7 @@ class ApiGateway {
         this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
       }
     });
+
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
@@ -138,6 +140,96 @@ class ApiGateway {
     });
   }
 
+  async labels(owner,repo,issue_number){
+    try {
+      return await this.githubService.labels(owner,repo,issue_number);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  async onPullRequest(context) {
+    return this.githubService.onPullRequest(context);
+  }
+
+  isLabeled(labels, name) {
+    let result = false;
+    if(labels && Array.isArray(labels)) {
+      labels.forEach(label => {
+        if(label.name == name){
+          result = true;
+          return true;
+        }
+      });
+    }
+    return result;
+  }
+
+  checkSuiteBranchName(context){
+    if(context.payload.check_suite.head_branch=='develop') {
+      return 'develop';
+    } else if (context.payload.check_suite.head_branch=='master'){
+      return 'master';
+    } else{
+      return "pr-" + context.payload.check_suite.pull_requests[0].number;
+    }
+  }
+  async onCheckSuite(context) {
+    let owner = context.payload.repository.owner.login;
+    let repo = context.payload.repository.name;
+    let sha = context.payload.check_suite.head_sha;
+    let issue_number = context.payload.check_suite.pull_requests[0].number;
+    let branchName = this.checkSuiteBranchName(context);
+
+    // Fetching branch labels
+    let labels = await this.labels(owner,repo,issue_number);
+
+    let check_run;
+    if(this.isLabeled(labels, cfg.deploy.label.name)) {
+      if (context.payload.action == 'requested') {
+        check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
+        check_run.checks[0].output = {
+              title: "Deploy is Waiting for status checks",
+              summary: "deploy will start when check suite completes",
+              text: "waiting for CI to complete successfully"
+          }
+      } else if(context.payload.action == 'completed') {
+        if (context.payload.check_suite.conclusion == 'success') {
+          // CI COMPLETED WITH SUCCESS
+          // TRIGGER CD SERVER DEPLOY AND THEN:
+          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
+          check_run.checks[0].output = {
+            title: "Robo-kit is Deploying branch: " + branchName,
+            summary: "Triggered a Continues-Deployment pipeline",
+            text: "Waiting for Continues deployment status updates"
+          }
+        } else {
+          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
+          check_run.checks[0].output = {
+            title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
+            summary: "Cancelled a Continues-Deployment pipeline",
+            text: "the deployment is cancelled because CI failed"
+          }
+        }
+      }
+
+      if(check_run)
+        this.githubService.createCheckRun(context, check_run);
+    }
+  }
+
+
+  async onCheckRun(context) {
+    if(context.payload.check_run.name == cfg.deploy.name){
+
+    }
+    return this.githubService.onCheckSuite(context);
+  }
+
+  createPullRequest(ctx) {
+    this.githubService.createPullRequest(ctx);
+  }
+
   async deployYaml(context){
     try {
       let deploy = await this.githubService.content(context.payload.repository.owner.login,
@@ -149,26 +241,6 @@ class ApiGateway {
       console.error(err);
     }
     return context;
-  }
-
-  async onPullRequest(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onPullRequest(ctx);
-  }
-
-  async onCheckSuite(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onCheckSuite(ctx);
-  }
-
-
-  async onCheckRun(context) {
-    let ctx = await this.deployYaml(context);
-    return this.githubService.onCheckSuite(ctx);
-  }
-
-  createPullRequest(ctx) {
-    this.githubService.createPullRequest(ctx);
   }
 
   thenResponse (p, response) {
@@ -191,5 +263,47 @@ class ApiGateway {
   };
 
 
+  route(context) {
+    this.githubService.route(context);
+  }
+
+  checkStatus(owner,repo,sha, name, status) {
+    if (status == 'completed') {
+      return {
+        owner: owner,
+        repo: repo,
+        sha: sha,
+        checks: [{
+          name: name,
+          status: status,
+          conclusion: "success"
+        }]
+      }
+
+    } else if (status == 'cancelled') {
+      return {
+        owner: owner,
+        repo: repo,
+        sha: sha,
+        checks: [{
+          name: name,
+          status: "completed",
+          conclusion: "cancelled"
+        }]
+      }
+
+    } else {
+      return {
+        owner: owner,
+        repo: repo,
+        sha: sha,
+        checks: [{
+          name: name,
+          status: status
+        }]
+      }
+    }
+  }
 }
+
 module.exports = ApiGateway;
