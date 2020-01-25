@@ -178,6 +178,18 @@ class ApiGateway {
     }
   }
 
+  checkRunBranchName(context){
+    if(context.payload.check_run.head_branch=='develop') {
+      return 'develop';
+    } else if (context.payload.check_run.head_branch=='master'){
+      return 'master';
+    } else if(context.payload.check_run.pull_requests){
+      return "pr-" + context.payload.check_run.pull_requests[0].number;
+    } else{
+      return undefined;
+    }
+  }
+
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
@@ -224,8 +236,8 @@ class ApiGateway {
     console.log(context.payload.check_run.name);
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
-    let sha = context.payload.check_suite.head_sha;
-    let branchName = this.checkSuiteBranchName(context);
+    let sha = context.payload.check_run.head_sha;
+    let branchName = this.checkRunBranchName(context);
     let issue_number;
 
     if (context.payload.check_suite.pull_requests[0]) {
