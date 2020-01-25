@@ -227,8 +227,8 @@ class ApiGateway {
 
   ciCompleted(check_run, name, action, conclusion,
                     labeled,branchName,issue_number){
-    if ( (check_run == name) & (action == 'completed') & (conclusion== 'success')) {
-        if ((branchName == 'develop' | branchName == 'master') | (issue_number & labeled)){
+    if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
+        if ((branchName == 'develop' || branchName === 'master') || (issue_number!=undefined && labeled)){
           return true;
         }
     }
@@ -240,7 +240,7 @@ class ApiGateway {
     let repo = context.payload.repository.name;
     let sha = context.payload.check_run.head_sha;
     let branchName = this.checkRunBranchName(context);
-    let issue_number;
+    let issue_number = undefined;
 
     if (context.payload.check_run.pull_requests) {
       issue_number = context.payload.check_run.pull_requests[0].number;
