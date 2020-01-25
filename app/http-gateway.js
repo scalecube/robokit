@@ -177,7 +177,7 @@ class ApiGateway {
       } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == "success") {
         // THIS MEANS CI COMPLETED WITH SUCCESS
         // TRIGGER CD SERVER DEPLOY AND THEN:
-        let body = this.checkStatus(context,context,cfg.deploy.name, "in_progress");
+        let body = this.checkStatus(context,cfg.deploy.name, "in_progress");
         this.githubService.createCheckRun(context, body);
       }
     }
