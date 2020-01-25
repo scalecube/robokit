@@ -21,7 +21,7 @@ jobs:
     - uses: azure/docker-login@v1
       with:
         login-server: ${{ secrets.DOCKER_REGISTRY }}
-        username: ${{ secrets.D_USER +"1"}}
+        username: ${{ secrets.D_USER}}
         password: ${{ secrets.D_PASS }}
     - name: push github-gateway container to registry
       run: |
