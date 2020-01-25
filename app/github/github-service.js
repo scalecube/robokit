@@ -44,12 +44,12 @@ class GithubService {
     }
   }
 
-  async createCheckRun(context, msg) {
+  async createCheckRun(github, msg) {
     let all = [];
 
     msg.checks.forEach(async check => {
       if(check.conclusion) {
-        all.push(await context.github.checks.create({
+        all.push(await github.checks.create({
           owner: msg.owner,
           repo: msg.repo,
           head_sha: msg.sha,
@@ -64,7 +64,7 @@ class GithubService {
           console.error(e);
         }));
       } else {
-        all.push(await context.github.checks.create({
+        all.push(await github.checks.create({
           owner: msg.owner,
           repo: msg.repo,
           head_sha: msg.sha,
