@@ -63,7 +63,7 @@ class GithubService {
       all.push(github.checks.create().then(res=>{
         console.log(res);
       }).catch(err=>{
-        console.error(e);
+        console.error(err);
       }));
     });
 
