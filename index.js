@@ -25,7 +25,7 @@ module.exports = app => {
   });
 
   app.on('check_run', async context => {
-    return api.onCheckRun(context);
+    //return api.onCheckRun(context);
   });
 
   app.on([
@@ -36,14 +36,14 @@ module.exports = app => {
       'pull_request.closed',
       'pull_request.reopened'], async context => {
 
-    return api.onPullRequest(context);
+    //return api.onPullRequest(context);
   });
 
   app.on([
       'issue_comment',
       'issues',
       'push'], async context => {
-    api.route(context);
+    //api.route(context);
   });
 
   console.log("Server Started.");
