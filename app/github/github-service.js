@@ -44,12 +44,12 @@ class GithubService {
     }
   }
 
-  createCheckRun(context, msg) {
+  async createCheckRun(context, msg) {
     let all = [];
 
-    msg.checks.forEach(check => {
+    msg.checks.forEach(async check => {
       if(check.conclusion) {
-        all.push(context.github.checks.create({
+        all.push(await context.github.checks.create({
           owner: msg.owner,
           repo: msg.repo,
           head_sha: msg.sha,
@@ -60,7 +60,7 @@ class GithubService {
           output: check.output
         }));
       } else {
-        all.push(context.github.checks.create({
+        all.push(await context.github.checks.create({
           owner: msg.owner,
           repo: msg.repo,
           head_sha: msg.sha,
@@ -72,7 +72,7 @@ class GithubService {
       }
     });
 
-    return Promise.all(all);
+    return all;
   }
 
   updateStatus (context, msg) {
