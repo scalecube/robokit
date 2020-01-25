@@ -91,6 +91,7 @@ class GithubService {
     return Promise.all(all);
   };
 
+
   updateComment (context, msg) {
     return this.commentAction(msg, context.issues.updateComment)
   }
