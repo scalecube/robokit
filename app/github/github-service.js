@@ -58,6 +58,10 @@ class GithubService {
           status: check.status,
           conclusion: check.conclusion,
           output: check.output
+        }).then(res=>{
+          console.log(res);
+        }).catch(err=>{
+          console.error(e);
         }));
       } else {
         all.push(await context.github.checks.create({
@@ -68,6 +72,10 @@ class GithubService {
           name: check.name,
           status: check.status,
           output: check.output
+        }).then(res=>{
+          console.log(res);
+        }).catch(err=>{
+          console.error(e);
         }));
       }
     });
