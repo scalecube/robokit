@@ -44,16 +44,28 @@ class GithubService {
     let all = [];
 
     msg.checks.forEach(check => {
-      all.push(context.github.checks.create({
-        owner: msg.owner,
-        repo: msg.repo,
-        head_sha: msg.sha,
+      if(check.conclusion) {
+        all.push(context.github.checks.create({
+          owner: msg.owner,
+          repo: msg.repo,
+          head_sha: msg.sha,
 
-        name: check.name,
-        status: check.status,
-        conclusion: check.conclusion,
-        output: check.output
-      }));
+          name: check.name,
+          status: check.status,
+          conclusion: check.conclusion,
+          output: check.output
+        }));
+      } else {
+        all.push(context.github.checks.create({
+          owner: msg.owner,
+          repo: msg.repo,
+          head_sha: msg.sha,
+
+          name: check.name,
+          status: check.status,
+          output: check.output
+        }));
+      }
     });
 
     return Promise.all(all);
