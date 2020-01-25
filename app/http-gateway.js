@@ -169,19 +169,19 @@ class ApiGateway {
     let sha = context.payload.check_suite.head_sha;
     let issue_number = context.payload.check_suite.pull_requests[0].number;
 
+    let check_run;
+
     let labels = await this.labels(owner,repo,issue_number);
     if(this.isLabeled(labels, cfg.deploy.label.name)) {
       if (context.payload.action == 'requested') {
-        let body = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
-        this.githubService.createCheckRun(context, body);
-
-      } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == "success") {
+        check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
+      } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == 'success') {
         // CI COMPLETED WITH SUCCESS
         // TRIGGER CD SERVER DEPLOY AND THEN:
-        let body = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
-        this.githubService.createCheckRun(context, body);
+        check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
       }
-
+      if(check_run)
+        this.githubService.createCheckRun(context, check_run);
     }
   }
 
