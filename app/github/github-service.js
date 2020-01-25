@@ -26,8 +26,8 @@ class GithubService {
 
   onCheckSuite(context) {
     try {
-        const owner = ctx.payload.repository.owner.login;
-        const repo = ctx.payload.repository.name;
+        const owner = context.payload.repository.owner.login;
+        const repo = context.payload.repository.name;
         this.router.route(owner,repo,context, (resp) => {
           if(resp && Array.isArray(resp.checks)) {
             console.log('<<< ###  router response: \n' + JSON.stringify(resp));
@@ -44,35 +44,30 @@ class GithubService {
     }
   }
 
-  createCheckRun(context, msg) {
+  async createCheckRun(github, msg) {
     let all = [];
+    msg.checks.forEach(async check => {
+      let req = {
+        owner: msg.owner,
+        repo: msg.repo,
+        head_sha: msg.sha,
+        name: check.name,
+        status: check.status,
+        output: check.output
+      };
 
-    msg.checks.forEach(check => {
       if(check.conclusion) {
-        all.push(context.github.checks.create({
-          owner: msg.owner,
-          repo: msg.repo,
-          head_sha: msg.sha,
-
-          name: check.name,
-          status: check.status,
-          conclusion: check.conclusion,
-          output: check.output
-        }));
-      } else {
-        all.push(context.github.checks.create({
-          owner: msg.owner,
-          repo: msg.repo,
-          head_sha: msg.sha,
-
-          name: check.name,
-          status: check.status,
-          output: check.output
-        }));
+        req.conclusion = check.conclusion;
       }
+      console.log(">>>>>>>> " + JSON.stringify(req));
+      all.push(github.checks.create(req).then(res=>{
+        console.log(res);
+      }).catch(err=>{
+        console.error(err);
+      }));
     });
 
-    return Promise.all(all);
+    return await Promise.all(all);
   }
 
   updateStatus (context, msg) {
@@ -90,6 +85,7 @@ class GithubService {
     });
     return Promise.all(all);
   };
+
 
   updateComment (context, msg) {
     return this.commentAction(msg, context.issues.updateComment)
@@ -110,6 +106,7 @@ class GithubService {
           })
     })
   }
+
 
   content (owner,repo, path, base64) {
     return new Promise((resolve, reject) => {
@@ -254,7 +251,7 @@ class GithubService {
 
   route(owner,repo,context) {
     this.router.route(owner,repo,context, (resp) => {
-        if((resp) && resp instanceof 'String') {
+        if((resp) && resp instanceof String) {
           console.log('<<< ###  router response: \n' + resp);
         } else if(resp !== undefined){
           console.log('<<< ###  router response: \n' + JSON.stringify(resp));
@@ -266,5 +263,6 @@ class GithubService {
     });
   }
 }
+
 
 module.exports = GithubService;

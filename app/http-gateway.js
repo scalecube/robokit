@@ -35,7 +35,7 @@ class ApiGateway {
     });
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
-      console.log("### update status request: " + JSON.stringify(request.body));
+      console.log("### checks status request: " + JSON.stringify(request.body));
       let ctx = this.cache.get(request.params.owner, request.params.repo);
       if(ctx) {
         request.body.owner = request.params.owner;
@@ -47,7 +47,6 @@ class ApiGateway {
         this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
       }
     });
-
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
@@ -170,10 +169,25 @@ class ApiGateway {
       return 'develop';
     } else if (context.payload.check_suite.head_branch=='master'){
       return 'master';
-    } else{
+    } else if(context.payload.check_suite.pull_requests){
       return "pr-" + context.payload.check_suite.pull_requests[0].number;
+    } else{
+      return undefined;
     }
   }
+
+  checkRunBranchName(context){
+    if(context.payload.check_run.head_branch=='develop') {
+      return 'develop';
+    } else if (context.payload.check_run.head_branch=='master'){
+      return 'master';
+    } else if(context.payload.check_run.pull_requests){
+      return "pr-" + context.payload.check_run.pull_requests[0].number;
+    } else{
+      return undefined;
+    }
+  }
+
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
@@ -181,65 +195,82 @@ class ApiGateway {
     let branchName = this.checkSuiteBranchName(context);
     let issue_number;
 
-    if(context.payload.check_suite.pull_requests[0]) {
+    if (context.payload.check_suite.pull_requests[0]) {
       issue_number = context.payload.check_suite.pull_requests[0].number;
     }
 
     // Fetching branch labels
-    let labels = await this.labels(owner,repo,issue_number);
+    let labels = await this.labels(owner, repo, issue_number);
 
     let check_run;
 
-      if (context.payload.action == 'requested') {
-        check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
-        check_run.checks[0].output = {
-              title: "Deploy is Waiting for status checks",
-              summary: "deploy will start when check suite completes",
-              text: "waiting for CI to complete successfully"
-          }
-      } else if(context.payload.action == 'completed') {
-        if (context.payload.check_suite.conclusion == 'success') {
-          // IF ITS A PULL REQUEST WITH LABEL {cfg.deploy.label.name} OR branch is master or develop
-          if((branchName == 'develop' || branchName == 'master') ||
-              (issue_number && this.isLabeled(labels, cfg.deploy.label.name))) {
-
-            this.route(owner,repo, {
-                owner: owner,
-                repo: repo,
-                sha: sha,
-                tag : branchName,
-                pr_num: issue_number
-              })
-          }
-          // CI COMPLETED WITH SUCCESS
-          // TRIGGER CD SERVER DEPLOY AND THEN:
-          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
-          check_run.checks[0].output = {
-            title: "Robo-kit is Deploying branch: " + branchName,
-            summary: "Triggered a Continues-Deployment pipeline",
-            text: "Waiting for Continues deployment status updates"
-          }
-        } else {
-          check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
-          check_run.checks[0].output = {
-            title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
-            summary: "Cancelled a Continues-Deployment pipeline",
-            text: "the deployment is cancelled because CI failed"
-          }
-        }
-
-
-      if(check_run)
-        this.githubService.createCheckRun(context, check_run);
+    if (context.payload.action == 'requested') {
+      check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "queued");
+      check_run.checks[0].output = {
+        title: "Deploy is Waiting for status checks",
+        summary: "deploy will start when check suite completes",
+        text: "waiting for CI to complete successfully"
+      }
+    } else if (context.payload.action != 'completed') {
+      check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
+      check_run.checks[0].output = {
+        title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
+        summary: "Cancelled a Continues-Deployment pipeline",
+        text: "the deployment is cancelled because CI failed"
+      }
     }
+
+    if (check_run)
+      this.githubService.createCheckRun(context.github, check_run);
   }
 
 
-  async onCheckRun(context) {
-    if(context.payload.check_run.name == cfg.deploy.name){
-
+  ciCompleted(check_run, name, action, conclusion,
+                    labeled,branchName,issue_number){
+    if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
+        if ((branchName == 'develop' || branchName === 'master') || (issue_number!=undefined && labeled)){
+          return true;
+        }
     }
-    return this.githubService.onCheckSuite(context);
+    return false;
+  }
+  async onCheckRun(context) {
+    console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
+    let owner = context.payload.repository.owner.login;
+    let repo = context.payload.repository.name;
+    let sha = context.payload.check_run.head_sha;
+    let branchName = this.checkRunBranchName(context);
+    let issue_number = undefined;
+
+    if (context.payload.check_run.pull_requests) {
+      issue_number = context.payload.check_run.pull_requests[0].number;
+    }
+    let labels = await this.labels(owner, repo, issue_number);
+    let labeled =this.isLabeled(labels, cfg.deploy.label.name);
+
+    if (this.ciCompleted(context.payload.check_run.name,"trigger_deploy",
+        context.payload.action,context.payload.check_run.conclusion,
+        labeled,branchName,issue_number)) {
+
+      let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
+      check_run.checks[0].output = {
+        title: "Robo-kit is Deploying branch: " + branchName,
+        summary: "Triggered a Continues-Deployment pipeline",
+        text: "Waiting for Continues deployment status updates"
+      };
+
+      // TRIGGER CD SERVER DEPLOY AND THEN:
+      this.route(owner, repo, {
+        owner: owner,
+        repo: repo,
+        sha: sha,
+        tag: branchName,
+        pr_num: issue_number
+      });
+
+      return this.githubService.createCheckRun(context.github, check_run);
+    }
+
   }
 
   createPullRequest(ctx) {
@@ -321,5 +352,4 @@ class ApiGateway {
     }
   }
 }
-
 module.exports = ApiGateway;
