@@ -230,7 +230,7 @@ class ApiGateway {
         context.payload.action == 'completed') &&
         (context.payload.check_run.conclusion == 'success') &&
         (branchName == 'develop' || branchName == 'master') ||
-        (issue_number && this.isLabeled(labels, cfg.deploy.label.name))
+        (issue_number && labels)
 
   }
   async onCheckRun(context) {
@@ -245,14 +245,14 @@ class ApiGateway {
       issue_number = context.payload.check_run.pull_requests[0].number;
     }
     let labels = await this.labels(owner, repo, issue_number);
-    if (this.ciCompleted(context,"create_helm",labels,branchName,issue_number)) {
+    let labeled =this.isLabeled(labels, cfg.deploy.label.name);
+    if (this.ciCompleted(context,"create_helm",labeled,branchName,issue_number)) {
       let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
         title: "Robo-kit is Deploying branch: " + branchName,
         summary: "Triggered a Continues-Deployment pipeline",
         text: "Waiting for Continues deployment status updates"
       };
-
 
       // TRIGGER CD SERVER DEPLOY AND THEN:
       this.route(owner, repo, {
