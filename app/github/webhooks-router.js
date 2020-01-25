@@ -12,10 +12,9 @@ class WebhooksRouter {
     })
   }
 
-  route (ctx, onRoute, onError) {
+
+  route (owner,repo, ctx, onRoute, onError) {
     this.routes.forEach(route => {
-      const owner = ctx.payload.repository.owner.login;
-      const repo = ctx.payload.repository.name;
       if (route.owner && route.owner === owner) {
         if (route.repo === repo || !route.repo) {
           httpClient.post(route.url, ctx).then((msg) => {

@@ -178,14 +178,18 @@ class ApiGateway {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_suite.head_sha;
-    let issue_number = context.payload.check_suite.pull_requests[0].number;
     let branchName = this.checkSuiteBranchName(context);
+    let issue_number;
+
+    if(context.payload.check_suite.pull_requests[0]) {
+      issue_number = context.payload.check_suite.pull_requests[0].number;
+    }
 
     // Fetching branch labels
     let labels = await this.labels(owner,repo,issue_number);
 
     let check_run;
-    if(this.isLabeled(labels, cfg.deploy.label.name)) {
+
       if (context.payload.action == 'requested') {
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
         check_run.checks[0].output = {
@@ -195,6 +199,18 @@ class ApiGateway {
           }
       } else if(context.payload.action == 'completed') {
         if (context.payload.check_suite.conclusion == 'success') {
+          // IF ITS A PULL REQUEST WITH LABEL {cfg.deploy.label.name} OR branch is master or develop
+          if((branchName == 'develop' || branchName == 'master') ||
+              (issue_number && this.isLabeled(labels, cfg.deploy.label.name))) {
+
+            this.route(owner,repo, {
+                owner: owner,
+                repo: repo,
+                sha: sha,
+                tag : branchName,
+                pr_num: issue_number
+              })
+          }
           // CI COMPLETED WITH SUCCESS
           // TRIGGER CD SERVER DEPLOY AND THEN:
           check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
@@ -211,7 +227,7 @@ class ApiGateway {
             text: "the deployment is cancelled because CI failed"
           }
         }
-      }
+
 
       if(check_run)
         this.githubService.createCheckRun(context, check_run);
@@ -263,8 +279,8 @@ class ApiGateway {
   };
 
 
-  route(context) {
-    this.githubService.route(context);
+  route(owner,repo,context) {
+    this.githubService.route(owner,repo,context);
   }
 
   checkStatus(owner,repo,sha, name, status) {
