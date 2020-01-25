@@ -165,22 +165,41 @@ class ApiGateway {
     return result;
   }
 
+  checkSuiteBranchName(context){
+    if(context.payload.check_suite.head_branch=='develop') {
+      return 'develop';
+    } else if (context.payload.check_suite.head_branch=='master'){
+      return 'master';
+    } else{
+      return "pull request:" + context.payload.check_suite.pull_requests[0].number;
+    }
+  }
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_suite.head_sha;
     let issue_number = context.payload.check_suite.pull_requests[0].number;
-
+    let branchName = this.checkSuiteBranchName(context);
     let check_run;
 
     let labels = await this.labels(owner,repo,issue_number);
     if(this.isLabeled(labels, cfg.deploy.label.name)) {
       if (context.payload.action == 'requested') {
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "queued");
+        check_run.output = {
+              title: "Deploy " + branchName + " to the cloud",
+              summary: "deploy will start when check suite completes",
+              text: "waiting for CI to complete successfully"
+          }
       } else if(context.payload.action == 'completed' && context.payload.check_suite.conclusion == 'success') {
         // CI COMPLETED WITH SUCCESS
         // TRIGGER CD SERVER DEPLOY AND THEN:
         check_run = this.checkStatus(owner,repo,sha, cfg.deploy.name, "in_progress");
+        check_run.output = {
+          title: "Deploy " + branchName + " to the cloud",
+              summary: "Triggered Continues deployment Server deploy pipeline",
+              text: "Waiting for Continues deployment status updates"
+        }
       }
 
       if(check_run)
@@ -246,12 +265,7 @@ class ApiGateway {
         checks: [{
           name: name,
           status: status,
-          conclusion: "success",
-          output: {
-            title: "Deploy branch to the cloud",
-            summary: "deploy will start when check suite completes",
-            text: "waiting for CI to complete successfully"
-          }
+          conclusion: "success"
         }]
       }
     } else
@@ -261,12 +275,7 @@ class ApiGateway {
         sha: sha,
         checks: [{
           name: name,
-          status: status,
-          output: {
-            title: "Deploy branch to the cloud",
-            summary: "deploy will start when check suite completes",
-            text: "waiting for CI to complete successfully"
-          }
+          status: status
         }]
     }
   }
