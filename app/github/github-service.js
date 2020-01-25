@@ -26,8 +26,8 @@ class GithubService {
 
   onCheckSuite(context) {
     try {
-        const owner = ctx.payload.repository.owner.login;
-        const repo = ctx.payload.repository.name;
+        const owner = context.payload.repository.owner.login;
+        const repo = context.payload.repository.name;
         this.router.route(owner,repo,context, (resp) => {
           if(resp && Array.isArray(resp.checks)) {
             console.log('<<< ###  router response: \n' + JSON.stringify(resp));
