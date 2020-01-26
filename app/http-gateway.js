@@ -225,11 +225,11 @@ class ApiGateway {
 
 
   ciCompleted(check_run, name, action, conclusion,
-                    labeled,branchName,issue_number){
+                    labeled,branchName,isPullRequest){
     if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
         if ((branchName == 'develop' || branchName === 'master')){
           return true;
-        } else if(issue_number!=undefined && labeled){
+        } else if(isPullRequest && labeled){
           return true;
         }
     }
@@ -244,8 +244,9 @@ class ApiGateway {
     let branchName = this.checkRunBranchName(context);
     let issue_number = undefined;
     let labeled = false;
+    let isPullRequest = this.isPullRequest(context);
 
-    if (this.isPullRequest(context)) {
+    if (isPullRequest) {
       issue_number = context.payload.check_run.pull_requests[0].number;
       let labels = await this.labels(owner, repo, issue_number);
       labeled =this.isLabeled(labels, cfg.deploy.label.name);
@@ -255,7 +256,9 @@ class ApiGateway {
         "trigger_deploy",
         context.payload.action,
         context.payload.check_run.conclusion,
-        labeled,branchName,issue_number)) {
+        labeled,
+        branchName,
+        isPullRequest)) {
 
       let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
