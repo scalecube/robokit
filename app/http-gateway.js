@@ -260,7 +260,7 @@ class ApiGateway {
         text: "Waiting for Continues deployment status updates"
       };
 
-      // TRIGGER CD SERVER DEPLOY AND THEN: 1
+      // TRIGGER CD SERVER DEPLOY AND THEN:
       this.route(owner, repo, {
         owner: owner,
         repo: repo,
