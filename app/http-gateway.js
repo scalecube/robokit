@@ -169,39 +169,49 @@ class ApiGateway {
       return 'develop';
     } else if (context.payload.check_suite.head_branch=='master'){
       return 'master';
-    } else if(context.payload.check_suite.pull_requests){
+    } else if(this.isPullRequest(context)){
       return "pr-" + context.payload.check_suite.pull_requests[0].number;
     } else{
       return undefined;
     }
   }
 
-  checkRunBranchName(context){
-    if(context.payload.check_run.head_branch=='develop') {
-      return 'develop';
-    } else if (context.payload.check_run.head_branch=='master'){
-      return 'master';
-    } else if(context.payload.check_run.pull_requests){
-      return "pr-" + context.payload.check_run.pull_requests[0].number;
-    } else{
-      return undefined;
+  isPullRequest(context){
+    if(context.payload.check_suite){
+      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0]);
+    } else {
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0]);
     }
   }
+
+  checkRunBranchName(context) {
+    if (context.payload.check_run) {
+      if (context.payload.check_run.head_branch == 'develop') {
+        return 'develop';
+      } else if (context.payload.check_run.head_branch == 'master') {
+        return 'master';
+      } else if (this.isPullRequest(context)) {
+        return "pr-" + context.payload.check_run.pull_requests[0].number;
+      } else if (context.payload.check_run.check_suite) {
+        if (context.payload.check_run.check_suite.head_branch == 'develop') {
+          return 'develop';
+        } else if (context.payload.check_run.check_suite.head_branch == 'master') {
+          return 'master';
+        }
+      } else if (this.isPullRequest(context)) {
+        return "pr-" + context.payload.check_run.pull_requests[0].number;
+      } else {
+        return undefined;
+      }
+    }
+  }
+
 
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_suite.head_sha;
     let branchName = this.checkSuiteBranchName(context);
-    let issue_number;
-
-    if (context.payload.check_suite.pull_requests[0]) {
-      issue_number = context.payload.check_suite.pull_requests[0].number;
-    }
-
-    // Fetching branch labels
-    let labels = await this.labels(owner, repo, issue_number);
-
     let check_run;
 
     if (context.payload.action == 'requested') {
@@ -226,12 +236,16 @@ class ApiGateway {
 
 
   ciCompleted(check_run, name, action, conclusion,
-                    labeled,branchName,issue_number){
+                    labeled,branchName,isPullRequest) {
+
     if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
-        if ((branchName == 'develop' || branchName === 'master') || (issue_number!=undefined && labeled)){
+        if ((branchName == 'develop' || branchName === 'master')){
+          return true;
+        } else if(isPullRequest && labeled){
           return true;
         }
     }
+
     return false;
   }
 
@@ -242,16 +256,21 @@ class ApiGateway {
     let sha = context.payload.check_run.head_sha;
     let branchName = this.checkRunBranchName(context);
     let issue_number = undefined;
+    let labeled = false;
+    let isPullRequest = this.isPullRequest(context);
 
-    if (context.payload.check_run.pull_requests) {
+    if (isPullRequest) {
       issue_number = context.payload.check_run.pull_requests[0].number;
+      let labels = await this.labels(owner, repo, issue_number);
+      labeled =this.isLabeled(labels, cfg.deploy.label.name);
     }
-    let labels = await this.labels(owner, repo, issue_number);
-    let labeled =this.isLabeled(labels, cfg.deploy.label.name);
 
     if (this.ciCompleted(context.payload.check_run.name,"trigger_deploy",
-        context.payload.action,context.payload.check_run.conclusion,
-        labeled,branchName,issue_number)) {
+        context.payload.action,
+        context.payload.check_run.conclusion,
+        labeled,
+        branchName,
+        isPullRequest)) {
 
       let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
@@ -261,7 +280,7 @@ class ApiGateway {
       };
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
-        // TRIGGER CD SERVER DEPLOY AND THEN: 1
+        // TRIGGER CD SERVER DEPLOY AND THEN:
         this.route(owner, repo, {
           owner: owner,
           repo: repo,
