@@ -1,11 +1,7 @@
 name: Pipeline github-gateway
 
-on:
-  pull_request:
+on: [pull_request,push]
 
-  push:
-    branches-ignore:
-      - develop
 
 jobs:
 
