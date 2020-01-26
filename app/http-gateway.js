@@ -260,16 +260,18 @@ class ApiGateway {
         text: "Waiting for Continues deployment status updates"
       };
 
-      // TRIGGER CD SERVER DEPLOY AND THEN:
-      this.route(owner, repo, {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        tag: branchName,
-        pr_num: issue_number
+      return this.githubService.createCheckRun(context.github, check_run).then(res=>{
+        // TRIGGER CD SERVER DEPLOY AND THEN:
+        this.route(owner, repo, {
+          owner: owner,
+          repo: repo,
+          sha: sha,
+          tag: branchName,
+          pr_num: issue_number
+        });
+      }).catch(err=>{
+        console.log(err);
       });
-
-      return this.githubService.createCheckRun(context.github, check_run);
     }
   }
 
