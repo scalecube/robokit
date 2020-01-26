@@ -188,7 +188,7 @@ class ApiGateway {
     if(context.payload.check_suite) {
       return context.payload.check_suite.head_branch;
     } else if (context.payload.check_run) {
-      return context.payload.check_run.head_branch;
+      return context.payload.check_run.check_suite.head_branch;
     }
   }
 
