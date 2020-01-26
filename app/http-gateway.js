@@ -181,14 +181,10 @@ class ApiGateway {
   }
 
   branchName(context) {
-    if (this.isPullRequest(context)) {
-      return "pr-" + pullRequestNumber(context);
-    } else if (context.payload.check_run.head_branch == 'develop') {
+    if (context.payload.check_run.head_branch == 'develop') {
       return 'develop';
     } else if (context.payload.check_run.head_branch == 'master') {
       return 'master';
-    } else if (this.isPullRequest(context)) {
-      return "pr-" + context.payload.check_run.pull_requests[0].number;
     } else if (context.payload.check_run.check_suite) {
       if (context.payload.check_run.check_suite.head_branch == 'develop') {
         return 'develop';
