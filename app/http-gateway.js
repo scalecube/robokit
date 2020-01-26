@@ -164,18 +164,6 @@ class ApiGateway {
     return result;
   }
 
-  checkSuiteBranchName(context){
-    if(context.payload.check_suite.head_branch=='develop') {
-      return 'develop';
-    } else if (context.payload.check_suite.head_branch=='master'){
-      return 'master';
-    } else if(this.isPullRequest(context)){
-      return "pr-" + context.payload.check_suite.pull_requests[0].number;
-    } else{
-      return undefined;
-    }
-  }
-
   isPullRequest(context){
     if(context.payload.check_suite){
       return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0]);
@@ -184,34 +172,39 @@ class ApiGateway {
     }
   }
 
-  checkRunBranchName(context) {
-    if (context.payload.check_run) {
-      if (context.payload.check_run.head_branch == 'develop') {
-        return 'develop';
-      } else if (context.payload.check_run.head_branch == 'master') {
-        return 'master';
-      } else if (this.isPullRequest(context)) {
-        return "pr-" + context.payload.check_run.pull_requests[0].number;
-      } else if (context.payload.check_run.check_suite) {
-        if (context.payload.check_run.check_suite.head_branch == 'develop') {
-          return 'develop';
-        } else if (context.payload.check_run.check_suite.head_branch == 'master') {
-          return 'master';
-        }
-      } else if (this.isPullRequest(context)) {
-        return "pr-" + context.payload.check_run.pull_requests[0].number;
-      } else {
-        return undefined;
-      }
+  pullRequestNumber(context){
+    if(context.payload.check_suite){
+      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0].number);
+    } else if(context.payload.check_run.pull_requests){
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0].number);
     }
   }
 
+  branchName(context) {
+    if (this.isPullRequest(context)) {
+      return "pr-" + pullRequestNumber(context);
+    } else if (context.payload.check_run.head_branch == 'develop') {
+      return 'develop';
+    } else if (context.payload.check_run.head_branch == 'master') {
+      return 'master';
+    } else if (this.isPullRequest(context)) {
+      return "pr-" + context.payload.check_run.pull_requests[0].number;
+    } else if (context.payload.check_run.check_suite) {
+      if (context.payload.check_run.check_suite.head_branch == 'develop') {
+        return 'develop';
+      } else if (context.payload.check_run.check_suite.head_branch == 'master') {
+        return 'master';
+      }
+    } else {
+      return undefined;
+    }
+  }
 
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_suite.head_sha;
-    let branchName = this.checkSuiteBranchName(context);
+    let branchName = this.branchName(context);
     let check_run;
 
     if (context.payload.action == 'requested') {
@@ -230,8 +223,9 @@ class ApiGateway {
       }
     }
 
-    if (check_run)
+    if (check_run) {
       this.githubService.createCheckRun(context.github, check_run);
+    }
   }
 
 
@@ -245,7 +239,6 @@ class ApiGateway {
           return true;
         }
     }
-
     return false;
   }
 
@@ -254,7 +247,7 @@ class ApiGateway {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
     let sha = context.payload.check_run.head_sha;
-    let branchName = this.checkRunBranchName(context);
+    let branchName = this.branchName(context);
     let isPullRequest = this.isPullRequest(context);
     let issue_number = undefined;
     let labeled = false;
