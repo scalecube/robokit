@@ -261,7 +261,7 @@ class ApiGateway {
       };
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
-        // TRIGGER CD SERVER DEPLOY AND THEN:
+        // TRIGGER CD SERVER DEPLOY AND THEN: 1
         this.route(owner, repo, {
           owner: owner,
           repo: repo,
