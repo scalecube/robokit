@@ -166,9 +166,9 @@ class ApiGateway {
 
   isPullRequest(context){
     if(context.payload.check_suite){
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0]);
+      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests>0);
     } else {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0]);
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length>0);
     }
   }
 
