@@ -201,15 +201,6 @@ class ApiGateway {
     let repo = context.payload.repository.name;
     let sha = context.payload.check_suite.head_sha;
     let branchName = this.checkSuiteBranchName(context);
-    let issue_number;
-
-    if (context.payload.check_suite.pull_requests[0]) {
-      issue_number = context.payload.check_suite.pull_requests[0].number;
-    }
-
-    // Fetching branch labels
-    let labels = await this.labels(owner, repo, issue_number);
-
     let check_run;
 
     if (context.payload.action == 'requested') {
@@ -250,7 +241,8 @@ class ApiGateway {
     let sha = context.payload.check_run.head_sha;
     let branchName = this.checkRunBranchName(context);
     let issue_number = undefined;
-    let labeled;
+    let labeled = false;
+
     if (this.isPullRequest(context)) {
       issue_number = context.payload.check_run.pull_requests[0].number;
       let labels = await this.labels(owner, repo, issue_number);
