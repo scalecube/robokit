@@ -185,19 +185,10 @@ class ApiGateway {
   }
 
   branchName(context) {
-
-    if (context.payload.check_run.head_branch == 'develop') {
-      return 'develop';
-    } else if (context.payload.check_run.head_branch == 'master') {
-      return 'master';
-    } else if (context.payload.check_run.check_suite) {
-      if (context.payload.check_run.check_suite.head_branch == 'develop') {
-        return 'develop';
-      } else if (context.payload.check_run.check_suite.head_branch == 'master') {
-        return 'master';
-      }
-    } else {
-      return undefined;
+    if(context.payload.check_suite) {
+      return context.payload.check_suite.head_branch;
+    } else if (context.payload.check_run) {
+      return context.payload.check_run.head_branch;
     }
   }
 
