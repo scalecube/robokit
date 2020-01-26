@@ -185,6 +185,7 @@ class ApiGateway {
   }
 
   branchName(context) {
+
     if (context.payload.check_run.head_branch == 'develop') {
       return 'develop';
     } else if (context.payload.check_run.head_branch == 'master') {
