@@ -184,14 +184,14 @@ class ApiGateway {
     }
   }
 
-  checkRunBranchName(context){
-    if(context.payload.check_run.head_branch=='develop') {
+  checkRunBranchName(context) {
+    if (context.payload.check_run.head_branch == 'develop' || context.payload.check_suite.head_branch == 'develop') {
       return 'develop';
-    } else if (context.payload.check_run.head_branch=='master'){
+    } else if (context.payload.check_run.head_branch == 'master' || context.payload.check_suite.head_branch == 'master') {
       return 'master';
-    } else if(this.isPullRequest(context)){
+    } else if (this.isPullRequest(context)) {
       return "pr-" + context.payload.check_run.pull_requests[0].number;
-    } else{
+    }else{
       return undefined;
     }
   }
