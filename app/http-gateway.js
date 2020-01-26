@@ -250,12 +250,12 @@ class ApiGateway {
     let sha = context.payload.check_run.head_sha;
     let branchName = this.checkRunBranchName(context);
     let issue_number = undefined;
-
+    let labeled;
     if (this.isPullRequest(context)) {
       issue_number = context.payload.check_run.pull_requests[0].number;
+      let labels = await this.labels(owner, repo, issue_number);
+      labeled =this.isLabeled(labels, cfg.deploy.label.name);
     }
-    let labels = await this.labels(owner, repo, issue_number);
-    let labeled =this.isLabeled(labels, cfg.deploy.label.name);
 
     if (this.ciCompleted(context.payload.check_run.name,
         "trigger_deploy",
