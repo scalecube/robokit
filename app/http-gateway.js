@@ -271,7 +271,6 @@ class ApiGateway {
 
       return this.githubService.createCheckRun(context.github, check_run);
     }
-
   }
 
   createPullRequest(ctx) {
