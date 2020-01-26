@@ -172,11 +172,15 @@ class ApiGateway {
     }
   }
 
-  pullRequestNumber(context){
+  issueNumber(context){
     if(context.payload.check_suite){
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0].number);
-    } else if(context.payload.check_run.pull_requests){
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0].number);
+      if (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests>0) {
+        context.payload.check_suite.pull_requests[0].number;
+      }
+    } else if(context.payload.check_run) {
+      if (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length>0) {
+        context.payload.check_run.pull_requests[0].number;
+      }
     }
   }
 
@@ -245,8 +249,11 @@ class ApiGateway {
     let sha = context.payload.check_run.head_sha;
     let branchName = this.branchName(context);
     let isPullRequest = this.isPullRequest(context);
-    let issue_number = undefined;
     let labeled = false;
+    let issue_number = undefined;
+    if(isPullRequest){
+      issue_number = issueNumber(context);
+    }
 
 
     if (isPullRequest) {
