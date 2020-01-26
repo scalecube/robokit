@@ -192,10 +192,10 @@ class ApiGateway {
         return 'master';
       } else if (this.isPullRequest(context)) {
         return "pr-" + context.payload.check_run.pull_requests[0].number;
-      } else if (context.payload.check_suite) {
-        if (context.payload.check_suite.head_branch == 'develop') {
+      } else if (context.payload.check_run.check_suite) {
+        if (context.payload.check_run.check_suite.head_branch == 'develop') {
           return 'develop';
-        } else if (context.payload.check_suite.head_branch == 'master') {
+        } else if (context.payload.check_run.check_suite.head_branch == 'master') {
           return 'master';
         }
       } else if (this.isPullRequest(context)) {
