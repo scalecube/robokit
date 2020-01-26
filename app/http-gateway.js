@@ -255,9 +255,10 @@ class ApiGateway {
     let repo = context.payload.repository.name;
     let sha = context.payload.check_run.head_sha;
     let branchName = this.checkRunBranchName(context);
+    let isPullRequest = this.isPullRequest(context);
     let issue_number = undefined;
     let labeled = false;
-    let isPullRequest = this.isPullRequest(context);
+
 
     if (isPullRequest) {
       issue_number = context.payload.check_run.pull_requests[0].number;
