@@ -181,7 +181,7 @@ class ApiGateway {
       return 'develop';
     } else if (context.payload.check_run.head_branch=='master'){
       return 'master';
-    } else if(context.payload.check_run.pull_requests){
+    } else if(context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0]){
       return "pr-" + context.payload.check_run.pull_requests[0].number;
     } else{
       return undefined;
