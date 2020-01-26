@@ -196,6 +196,7 @@ class ApiGateway {
     }
   }
 
+
   async onCheckSuite(context) {
     let owner = context.payload.repository.owner.login;
     let repo = context.payload.repository.name;
