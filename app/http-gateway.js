@@ -227,7 +227,9 @@ class ApiGateway {
   ciCompleted(check_run, name, action, conclusion,
                     labeled,branchName,issue_number){
     if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
-        if ((branchName == 'develop' || branchName === 'master') || (issue_number!=undefined && labeled)){
+        if ((branchName == 'develop' || branchName === 'master')){
+          return true;
+        } else if(issue_number!=undefined && labeled){
           return true;
         }
     }
