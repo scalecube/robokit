@@ -251,7 +251,7 @@ class ApiGateway {
     let branchName = this.checkRunBranchName(context);
     let issue_number = undefined;
 
-    if (context.payload.check_run.pull_requests) {
+    if (this.isPullRequest(context)) {
       issue_number = context.payload.check_run.pull_requests[0].number;
     }
     let labels = await this.labels(owner, repo, issue_number);
