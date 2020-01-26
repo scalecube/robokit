@@ -244,7 +244,7 @@ class ApiGateway {
     let labeled = false;
     let issue_number = undefined;
     if(isPullRequest){
-      issue_number = issueNumber(context);
+      issue_number = this.issueNumber(context);
     }
 
 
