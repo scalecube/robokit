@@ -225,7 +225,8 @@ class ApiGateway {
 
 
   ciCompleted(check_run, name, action, conclusion,
-                    labeled,branchName,isPullRequest){
+                    labeled,branchName,isPullRequest) {
+
     if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
         if ((branchName == 'develop' || branchName === 'master')){
           return true;
@@ -233,6 +234,7 @@ class ApiGateway {
           return true;
         }
     }
+
     return false;
   }
 
@@ -252,8 +254,7 @@ class ApiGateway {
       labeled =this.isLabeled(labels, cfg.deploy.label.name);
     }
 
-    if (this.ciCompleted(context.payload.check_run.name,
-        "trigger_deploy",
+    if (this.ciCompleted(context.payload.check_run.name,"trigger_deploy",
         context.payload.action,
         context.payload.check_run.conclusion,
         labeled,
