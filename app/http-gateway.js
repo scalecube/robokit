@@ -234,6 +234,7 @@ class ApiGateway {
     }
     return false;
   }
+
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let owner = context.payload.repository.owner.login;
@@ -259,18 +260,19 @@ class ApiGateway {
         text: "Waiting for Continues deployment status updates"
       };
 
-      // TRIGGER CD SERVER DEPLOY AND THEN:
-      this.route(owner, repo, {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        tag: branchName,
-        pr_num: issue_number
+      return this.githubService.createCheckRun(context.github, check_run).then(res=>{
+        // TRIGGER CD SERVER DEPLOY AND THEN: 1
+        this.route(owner, repo, {
+          owner: owner,
+          repo: repo,
+          sha: sha,
+          tag: branchName,
+          pr_num: issue_number
+        });
+      }).catch(err=>{
+        console.log(err);
       });
-
-      return this.githubService.createCheckRun(context.github, check_run);
     }
-
   }
 
   createPullRequest(ctx) {

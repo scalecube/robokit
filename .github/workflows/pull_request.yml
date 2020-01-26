@@ -1,0 +1,59 @@
+name: Pipeline github-gateway
+
+on: [pull_request]
+
+jobs:
+
+  build_push_docker:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.DOCKER_REGISTRY }}
+        username: ${{ secrets.D_USER}}
+        password: ${{ secrets.D_PASS }}
+    - name: push github-gateway container to registry
+      run: |
+        cat $DOCKER_CONFIG/*
+        docker login -u ${{ secrets.D_USER }} -p ${{ secrets.D_PASS }} docker.io && docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
+  create_helm:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v1
+    - name: Install Helm package
+      run: |
+        wget -q ${{ secrets.HELM_URL }}/${{ secrets.HELM_TGZ }}
+        tar xzfv ${{ secrets.HELM_TGZ }}
+        PATH=`pwd`/linux-amd64/:$PATH && helm init --client-only
+    - name: Check Helm package
+      run: |
+        echo 'cd helm_package'
+        cd ./helm_package
+        echo "helm lint ./github-gateway"
+        helm lint ./github-gateway
+        echo "helm package ./github-gateway"
+        helm package ./github-gateway
+    - name: POST Helm package
+      run: |
+        for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
+  trigger_deploy:
+
+    needs:
+      - build_push_docker
+      - create_helm
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: trigger deploy
+        run: |
+          curl -X POST -H "Content-Type: application/json" -d '{"payload": "${{ secrets.SPINNAKER_TRIGGER_PAYLOAD }}"}'  ${{ secrets.SPINNAKER_TRIGGER_URL }}
