@@ -218,7 +218,7 @@ class ApiGateway {
 
     if (deploy.isPullRequest) {
       deploy.issue_number = this.issueNumber(context);
-      let labels = await this.labels(owner, repo, issue_number);
+      let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
       deploy.labeled =this.isLabeled(labels, cfg.deploy.label.name);
     }
     return deploy;
