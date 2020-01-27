@@ -176,11 +176,11 @@ class ApiGateway {
     if (context.payload.check_run) {
       if (context.payload.check_run.check_suite) {
         if (context.payload.check_run.check_suite.pull_requests.length > 0) {
-          context.payload.check_run.check_suite.pull_requests[0].number;
+          return context.payload.check_run.check_suite.pull_requests[0].number;
         }
       } else {
         if (context.payload.check_run.pull_requests.length > 0) {
-          context.payload.check_run.pull_requests[0].number;
+          return context.payload.check_run.pull_requests[0].number;
         }
       }
     }
@@ -249,7 +249,7 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy,'created')) {
+    if (this.ci_action_status(deploy,'created')) { 
       let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
       check_run.checks[0].output = {
         title: "Deploy is Waiting for status checks",
