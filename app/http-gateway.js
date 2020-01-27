@@ -18,15 +18,15 @@ class ApiGateway {
 
   mapToChecks(req) {
     let all = [];
-    for(const check in req.checks) {
+    for(let i=0; i<req.checks.length ; i++) {
       all.push({
         owner: req.owner,
         repo: req.repo,
-        head_sha: req.sha,
-        name: check.name,
-        status: check.status,
-        conclusion: check.conclusion || null,
-        output: check.output
+        sha: req.sha,
+        name: req.checks[i].name,
+        status: req.checks[i].status,
+        conclusion: req.checks[i].conclusion || null,
+        output: req.checks[i].output
       });
     }
     return all;
@@ -366,6 +366,7 @@ class ApiGateway {
 
     if (status == 'completed') {
       result.conclusion = "success";
+      result.completed_at = Date.now();
     } else if (status == 'cancelled') {
       result.status = 'completed';
       result.conclusion = "cancelled";
