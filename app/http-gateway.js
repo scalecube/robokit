@@ -234,14 +234,23 @@ class ApiGateway {
   }
 
   ci_action_status(deploy, action) {
-    for(let i =0; i<cfg.deploy.on.actions.length ; i++) {
-      if ( (deploy.checkName == cfg.deploy.on.actions[i]) && (deploy.action == action)) {
-        if(deploy.isPullRequest && deploy.labeled){
-          return true;
-        } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
-          return true;
+
+      if(deploy.isPullRequest) {
+        for(let i =0; i < cfg.deploy.on.actions.length ; i++) {
+          if ((deploy.checkName == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+            if (deploy.labeled) {
+              return true;
+            } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')) {
+              return true;
+            }
+          }
         }
-      }
+      } else {
+        for(let i =0; i < cfg.deploy.on.actions.length ; i++) {
+          if ( (deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.action == action)) {
+            return true;
+          }
+        }
     }
     return false;
   }

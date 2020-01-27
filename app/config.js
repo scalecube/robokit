@@ -14,12 +14,18 @@ module.exports = {
             }
         },
         on: {
-            actions:[
-                'Travis CI - Pull Request',
-                'trigger_deploy'
-            ],
+            push: {
+                actions:[
+                    'Travis CI - Branch',
+                    'trigger_deploy'
+                ]
+            },
             pull_request: {
-                labeled: ["DEPLOY"]
+                labeled: ["DEPLOY"],
+                actions:[
+                    'Travis CI - Pull Request',
+                    'trigger_deploy'
+                ]
             }
         }
     },
