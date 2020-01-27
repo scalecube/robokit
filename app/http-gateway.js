@@ -240,9 +240,9 @@ class ApiGateway {
   ci_started(deploy) {
     for(let i =0; i<cfg.deploy.on.length ; i++){
       if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == 'created')) {
-        if ((deploy.branchName == 'develop' || deploy.branchName === 'master')){
+        if(deploy.isPullRequest && deploy.labeled){
           return true;
-        } else if(deploy.isPullRequest && deploy.labeled){
+        } else if (!(deploy.isPullRequest && deploy.labeled) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
           return true;
         }
       }
