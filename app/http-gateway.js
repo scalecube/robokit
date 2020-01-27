@@ -214,6 +214,7 @@ class ApiGateway {
       repo : context.payload.repository.name,
       sha : context.payload.check_run.head_sha,
       conclusion: context.payload.check_run.conclusion,
+      status: context.payload.check_run.status,
       checkName: context.payload.check_run.name,
       action: context.payload.action,
       branchName : this.branchName(context),
@@ -331,7 +332,7 @@ class ApiGateway {
     let result = {
       owner: deploy.owner,
       repo: deploy.repo,
-      sha: deploy.sha
+      head_sha: deploy.sha
     };
 
     if (status == 'completed') {
