@@ -224,22 +224,9 @@ class ApiGateway {
     return deploy;
   }
 
-  ci_done(deploy) {
+  ci_action_status(deploy, action) {
     for(let i =0; i<cfg.deploy.on.length ; i++){
-      if ( (deploy.checkName == cfg.deploy.on[0]) && (deploy.action == 'completed') && (deploy.conclusion== 'success')) {
-        if ((deploy.branchName == 'develop' || deploy.branchName === 'master')){
-          return true;
-        } else if(deploy.isPullRequest && deploy.labeled){
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  ci_started(deploy) {
-    for(let i =0; i<cfg.deploy.on.length ; i++){
-      if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == 'created')) {
+      if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == action)) {
         if(deploy.isPullRequest && deploy.labeled){
           return true;
         } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
@@ -255,7 +242,7 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_started(deploy)) {
+    if (this.ci_action_status(deploy,'created')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
       check_run.checks[0].output = {
         title: "Deploy is Waiting for status checks",
@@ -265,7 +252,7 @@ class ApiGateway {
       this.githubService.createCheckRun(context.github, check_run);
     }
 
-    if (this.ci_done(deploy)) {
+    if (this.ci_action_status(deploy,'completed')) {
       let check_run = this.checkStatus(deploy.owner, deploy.repo, deploy.sha, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
         title: "Robo-kit is Deploying branch: " + deploy.branchName,
