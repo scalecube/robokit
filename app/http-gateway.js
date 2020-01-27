@@ -172,9 +172,9 @@ class ApiGateway {
     }
   }
 
-  issueNumber(context){
-    if(context.payload.check_run){
-      if(context.payload.check_run.check_suite) {
+  issueNumber(context) {
+    if (context.payload.check_run) {
+      if (context.payload.check_run.check_suite) {
         if (context.payload.check_run.check_suite.pull_requests > 0) {
           context.payload.check_run.check_suite.pull_requests[0].number;
         }
@@ -182,6 +182,7 @@ class ApiGateway {
         if (context.payload.check_run.pull_requests.length > 0) {
           context.payload.check_run.pull_requests[0].number;
         }
+      }
     }
   }
 
