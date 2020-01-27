@@ -232,7 +232,7 @@ class ApiGateway {
   }
 
   ci_action_status(deploy, action) {
-    for(let i =0; i<cfg.deploy.on.length ; i++){
+    for(let i =0; i<cfg.deploy.on.length ; i++) {
       if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == action)) {
         if(deploy.isPullRequest && deploy.labeled){
           return true;
@@ -249,7 +249,7 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy,'created')) { 
+    if (this.ci_action_status(deploy,'created')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
       check_run.checks[0].output = {
         title: "Deploy is Waiting for status checks",
