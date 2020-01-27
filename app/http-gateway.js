@@ -225,8 +225,8 @@ class ApiGateway {
   }
 
   ci_done(deploy) {
-    for(const name in cfg.deploy.on){
-      if ( (deploy.checkName == name) && (deploy.action == 'completed') && (deploy.conclusion== 'success')) {
+    for(let i =0; i<cfg.deploy.on.length ; i++){
+      if ( (deploy.checkName == cfg.deploy.on[0]) && (deploy.action == 'completed') && (deploy.conclusion== 'success')) {
         if ((deploy.branchName == 'develop' || deploy.branchName === 'master')){
           return true;
         } else if(deploy.isPullRequest && deploy.labeled){
@@ -238,8 +238,8 @@ class ApiGateway {
   }
 
   ci_started(deploy) {
-    for(const name in cfg.deploy.on){
-      if ( (deploy.checkName == name) && (deploy.action == 'queued')) {
+    for(let i =0; i<cfg.deploy.on.length ; i++){
+      if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == 'queued')) {
         if ((deploy.branchName == 'develop' || deploy.branchName === 'master')){
           return true;
         } else if(deploy.isPullRequest && deploy.labeled){
