@@ -256,7 +256,7 @@ class ApiGateway {
     let deploy = await this.deployContext(context);
 
     if (this.ci_started(deploy)) {
-      let check_run = this.checkStatus(deploy.owner, deploy.repo, deploy.sha, cfg.deploy.name, "queued");
+      let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
       check_run.checks[0].output = {
         title: "Deploy is Waiting for status checks",
         summary: "deploy will start when check suite completes",
@@ -271,7 +271,7 @@ class ApiGateway {
         title: "Robo-kit is Deploying branch: " + deploy.branchName,
         summary: "Triggered a Continues-Deployment pipeline",
         text: "Waiting for Continues deployment status updates"
-      }; 
+      };
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
         // TRIGGER CD SERVER DEPLOY AND THEN:
@@ -324,42 +324,33 @@ class ApiGateway {
     this.githubService.route(owner,repo,context);
   }
 
-  checkStatus(owner,repo,sha, name, status) {
+  checkStatus(deploy,name, status) {
+    let result = {
+      owner: deploy.owner,
+      repo: deploy.repo,
+      sha: deploy.sha
+    };
+
     if (status == 'completed') {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+      return result.checks = [{
           name: name,
-          status: status,
+          status: 'completed',
           conclusion: "success"
         }]
       }
-
-    } else if (status == 'cancelled') {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+    else if (status == 'cancelled') {
+      return result.checks =[{
           name: name,
           status: "completed",
           conclusion: "cancelled"
         }]
-      }
-
     } else {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+      return result.checks = [{
           name: name,
           status: status
         }]
       }
     }
   }
-}
+
 module.exports = ApiGateway;
