@@ -250,6 +250,7 @@ class ApiGateway {
     return false;
   }
 
+
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
