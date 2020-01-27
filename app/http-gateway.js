@@ -151,14 +151,16 @@ class ApiGateway {
     return this.githubService.onPullRequest(context);
   }
 
-  isLabeled(labels, name) {
+  isLabeled(labels, names) {
     let result = false;
     if(labels && Array.isArray(labels)) {
       labels.forEach(label => {
-        if(label.name == name){
-          result = true;
-          return true;
-        }
+        names.forEach(name=>{
+          if(label.name == name){
+            result = true;
+            return true;
+          }
+        });
       });
     }
     return result;
@@ -223,7 +225,7 @@ class ApiGateway {
 
       if(deploy.issue_number){
         let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
-        deploy.labeled =this.isLabeled(labels, cfg.deploy.label.name);
+        deploy.labeled =this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
       } else{
         deploy.labeled = false;
       }
@@ -232,8 +234,8 @@ class ApiGateway {
   }
 
   ci_action_status(deploy, action) {
-    for(let i =0; i<cfg.deploy.on.length ; i++) {
-      if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == action)) {
+    for(let i =0; i<cfg.deploy.on.actions.length ; i++) {
+      if ( (deploy.checkName == cfg.deploy.on.actions[i]) && (deploy.action == action)) {
         if(deploy.isPullRequest && deploy.labeled){
           return true;
         } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
@@ -250,25 +252,22 @@ class ApiGateway {
     let deploy = await this.deployContext(context);
 
     if (this.ci_action_status(deploy,'created')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
-      check_run.checks[0].output = {
-        title: "Deploy is Waiting for ci to complete.",
-        summary: "deploy will start when check suite completes",
-        text: "waiting for CI to complete successfully"
-      };
+      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
+      check_run.checks[0].output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, check_run);
     }
 
     if (this.ci_action_status(deploy,'completed')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.name, "in_progress");
-      check_run.checks[0].output = {
-        title: "Robo-kit is Deploying branch: " + deploy.branchName,
-        summary: "Triggered a Continues-Deployment pipeline",
-        text: "Waiting for Continues deployment status updates"
-      };
+      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
+      check_run.checks[0].output = cfg.deploy.check.in_progress;
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
         // TRIGGER CD SERVER DEPLOY AND THEN:
+        let req = {
+          url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
+          namespace: "scalecube-gihub-gateway-pr-111",
+          vault_path: "secrets/scalecube/gihub-gateway/pr-111"
+        };
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err=>{
         console.log(err);
