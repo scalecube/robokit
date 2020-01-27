@@ -58,6 +58,7 @@ class GithubService {
 
       if(check.conclusion) {
         req.conclusion = check.conclusion;
+        req.completed_at = Date.now();
       }
 
       console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
