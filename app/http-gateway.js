@@ -241,7 +241,7 @@ class ApiGateway {
         }
       }
     }
-    return false; 
+    return false;
   }
 
 
@@ -252,7 +252,7 @@ class ApiGateway {
     if (this.ci_action_status(deploy,'created')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
       check_run.checks[0].output = {
-        title: "Deploy is Waiting for status checks",
+        title: "Deploy is Waiting for ci to complete.",
         summary: "deploy will start when check suite completes",
         text: "waiting for CI to complete successfully"
       };
