@@ -174,7 +174,7 @@ class ApiGateway {
 
   issueNumber(context){
     if(context.payload.check_run){
-      if (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests>0) {
+      if (context.payload.check_run.check_suite && context.payload.check_run.check_suite.pull_requests>0) {
         context.payload.check_suite.pull_requests[0].number;
       }
     } else if(context.payload.check_run.check_suite) {
