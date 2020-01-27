@@ -348,8 +348,8 @@ class ApiGateway {
     if (result === 'ok') {
       response.send(result)
     } else {
-      response.status(500)
-      response.send('PR URL is wrong/ not found or not waiting for update.')
+      response.status(500);
+      response.send(result);
     }
   };
 
