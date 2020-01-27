@@ -44,35 +44,6 @@ class GithubService {
     }
   }
 
-  async createCheckRun(github, array) {
-    let all = [];
-    array.forEach(async check => {
-      let req = {
-        owner: check.owner,
-        repo: check.repo,
-        head_sha: check.sha,
-        name: check.name,
-        status: check.status,
-        output: check.output
-      };
-
-      if(check.conclusion && check.conclusion != null) {
-        req.conclusion = check.conclusion;
-        req.completed_at = Date.now();
-      }
-
-
-      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
-      all.push(github.checks.create(req).then(res=>{
-        console.log(res);
-      }).catch(err=>{
-        console.error(err);
-      }));
-    });
-
-    return await Promise.all(all);
-  }
-
   updateStatus (context, msg) {
     let all = [];
     if(msg.statuses) msg.statuses.forEach(async element => {
@@ -89,6 +60,33 @@ class GithubService {
     return Promise.all(all);
   };
 
+
+  async createCheckRun(github, array) {
+    let all = [];
+    array.forEach(async check => {
+      let req = {
+        owner: check.owner,
+        repo: check.repo,
+        head_sha: check.sha,
+        name: check.name,
+        status: check.status,
+        output: check.output
+      };
+
+      if(check.conclusion && check.conclusion != null) {
+        req.conclusion = check.conclusion;
+      }
+
+      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
+      all.push(github.checks.create(req).then(res=>{
+        console.log(res);
+      }).catch(err=>{
+        console.error(err);
+      }));
+    });
+
+    return await Promise.all(all);
+  }
 
   updateComment (context, msg) {
     return this.commentAction(msg, context.issues.updateComment)

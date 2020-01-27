@@ -366,7 +366,6 @@ class ApiGateway {
 
     if (status == 'completed') {
       result.conclusion = "success";
-      result.completed_at = Date.now();
     } else if (status == 'cancelled') {
       result.status = 'completed';
       result.conclusion = "cancelled";
