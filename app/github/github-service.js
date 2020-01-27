@@ -60,7 +60,6 @@ class GithubService {
     return Promise.all(all);
   };
 
-
   async createCheckRun(github, array) {
     let all = [];
     array.forEach(async check => {
