@@ -278,6 +278,7 @@ class ApiGateway {
       }).catch(err=>{
         console.log(err);
       });
+
     }
   }
 
