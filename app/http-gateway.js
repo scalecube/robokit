@@ -240,7 +240,7 @@ class ApiGateway {
 
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
-    let deploy = await this.deployContext(context); 
+    let deploy = await this.deployContext(context);
 
     if (this.ci_action_status(deploy,'created')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
@@ -253,7 +253,7 @@ class ApiGateway {
     }
 
     if (this.ci_action_status(deploy,'completed')) {
-      let check_run = this.checkStatus(deploy.owner, deploy.repo, deploy.sha, cfg.deploy.name, "in_progress");
+      let check_run = this.checkStatus(deploy, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
         title: "Robo-kit is Deploying branch: " + deploy.branchName,
         summary: "Triggered a Continues-Deployment pipeline",
