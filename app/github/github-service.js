@@ -44,13 +44,13 @@ class GithubService {
     }
   }
 
-  async createCheckRun(github, msg) {
+  async createCheckRun(github, array) {
     let all = [];
-    msg.checks.forEach(async check => {
+    array.forEach(async check => {
       let req = {
-        owner: msg.owner,
-        repo: msg.repo,
-        head_sha: msg.sha,
+        owner: check.owner,
+        repo: check.repo,
+        head_sha: check.sha,
         name: check.name,
         status: check.status,
         output: check.output
@@ -59,6 +59,7 @@ class GithubService {
       if(check.conclusion) {
         req.conclusion = check.conclusion;
       }
+
       console.log(">>>>>>>> " + JSON.stringify(req));
       all.push(github.checks.create(req).then(res=>{
         console.log(res);

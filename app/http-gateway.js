@@ -5,10 +5,10 @@ const express = require('express');
 const cfg = require('./config');
 
 class ApiGateway {
-  constructor (app, cache) {
+  constructor(app, cache) {
     this.app = app;
     this.cache = cache;
-    this.githubService = new GithubService(app,cache);
+    this.githubService = new GithubService(app, cache);
     this.performanceService = require('./perfromance/performance-service');
     this.router = app.route();
     this.router.use(cors());
@@ -16,65 +16,83 @@ class ApiGateway {
     this.start(this.router);
   }
 
-  start () {
+  mapToChecks(req) {
+    let all = [];
+    for(const check in req.checks) {
+      all.push({
+        owner: req.owner,
+        repo: req.repo,
+        head_sha: req.sha,
+        name: check.name,
+        status: check.status,
+        conclusion: check.conclusion || null,
+        output: check.output
+      });
+    }
+    return all;
+  }
+
+  start() {
     this.router.get('/server/ping/', (request, response) => {
       console.log('ping request arrived -> reply with pong.');
-      response.send({ time: Date.now() })
+      response.send({time: Date.now()})
     });
 
     this.router.post('/pulls/status/:owner/:repo/:sha', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if(ctx) {
+      if (ctx) {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-        this.thenResponse(this.githubService.updateStatus(ctx, request.body),response);
+        this.thenResponse(this.githubService.updateStatus(ctx, request.body), response);
       } else {
-        this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
+        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
     });
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log("### checks status request: " + JSON.stringify(request.body));
       let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if(ctx) {
+      if (ctx) {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-
-        this.thenResponse(this.githubService.createCheckRun(ctx, request.body),response);
+        let array = this.mapToChecks(request.body);
+        this.thenResponse(this.githubService.createCheckRun(ctx, array), response);
       } else {
-        this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
+        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
     });
 
+
+
     this.router.post('/comment/:owner/:repo/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if(ctx) {
+      if (ctx) {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
-        this.thenResponse(this.githubService.updateComment(ctx,request.body), response);
+        this.thenResponse(this.githubService.updateComment(ctx, request.body), response);
       } else {
-        this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
+        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
     });
 
     this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if(ctx) {
+      if (ctx) {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.issue_number = request.params.issue_number;
         this.thenResponse(this.githubService.createComment(ctx, request.body), response);
       } else {
-        this.sendResponse(response,"no context was found for repo:" + request.body.owner+ "/" + request.body.repo );
+        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
     });
 
     this.router.get('/commits/:owner/:repo/', (request, response) => {
       this.thenResponse(this.performanceService.listCommits(
-        request.params.owner,
-        request.params.repo), response)
+          request.params.owner,
+          request.params.repo), response)
     });
 
     this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
@@ -85,7 +103,9 @@ class ApiGateway {
           request.params.sha,
           filter).then(r => {
         const result = [];
-        r.forEach(e => { result.push(e.data) });
+        r.forEach(e => {
+          result.push(e.data)
+        });
         response.send(result);
       });
     });
@@ -99,19 +119,27 @@ class ApiGateway {
           request.body.repo,
           request.body.sha,
           request.body.traces),
-      response);
+          response);
     });
 
     this.router.post('/webhooks/:owner?/:repo?', (request, response) => {
-      if (request.params.owner) { request.body.owner = request.params.owner }
-      if(request.params.repo)   { request.body.repo = request.params.repo   }
+      if (request.params.owner) {
+        request.body.owner = request.params.owner
+      }
+      if (request.params.repo) {
+        request.body.repo = request.params.repo
+      }
       this.thenResponse(this.githubService.saveWebhook(request.body), response);
     });
 
     this.router.get('/webhooks/:owner?/:repo?', (request, response) => {
       let msg = {};
-      if (request.params.owner) { msg.owner = request.params.owner }
-      if(request.params.repo)   { msg.repo = request.params.repo   }
+      if (request.params.owner) {
+        msg.owner = request.params.owner
+      }
+      if (request.params.repo) {
+        msg.repo = request.params.repo
+      }
       this.thenResponse(this.githubService.findWebhook(msg), response);
     });
 
@@ -121,17 +149,17 @@ class ApiGateway {
           request.params.repo,
           request.params.sha)
           .then(r => {
-              const result = [];
-              r.forEach(e => {
-                result.push(e.data);
-              });
-        this.writeResponse(result, response);
-      });
+            const result = [];
+            r.forEach(e => {
+              result.push(e.data);
+            });
+            this.writeResponse(result, response);
+          });
     });
 
     this.router.get('/commits/:owner/:repo/', (request, response) => {
       this.performanceService.listCommits(request.params.owner,
-        request.params.repo).then((r) => {
+          request.params.repo).then((r) => {
         writeResponse(r, response)
       }).catch((err) => {
         console.log(err)
@@ -139,10 +167,10 @@ class ApiGateway {
     });
   }
 
-  async labels(owner,repo,issue_number){
+  async labels(owner, repo, issue_number) {
     try {
-      return await this.githubService.labels(owner,repo,issue_number);
-    } catch(err) {
+      return await this.githubService.labels(owner, repo, issue_number);
+    } catch (err) {
       console.error(err);
     }
   }
@@ -153,10 +181,10 @@ class ApiGateway {
 
   isLabeled(labels, names) {
     let result = false;
-    if(labels && Array.isArray(labels)) {
+    if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
-        names.forEach(name=>{
-          if(label.name == name){
+        names.forEach(name => {
+          if (label.name == name) {
             result = true;
             return true;
           }
@@ -166,11 +194,11 @@ class ApiGateway {
     return result;
   }
 
-  isPullRequest(context){
-    if(context.payload.check_suite){
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests>0);
+  isPullRequest(context) {
+    if (context.payload.check_suite) {
+      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests > 0);
     } else {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length>0);
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0);
     }
   }
 
@@ -189,7 +217,7 @@ class ApiGateway {
   }
 
   branchName(context) {
-    if(context.payload.check_suite) {
+    if (context.payload.check_suite) {
       return context.payload.check_suite.head_branch;
     } else if (context.payload.check_run) {
       return context.payload.check_run.check_suite.head_branch;
@@ -210,24 +238,24 @@ class ApiGateway {
 
   async deployContext(context) {
     let deploy = {
-      owner : context.payload.repository.owner.login,
-      repo : context.payload.repository.name,
-      sha : context.payload.check_run.head_sha,
+      owner: context.payload.repository.owner.login,
+      repo: context.payload.repository.name,
+      sha: context.payload.check_run.head_sha,
       conclusion: context.payload.check_run.conclusion,
       status: context.payload.check_run.status,
       checkName: context.payload.check_run.name,
       action: context.payload.action,
-      branchName : this.branchName(context),
-      isPullRequest : this.isPullRequest(context)
+      branchName: this.branchName(context),
+      isPullRequest: this.isPullRequest(context)
     };
 
     if (deploy.isPullRequest) {
       deploy.issue_number = this.issueNumber(context);
 
-      if(deploy.issue_number){
+      if (deploy.issue_number) {
         let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
-        deploy.labeled =this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
-      } else{
+        deploy.labeled = this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
+      } else {
         deploy.labeled = false;
       }
     }
@@ -236,42 +264,41 @@ class ApiGateway {
 
   ci_action_status(deploy, action) {
 
-      if(deploy.isPullRequest) {
-        for(let i =0; i < cfg.deploy.on.actions.length ; i++) {
-          if ((deploy.checkName == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
-            if (deploy.labeled) {
-              return true;
-            } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')) {
-              return true;
-            }
-          }
-        }
-      } else {
-        for(let i =0; i < cfg.deploy.on.push.actions.length ; i++) {
-          if ( (deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.action == action)) {
+    if (deploy.isPullRequest) {
+      for (let i = 0; i < cfg.deploy.on.actions.length; i++) {
+        if ((deploy.checkName == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+          if (deploy.labeled) {
+            return true;
+          } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')) {
             return true;
           }
         }
+      }
+    } else {
+      for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
+        if ((deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.action == action)) {
+          return true;
+        }
+      }
     }
     return false;
   }
 
 
   async onCheckRun(context) {
-    console.log(context.payload.check_run.name + "-" + context.payload.check_run.status + " - " +context.payload.check_run.conclusion);
+    console.log(context.payload.check_run.name + "-" + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy,'created')) {
+    if (this.ci_action_status(deploy, 'in_progress')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
-      check_run.checks = [{output: cfg.deploy.check.queued}];
-      this.githubService.createCheckRun(context.github, check_run);
+      check_run.output = cfg.deploy.check.queued;
+      this.githubService.createCheckRun(context.github, [check_run]);
     }
 
-    if (this.ci_action_status(deploy,'completed')) {
+    if (this.ci_action_status(deploy, 'completed')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
-      check_run.checks = [{output: cfg.deploy.check.in_progress}];
-
-      return this.githubService.createCheckRun(context.github, check_run).then(res=>{
+      check_run.output = cfg.deploy.check.in_progress;
+      return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
         // TRIGGER CD SERVER DEPLOY AND THEN:
         let req = {
           url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
@@ -279,7 +306,7 @@ class ApiGateway {
           vault_path: "secrets/scalecube/gihub-gateway/pr-111"
         };
         this.route(deploy.owner, deploy.repo, deploy);
-      }).catch(err=>{
+      }).catch(err => {
         console.log(err);
       });
 
@@ -291,20 +318,20 @@ class ApiGateway {
     this.githubService.createPullRequest(ctx);
   }
 
-  async deployYaml(context){
+  async deployYaml(context) {
     try {
       let deploy = await this.githubService.content(context.payload.repository.owner.login,
           context.payload.repository.name,
           "deploy.yml");
 
-      if(deploy) context.deploy = yaml.load(deploy);
-    } catch(err) {
+      if (deploy) context.deploy = yaml.load(deploy);
+    } catch (err) {
       console.error(err);
     }
     return context;
   }
 
-  thenResponse (p, response) {
+  thenResponse(p, response) {
     p.then((r) => {
       response.send(r)
     }).catch((err) => {
@@ -314,7 +341,7 @@ class ApiGateway {
     });
   };
 
-  sendResponse (response, result) {
+  sendResponse(response, result) {
     if (result === 'ok') {
       response.send(result)
     } else {
@@ -324,37 +351,28 @@ class ApiGateway {
   };
 
 
-  route(owner,repo,context) {
-    this.githubService.route(owner,repo,context);
+  route(owner, repo, context) {
+    this.githubService.route(owner, repo, context);
   }
 
-  checkStatus(deploy,name, status) {
+  checkStatus(deploy, name, status) {
     let result = {
+      name: name,
       owner: deploy.owner,
       repo: deploy.repo,
-      head_sha: deploy.sha
+      head_sha: deploy.sha,
+      status: status
     };
 
     if (status == 'completed') {
-      return result.checks = [{
-          name: name,
-          status: 'completed',
-          conclusion: "success"
-        }]
-      }
-    else if (status == 'cancelled') {
-      return result.checks =[{
-          name: name,
-          status: "completed",
-          conclusion: "cancelled"
-        }]
+      result.conclusion = "success";
+    } else if (status == 'cancelled') {
+      result.status = 'completed';
+      result.conclusion = "cancelled";
     } else {
-      return result.checks = [{
-          name: name,
-          status: status
-        }]
-      }
+      result.status = 'in_progress';
     }
+    return result;
   }
-
+}
 module.exports = ApiGateway;
