@@ -56,10 +56,11 @@ class GithubService {
         output: check.output
       };
 
-      if(check.conclusion) {
+      if(check.conclusion && check.conclusion != null) {
         req.conclusion = check.conclusion;
         req.completed_at = Date.now();
       }
+
 
       console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
       all.push(github.checks.create(req).then(res=>{
