@@ -60,7 +60,7 @@ class GithubService {
         req.conclusion = check.conclusion;
       }
 
-      console.log(">>>>>>>> " + JSON.stringify(req));
+      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
       all.push(github.checks.create(req).then(res=>{
         console.log(res);
       }).catch(err=>{
