@@ -218,8 +218,13 @@ class ApiGateway {
 
     if (deploy.isPullRequest) {
       deploy.issue_number = this.issueNumber(context);
-      let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
-      deploy.labeled =this.isLabeled(labels, cfg.deploy.label.name);
+
+      if(deploy.issue_number){
+        let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
+        deploy.labeled =this.isLabeled(labels, cfg.deploy.label.name);
+      } else{
+        deploy.labeled = false;
+      }
     }
     return deploy;
   }
@@ -269,6 +274,7 @@ class ApiGateway {
 
     }
   }
+
 
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
