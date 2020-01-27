@@ -360,7 +360,7 @@ class ApiGateway {
       name: name,
       owner: deploy.owner,
       repo: deploy.repo,
-      head_sha: deploy.sha,
+      sha: deploy.sha,
       status: status
     };
 
