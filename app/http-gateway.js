@@ -242,7 +242,7 @@ class ApiGateway {
       if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == 'created')) {
         if(deploy.isPullRequest && deploy.labeled){
           return true;
-        } else if (!(deploy.isPullRequest && deploy.labeled) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
+        } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
           return true;
         }
       }
