@@ -164,135 +164,119 @@ class ApiGateway {
     return result;
   }
 
-  checkSuiteBranchName(context){
-    if(context.payload.check_suite.head_branch=='develop') {
-      return 'develop';
-    } else if (context.payload.check_suite.head_branch=='master'){
-      return 'master';
-    } else if(this.isPullRequest(context)){
-      return "pr-" + context.payload.check_suite.pull_requests[0].number;
-    } else{
-      return undefined;
-    }
-  }
-
   isPullRequest(context){
     if(context.payload.check_suite){
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests[0]);
+      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests>0);
     } else {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests[0]);
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length>0);
     }
   }
 
-  checkRunBranchName(context) {
+  issueNumber(context) {
     if (context.payload.check_run) {
-      if (context.payload.check_run.head_branch == 'develop') {
-        return 'develop';
-      } else if (context.payload.check_run.head_branch == 'master') {
-        return 'master';
-      } else if (this.isPullRequest(context)) {
-        return "pr-" + context.payload.check_run.pull_requests[0].number;
-      } else if (context.payload.check_run.check_suite) {
-        if (context.payload.check_run.check_suite.head_branch == 'develop') {
-          return 'develop';
-        } else if (context.payload.check_run.check_suite.head_branch == 'master') {
-          return 'master';
+      if (context.payload.check_run.check_suite) {
+        if (context.payload.check_run.check_suite.pull_requests.length > 0) {
+          return context.payload.check_run.check_suite.pull_requests[0].number;
         }
-      } else if (this.isPullRequest(context)) {
-        return "pr-" + context.payload.check_run.pull_requests[0].number;
       } else {
-        return undefined;
+        if (context.payload.check_run.pull_requests.length > 0) {
+          return context.payload.check_run.pull_requests[0].number;
+        }
       }
     }
   }
 
+  branchName(context) {
+    if(context.payload.check_suite) {
+      return context.payload.check_suite.head_branch;
+    } else if (context.payload.check_run) {
+      return context.payload.check_run.check_suite.head_branch;
+    }
+  }
 
   async onCheckSuite(context) {
-    let owner = context.payload.repository.owner.login;
-    let repo = context.payload.repository.name;
-    let sha = context.payload.check_suite.head_sha;
-    let branchName = this.checkSuiteBranchName(context);
-    let check_run;
-
-    if (context.payload.action == 'requested') {
-      check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "queued");
-      check_run.checks[0].output = {
-        title: "Deploy is Waiting for status checks",
-        summary: "deploy will start when check suite completes",
-        text: "waiting for CI to complete successfully"
-      }
-    } else if (context.payload.action != 'completed') {
+    /*
+    if (context.payload.action != 'completed') {
       check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
       check_run.checks[0].output = {
         title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
         summary: "Cancelled a Continues-Deployment pipeline",
         text: "the deployment is cancelled because CI failed"
       }
-    }
-
-    if (check_run)
-      this.githubService.createCheckRun(context.github, check_run);
+    }*/
   }
 
+  async deployContext(context) {
+    let deploy = {
+      owner : context.payload.repository.owner.login,
+      repo : context.payload.repository.name,
+      sha : context.payload.check_run.head_sha,
+      conclusion: context.payload.check_run.conclusion,
+      checkName: context.payload.check_run.name,
+      action: context.payload.action,
+      branchName : this.branchName(context),
+      isPullRequest : this.isPullRequest(context)
+    };
 
-  ciCompleted(check_run, name, action, conclusion,
-                    labeled,branchName,isPullRequest) {
+    if (deploy.isPullRequest) {
+      deploy.issue_number = this.issueNumber(context);
 
-    if ( (check_run == name) && (action == 'completed') && (conclusion== 'success')) {
-        if ((branchName == 'develop' || branchName === 'master')){
+      if(deploy.issue_number){
+        let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
+        deploy.labeled =this.isLabeled(labels, cfg.deploy.label.name);
+      } else{
+        deploy.labeled = false;
+      }
+    }
+    return deploy;
+  }
+
+  ci_action_status(deploy, action) {
+    for(let i =0; i<cfg.deploy.on.length ; i++) {
+      if ( (deploy.checkName == cfg.deploy.on[i]) && (deploy.action == action)) {
+        if(deploy.isPullRequest && deploy.labeled){
           return true;
-        } else if(isPullRequest && labeled){
+        } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')){
           return true;
         }
+      }
     }
-
     return false;
   }
 
+
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " +context.payload.check_run.conclusion);
-    let owner = context.payload.repository.owner.login;
-    let repo = context.payload.repository.name;
-    let sha = context.payload.check_run.head_sha;
-    let branchName = this.checkRunBranchName(context);
-    let issue_number = undefined;
-    let labeled = false;
-    let isPullRequest = this.isPullRequest(context);
+    let deploy = await this.deployContext(context);
 
-    if (isPullRequest) {
-      issue_number = context.payload.check_run.pull_requests[0].number;
-      let labels = await this.labels(owner, repo, issue_number);
-      labeled =this.isLabeled(labels, cfg.deploy.label.name);
+    if (this.ci_action_status(deploy,'created')) {
+      let check_run = this.checkStatus(deploy, cfg.deploy.name, "queued");
+      check_run.checks[0].output = {
+        title: "Deploy is Waiting for ci to complete.",
+        summary: "deploy will start when check suite completes",
+        text: "waiting for CI to complete successfully"
+      };
+      this.githubService.createCheckRun(context.github, check_run);
     }
 
-    if (this.ciCompleted(context.payload.check_run.name,"trigger_deploy",
-        context.payload.action,
-        context.payload.check_run.conclusion,
-        labeled,
-        branchName,
-        isPullRequest)) {
-
-      let check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "in_progress");
+    if (this.ci_action_status(deploy,'completed')) {
+      let check_run = this.checkStatus(deploy, cfg.deploy.name, "in_progress");
       check_run.checks[0].output = {
-        title: "Robo-kit is Deploying branch: " + branchName,
+        title: "Robo-kit is Deploying branch: " + deploy.branchName,
         summary: "Triggered a Continues-Deployment pipeline",
         text: "Waiting for Continues deployment status updates"
       };
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
         // TRIGGER CD SERVER DEPLOY AND THEN:
-        this.route(owner, repo, {
-          owner: owner,
-          repo: repo,
-          sha: sha,
-          tag: branchName,
-          pr_num: issue_number
-        });
+        this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err=>{
         console.log(err);
       });
+
     }
   }
+
 
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
@@ -335,42 +319,33 @@ class ApiGateway {
     this.githubService.route(owner,repo,context);
   }
 
-  checkStatus(owner,repo,sha, name, status) {
+  checkStatus(deploy,name, status) {
+    let result = {
+      owner: deploy.owner,
+      repo: deploy.repo,
+      sha: deploy.sha
+    };
+
     if (status == 'completed') {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+      return result.checks = [{
           name: name,
-          status: status,
+          status: 'completed',
           conclusion: "success"
         }]
       }
-
-    } else if (status == 'cancelled') {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+    else if (status == 'cancelled') {
+      return result.checks =[{
           name: name,
           status: "completed",
           conclusion: "cancelled"
         }]
-      }
-
     } else {
-      return {
-        owner: owner,
-        repo: repo,
-        sha: sha,
-        checks: [{
+      return result.checks = [{
           name: name,
           status: status
         }]
       }
     }
   }
-}
+
 module.exports = ApiGateway;
