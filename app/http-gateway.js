@@ -271,7 +271,7 @@ class ApiGateway {
         title: "Robo-kit is Deploying branch: " + deploy.branchName,
         summary: "Triggered a Continues-Deployment pipeline",
         text: "Waiting for Continues deployment status updates"
-      };
+      }; 
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
         // TRIGGER CD SERVER DEPLOY AND THEN:
