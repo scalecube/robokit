@@ -44,6 +44,22 @@ class GithubService {
     }
   }
 
+  updateStatus (context, msg) {
+    let all = [];
+    if(msg.statuses) msg.statuses.forEach(async element => {
+      all.push(context.repos.createStatus({
+        owner: msg.owner,
+        repo: msg.repo,
+        sha: msg.sha,
+        state: element.status || "pending",
+        context: element.name,
+        target_url: element.target_url,
+        description: element.message
+      }))
+    });
+    return Promise.all(all);
+  };
+
   async createCheckRun(github, array) {
     let all = [];
     array.forEach(async check => {
@@ -61,7 +77,6 @@ class GithubService {
         req.completed_at = Date.now();
       }
 
-
       console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
       all.push(github.checks.create(req).then(res=>{
         console.log(res);
@@ -72,23 +87,6 @@ class GithubService {
 
     return await Promise.all(all);
   }
-
-  updateStatus (context, msg) {
-    let all = [];
-    if(msg.statuses) msg.statuses.forEach(async element => {
-      all.push(context.repos.createStatus({
-        owner: msg.owner,
-        repo: msg.repo,
-        sha: msg.sha,
-        state: element.status || "pending",
-        context: element.name,
-        target_url: element.target_url,
-        description: element.message
-      }))
-    });
-    return Promise.all(all);
-  };
-
 
   updateComment (context, msg) {
     return this.commentAction(msg, context.issues.updateComment)
