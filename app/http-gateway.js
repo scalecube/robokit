@@ -253,13 +253,14 @@ class ApiGateway {
 
     if (this.ci_action_status(deploy,'created')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
+      check_run.checks = [];
       check_run.checks[0].output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, check_run);
     }
 
-
     if (this.ci_action_status(deploy,'completed')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
+      check_run.checks = [];
       check_run.checks[0].output = cfg.deploy.check.in_progress;
 
       return this.githubService.createCheckRun(context.github, check_run).then(res=>{
