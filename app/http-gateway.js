@@ -3,6 +3,7 @@ const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
+const httpClient = require('../http-client');
 
 class ApiGateway {
   constructor(app, cache) {
@@ -302,11 +303,28 @@ class ApiGateway {
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
         // TRIGGER CD SERVER DEPLOY AND THEN:
+        let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
         let req = {
           url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
           namespace: "scalecube-gihub-gateway-pr-111",
           vault_path: "secrets/scalecube/gihub-gateway/pr-111"
         };
+
+        let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
+        let body = {
+          namespace: namespace,
+          url: "https://"+ namespace +".exchange.om2.com",
+          slug:"vault",
+          version: deploy.branchName,
+          vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
+        };
+
+        httpClient.post(url, body).then((msg) => {
+
+        }).catch(function (err) {
+
+        });
+
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
         console.log(err);
