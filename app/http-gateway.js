@@ -296,7 +296,7 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy, 'created') || this.ci_action_status(deploy, 'queued')) {
+    if (this.ci_action_status(deploy, 'queued')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
       check_run.output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, [check_run]);
