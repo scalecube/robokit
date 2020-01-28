@@ -356,6 +356,19 @@ class ApiGateway {
     this.githubService.route(owner, repo, context);
   }
 
+  /**
+   * The current status. Can be one of queued, in_progress, or completed. Default: queued
+   *
+   * Required if you provide completed_at or a status of completed.
+   * The final conclusion of the check.
+   * Can be one of success, failure, neutral, cancelled, timed_out, or action_required.
+   * When the conclusion is action_required, additional details should be provided on the site specified by details_url.
+   *   Note: Providing conclusion will automatically set the status parameter to completed.
+   * @param deploy
+   * @param name
+   * @param status
+   * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
+   */
   checkStatus(deploy, name, status) {
     let result = {
       name: name,
@@ -367,11 +380,15 @@ class ApiGateway {
 
     if (status == 'completed') {
       result.conclusion = "success";
+      result.completed_at = new Date().toISOString();
     } else if (status == 'cancelled') {
       result.status = 'completed';
       result.conclusion = "cancelled";
-    } else {
+    } else if(status == 'in_progress') {
       result.status = 'in_progress';
+      result.started_at = new Date().toISOString();
+    } else if(status == 'queued') {
+      result.status = 'queued';
     }
     return result;
   }
