@@ -393,4 +393,5 @@ class ApiGateway {
     return result;
   }
 }
+
 module.exports = ApiGateway;
