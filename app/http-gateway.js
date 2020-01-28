@@ -251,6 +251,7 @@ class ApiGateway {
       check_run_name: context.payload.check_run.name,
       action: context.payload.action
     };
+
     if (deploy.is_pull_request) {
       deploy.issue_number = this.issueNumber(context);
 
@@ -268,11 +269,11 @@ class ApiGateway {
     return deploy;
   }
 
-  ci_action_status(deploy, action) {
+  ci_action_status(deploy, status) {
 
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
           if (deploy.labeled) {
             return true;
           } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
