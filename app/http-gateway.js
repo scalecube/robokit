@@ -296,9 +296,8 @@ class ApiGateway {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
       check_run.output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, [check_run]);
-    }
 
-    if (this.ci_action_status(deploy, 'completed')) {
+    } else if (this.ci_action_status(deploy, 'completed')) {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
@@ -312,7 +311,6 @@ class ApiGateway {
       }).catch(err => {
         console.log(err);
       });
-
     }
   }
 
