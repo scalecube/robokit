@@ -254,7 +254,7 @@ class ApiGateway {
       action: context.payload.action
     };
 
-    if (deploy.isPullRequest) {
+    if (deploy.is_pull_request) {
       deploy.issue_number = this.issueNumber(context);
 
       if (deploy.issue_number) {
