@@ -94,7 +94,7 @@ class GithubService {
   createComment (context, msg) {
     return this.commentAction(msg, context.issues.createComment)
   }
-
+  
   labels(owner,repo,issue_number) {
     return new Promise((resolve, reject) => {
       let ctx = this.cache.get(owner,repo);
