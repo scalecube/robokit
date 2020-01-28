@@ -267,6 +267,7 @@ class ApiGateway {
 
     deploy.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
     deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
+    deploy.check_run_name = this.getCheckName(deploy);
     return deploy;
   }
 
@@ -292,20 +293,29 @@ class ApiGateway {
     return false;
   }
 
+  getCheckName(deploy) {
+    if(deploy.is_pull_request){
+      return cfg.deploy.check.name + " (pull_request)";
+    } else {
+      return cfg.deploy.check.name + " (push)";
+    }
+  }
 
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
     if (this.ci_action_status(deploy, 'queued')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
+
+      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "queued");
       check_run.output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, [check_run]);
 
     } else if (this.ci_action_status(deploy, 'completed')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
+      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
+
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
         console.log(err);
