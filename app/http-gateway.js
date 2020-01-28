@@ -36,6 +36,7 @@ class ApiGateway {
     return all;
   }
 
+
   start() {
     this.router.get('/server/ping/', (request, response) => {
       console.log('ping request arrived -> reply with pong.');
@@ -251,6 +252,7 @@ class ApiGateway {
       check_run_name: context.payload.check_run.name,
       action: context.payload.action
     };
+
     if (deploy.is_pull_request) {
       deploy.issue_number = this.issueNumber(context);
 
@@ -268,11 +270,11 @@ class ApiGateway {
     return deploy;
   }
 
-  ci_action_status(deploy, action) {
+  ci_action_status(deploy, status) {
 
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
           if (deploy.labeled) {
             return true;
           } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
@@ -282,7 +284,7 @@ class ApiGateway {
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.action == action)) {
+        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
           return true;
         }
       }
@@ -290,50 +292,35 @@ class ApiGateway {
     return false;
   }
 
+  getCheckName(deploy) {
+    if(deploy.is_pull_request){
+      return cfg.deploy.check.name + " (pull_request)";
+    } else {
+      return cfg.deploy.check.name + " (push)";
+    }
+  }
 
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy, 'created') || this.ci_action_status(deploy, 'queued')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "queued");
+    if (this.ci_action_status(deploy, 'queued')) {
+
+      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "queued");
       check_run.output = cfg.deploy.check.queued;
       this.githubService.createCheckRun(context.github, [check_run]);
 
     } else if (this.ci_action_status(deploy, 'completed')) {
-      let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
+      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
+        deploy.check_run_name = this.getCheckName(deploy);
+        console.log(">>>>> SENDING TO CD >>> " + JSON.stringify(deploy));
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
         console.log(err);
       });
     }
-  }
-
-  triggerSpinnaker(deploy) {
-    // TRIGGER CD SERVER DEPLOY AND THEN:
-    let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
-    let req = {
-      url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
-      namespace: "scalecube-gihub-gateway-pr-111",
-      vault_path: "secrets/scalecube/gihub-gateway/pr-111"
-    };
-
-    let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
-    let body = {
-      namespace: namespace,
-      url: "https://"+ namespace +".exchange.om2.com",
-      slug:"vault",
-      version: deploy.branchName,
-      vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
-    };
-
-    httpClient.post(url, body).then((msg) => {
-      console.log(msg);
-    }).catch(function (err) {
-      console.error(err);
-    });
   }
 
   createPullRequest(ctx) {
