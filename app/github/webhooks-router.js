@@ -17,7 +17,7 @@ class WebhooksRouter {
     this.routes.forEach(route => {
       if (route.owner && route.owner === owner) {
         if (route.repo === repo || !route.repo) {
-          for (let [key, value] of Object.entries(object1)) {
+          for (let [key, value] of Object.entries(ctx)) {
             console.log(`${key}: ${value}`);
             route.url = route.url.replace("${"+ key + "}", value);
           }
