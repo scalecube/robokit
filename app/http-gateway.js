@@ -36,6 +36,7 @@ class ApiGateway {
     return all;
   }
 
+
   start() {
     this.router.get('/server/ping/', (request, response) => {
       console.log('ping request arrived -> reply with pong.');
@@ -310,32 +311,6 @@ class ApiGateway {
         console.log(err);
       });
     }
-  }
-
-
-  triggerSpinnaker(deploy) {
-    // TRIGGER CD SERVER DEPLOY AND THEN:
-    let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
-    let req = {
-      url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
-      namespace: "scalecube-gihub-gateway-pr-111",
-      vault_path: "secrets/scalecube/gihub-gateway/pr-111"
-    };
-
-    let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
-    let body = {
-      namespace: namespace,
-      url: "https://"+ namespace +".exchange.om2.com",
-      slug:"vault",
-      version: deploy.branchName,
-      vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
-    };
-
-    httpClient.post(url, body).then((msg) => {
-      console.log(msg);
-    }).catch(function (err) {
-      console.error(err);
-    });
   }
 
   createPullRequest(ctx) {
