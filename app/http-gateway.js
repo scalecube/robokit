@@ -306,7 +306,6 @@ class ApiGateway {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
-
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
         console.log(err);
