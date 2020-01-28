@@ -244,13 +244,14 @@ class ApiGateway {
     let deploy = {
       owner: context.payload.repository.owner.login,
       repo: context.payload.repository.name,
+      branch_name: this.branchName(context),
       sha: context.payload.check_run.head_sha,
+      is_pull_request: this.isPullRequest(context),
+
       conclusion: context.payload.check_run.conclusion,
       status: context.payload.check_run.status,
-      checkName: context.payload.check_run.name,
-      action: context.payload.action,
-      branchName: this.branchName(context),
-      isPullRequest: this.isPullRequest(context)
+      check_run_name: context.payload.check_run.name,
+      action: context.payload.action
     };
 
     if (deploy.isPullRequest) {
@@ -259,6 +260,7 @@ class ApiGateway {
       if (deploy.issue_number) {
         let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
         deploy.labeled = this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
+        deploy.labels = labels;
       } else {
         deploy.labeled = false;
       }
@@ -270,10 +272,10 @@ class ApiGateway {
 
     if (deploy.isPullRequest) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.checkName == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
           if (deploy.labeled) {
             return true;
-          } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')) {
+          } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
             return true;
           }
         }
@@ -302,28 +304,6 @@ class ApiGateway {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
-        // TRIGGER CD SERVER DEPLOY AND THEN:
-        let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
-        let req = {
-          url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
-          namespace: "scalecube-gihub-gateway-pr-111",
-          vault_path: "secrets/scalecube/gihub-gateway/pr-111"
-        };
-
-        let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
-        let body = {
-          namespace: namespace,
-          url: "https://"+ namespace +".exchange.om2.com",
-          slug:"vault",
-          version: deploy.branchName,
-          vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
-        };
-
-        httpClient.post(url, body).then((msg) => {
-          console.log(msg);
-        }).catch(function (err) {
-          console.error(err);
-        });
 
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
@@ -332,6 +312,30 @@ class ApiGateway {
     }
   }
 
+  triggerSpinnaker(deploy) {
+    // TRIGGER CD SERVER DEPLOY AND THEN:
+    let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
+    let req = {
+      url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
+      namespace: "scalecube-gihub-gateway-pr-111",
+      vault_path: "secrets/scalecube/gihub-gateway/pr-111"
+    };
+
+    let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
+    let body = {
+      namespace: namespace,
+      url: "https://"+ namespace +".exchange.om2.com",
+      slug:"vault",
+      version: deploy.branchName,
+      vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
+    };
+
+    httpClient.post(url, body).then((msg) => {
+      console.log(msg);
+    }).catch(function (err) {
+      console.error(err);
+    });
+  }
 
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
