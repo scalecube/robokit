@@ -3,7 +3,7 @@ const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
-const httpClient = require('../http-client');
+const httpClient = require('./http-client');
 
 class ApiGateway {
   constructor(app, cache) {
