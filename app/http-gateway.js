@@ -312,6 +312,7 @@ class ApiGateway {
     }
   }
 
+
   triggerSpinnaker(deploy) {
     // TRIGGER CD SERVER DEPLOY AND THEN:
     let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
