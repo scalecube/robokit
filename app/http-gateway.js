@@ -283,7 +283,7 @@ class ApiGateway {
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.action == action)) {
+        if ((deploy.checkName == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
           return true;
         }
       }
