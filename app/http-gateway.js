@@ -272,7 +272,7 @@ class ApiGateway {
 
   ci_action_status(deploy, action) {
 
-    if (deploy.isPullRequest) {
+    if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
         if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
           if (deploy.labeled) {
