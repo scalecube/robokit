@@ -253,19 +253,20 @@ class ApiGateway {
       check_run_name: context.payload.check_run.name,
       action: context.payload.action
     };
-
     if (deploy.is_pull_request) {
       deploy.issue_number = this.issueNumber(context);
 
       if (deploy.issue_number) {
         let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
         deploy.labeled = this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
-        deploy.labels = labels;
+        deploy.labels = labels.map(i => i.name);
       } else {
         deploy.labeled = false;
       }
     }
 
+    deploy.github_gateway_url = process.env.CALLBACK_URL;
+    deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
     return deploy;
   }
 
