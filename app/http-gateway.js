@@ -236,7 +236,7 @@ class ApiGateway {
         summary: "Cancelled a Continues-Deployment pipeline",
         text: "the deployment is cancelled because CI failed"
       }
-    }*/
+    }*/ 
   }
 
   async deployContext(context) {
