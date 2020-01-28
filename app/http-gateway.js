@@ -320,9 +320,9 @@ class ApiGateway {
         };
 
         httpClient.post(url, body).then((msg) => {
-
+          console.log(msg);
         }).catch(function (err) {
-
+          console.error(err);
         });
 
         this.route(deploy.owner, deploy.repo, deploy);
