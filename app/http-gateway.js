@@ -3,6 +3,7 @@ const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
+const httpClient = require('./http-client');
 
 class ApiGateway {
   constructor(app, cache) {
@@ -66,8 +67,6 @@ class ApiGateway {
         this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
     });
-
-
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
       let ctx = this.cache.get(request.params.owner, request.params.repo);
@@ -243,36 +242,40 @@ class ApiGateway {
     let deploy = {
       owner: context.payload.repository.owner.login,
       repo: context.payload.repository.name,
+      branch_name: this.branchName(context),
       sha: context.payload.check_run.head_sha,
+      is_pull_request: this.isPullRequest(context),
+
       conclusion: context.payload.check_run.conclusion,
       status: context.payload.check_run.status,
-      checkName: context.payload.check_run.name,
-      action: context.payload.action,
-      branchName: this.branchName(context),
-      isPullRequest: this.isPullRequest(context)
+      check_run_name: context.payload.check_run.name,
+      action: context.payload.action
     };
-
-    if (deploy.isPullRequest) {
+    if (deploy.is_pull_request) {
       deploy.issue_number = this.issueNumber(context);
 
       if (deploy.issue_number) {
         let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
         deploy.labeled = this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
+        deploy.labels = labels.map(i => i.name);
       } else {
         deploy.labeled = false;
       }
     }
+
+    deploy.github_gateway_url = process.env.CALLBACK_URL;
+    deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
     return deploy;
   }
 
   ci_action_status(deploy, action) {
 
-    if (deploy.isPullRequest) {
+    if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.checkName == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
+        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.action == action)) {
           if (deploy.labeled) {
             return true;
-          } else if (!(deploy.isPullRequest) && (deploy.branchName == 'develop' || deploy.branchName === 'master')) {
+          } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
             return true;
           }
         }
@@ -301,12 +304,6 @@ class ApiGateway {
       let check_run = this.checkStatus(deploy, cfg.deploy.check.name, "in_progress");
       check_run.output = cfg.deploy.check.in_progress;
       return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
-        // TRIGGER CD SERVER DEPLOY AND THEN:
-        let req = {
-          url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
-          namespace: "scalecube-gihub-gateway-pr-111",
-          vault_path: "secrets/scalecube/gihub-gateway/pr-111"
-        };
         this.route(deploy.owner, deploy.repo, deploy);
       }).catch(err => {
         console.log(err);
@@ -314,6 +311,30 @@ class ApiGateway {
     }
   }
 
+  triggerSpinnaker(deploy) {
+    // TRIGGER CD SERVER DEPLOY AND THEN:
+    let namespace = deploy.owner + "-" + deploy.repo + "-" + deploy.branchName;
+    let req = {
+      url: deploy.owner + "-" + deploy.repo + "-" + deploy.branchName,
+      namespace: "scalecube-gihub-gateway-pr-111",
+      vault_path: "secrets/scalecube/gihub-gateway/pr-111"
+    };
+
+    let url = 'https://spinnakerapi.genesis.om2.com/webhooks/webhook/deploy-' + deploy.owner + "-" + deploy.repo;
+    let body = {
+      namespace: namespace,
+      url: "https://"+ namespace +".exchange.om2.com",
+      slug:"vault",
+      version: deploy.branchName,
+      vault_path:"secrets/"+ deploy.owner +"/"+ deploy.repo +"/" + deploy.branchName
+    };
+
+    httpClient.post(url, body).then((msg) => {
+      console.log(msg);
+    }).catch(function (err) {
+      console.error(err);
+    });
+  }
 
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
@@ -356,6 +377,19 @@ class ApiGateway {
     this.githubService.route(owner, repo, context);
   }
 
+  /**
+   * The current status. Can be one of queued, in_progress, or completed. Default: queued
+   *
+   * Required if you provide completed_at or a status of completed.
+   * The final conclusion of the check.
+   * Can be one of success, failure, neutral, cancelled, timed_out, or action_required.
+   * When the conclusion is action_required, additional details should be provided on the site specified by details_url.
+   *   Note: Providing conclusion will automatically set the status parameter to completed.
+   * @param deploy
+   * @param name
+   * @param status
+   * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
+   */
   checkStatus(deploy, name, status) {
     let result = {
       name: name,
@@ -367,13 +401,18 @@ class ApiGateway {
 
     if (status == 'completed') {
       result.conclusion = "success";
+      result.completed_at = new Date().toISOString();
     } else if (status == 'cancelled') {
       result.status = 'completed';
       result.conclusion = "cancelled";
-    } else {
+    } else if(status == 'in_progress') {
       result.status = 'in_progress';
+      result.started_at = new Date().toISOString();
+    } else if(status == 'queued') {
+      result.status = 'queued';
     }
     return result;
   }
 }
+
 module.exports = ApiGateway;

@@ -2,3 +2,4 @@ WEBHOOK_PROXY_URL=https://smee.io/f74sOaXacyxBsDQs
 PORT=7777
 # Use `trace` to get verbose logging or `info` to show less
 LOG_LEVEL=debug
+CALLBACK_URL=https://scalecube-7777.exchange.om2.com/checks/status/

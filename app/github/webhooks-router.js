@@ -12,11 +12,14 @@ class WebhooksRouter {
     })
   }
 
-
   route (owner,repo, ctx, onRoute, onError) {
     this.routes.forEach(route => {
       if (route.owner && route.owner === owner) {
         if (route.repo === repo || !route.repo) {
+
+          for (let [key, value] of Object.entries(ctx)) {
+            route.url = route.url.replace("${"+ key + "}", value);
+          }
           httpClient.post(route.url, ctx).then((msg) => {
             onRoute(msg);
           }).catch(function (err) {
