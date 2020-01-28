@@ -226,22 +226,24 @@ class ApiGateway {
     let deploy = await this.deployContext(context);
 
     if (this.ci_action_status(deploy, 'queued')) {
-
-      let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), "queued");
-      check_run.output = cfg.deploy.check.queued;
-      this.githubService.createCheckRun(context.github, [check_run]);
+      this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.queued);
 
     } else if (this.ci_action_status(deploy, 'completed')) {
-      let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), "in_progress");
-      check_run.output = cfg.deploy.check.in_progress;
-      return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
-        deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
-        console.log(">>>>> SENDING TO CD >>> " + JSON.stringify(deploy));
-        this.route(deploy.owner, deploy.repo, deploy);
-      }).catch(err => {
-        console.log(err);
-      });
+      return this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
+          .then(res => {
+            deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
+            console.log(">>>>> SENDING TO CD >>> " + JSON.stringify(deploy));
+            this.route(deploy.owner, deploy.repo, deploy);
+          }).catch(err => {
+            console.log(err);
+          });
     }
+  }
+
+  updateCheckRunStatus(context, deploy, status, output) {
+    let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
+    check_run.output = output;
+    return this.githubService.createCheckRun(context.github, [check_run]);
   }
 
   createPullRequest(ctx) {
