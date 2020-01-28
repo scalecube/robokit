@@ -265,6 +265,7 @@ class ApiGateway {
         deploy.labeled = false;
       }
     }
+
     return deploy;
   }
 
