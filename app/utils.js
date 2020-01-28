@@ -58,7 +58,7 @@ class Utils{
             status: context.payload.check_run.status,
             action: context.payload.action
         };
-        if (deploy.is_pull_request) { ctx.issue_number = this.issueNumber(context); }
+        if (ctx.is_pull_request) { ctx.issue_number = this.issueNumber(context); }
         ctx.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
         ctx.callback_url = process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha;
         return ctx;
