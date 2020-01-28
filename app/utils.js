@@ -1,3 +1,4 @@
+const cfg = require('./config');
 class Utils{
 
     isLabeled(labels, names) {
