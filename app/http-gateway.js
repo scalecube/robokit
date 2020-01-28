@@ -267,7 +267,6 @@ class ApiGateway {
 
     deploy.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
     deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
-    deploy.check_run_name = this.getCheckName(deploy);
     return deploy;
   }
 
