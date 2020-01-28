@@ -17,26 +17,6 @@ class ApiGateway {
     this.start(this.router);
   }
 
-  mapToChecks(req) {
-    let all = [];
-    for(let i=0; i<req.checks.length ; i++) {
-      let check = {
-        owner: req.owner,
-        repo: req.repo,
-        sha: req.sha,
-        name: req.checks[i].name,
-        status: req.checks[i].status,
-        output: req.checks[i].output
-      };
-      if(req.checks[i].conclusion && req.checks[i].conclusion != null){
-        check.conclusion = req.checks[i].conclusion;
-      }
-      all.push(check);
-    }
-    return all;
-  }
-
-
   start() {
     this.router.get('/server/ping/', (request, response) => {
       console.log('ping request arrived -> reply with pong.');
@@ -62,8 +42,13 @@ class ApiGateway {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-        let array = this.mapToChecks(request.body);
-        this.thenResponse(this.githubService.createCheckRun(ctx, array), response);
+
+        this.thenResponse(
+            this.githubService.createCheckRun(
+              ctx,
+              util.mapToChecks(request.body),
+            response));
+
       } else {
         this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
@@ -117,6 +102,7 @@ class ApiGateway {
       request.body.owner = request.params.owner;
       request.body.repo = request.params.repo;
       request.body.sha = request.params.sha;
+
       this.thenResponse(this.performanceService.addReport(
           request.body.owner,
           request.body.repo,
@@ -199,7 +185,7 @@ class ApiGateway {
     return deploy;
   }
 
-  ci_action_status(deploy, status) {
+  is_check_run_in_status(deploy, status) {
 
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
@@ -225,10 +211,10 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy, 'queued')) {
+    if (this.is_check_run_in_status(deploy, 'queued')) {
       this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.queued);
 
-    } else if (this.ci_action_status(deploy, 'completed')) {
+    } else if (this.is_check_run_in_status(deploy, 'completed')) {
       return this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
@@ -309,19 +295,6 @@ class ApiGateway {
       response.send(result);
     }
   };
-
-  async deployYaml(context) {
-    try {
-      let deploy = await this.githubService.content(context.payload.repository.owner.login,
-          context.payload.repository.name,
-          "deploy.yml");
-
-      if (deploy) context.deploy = yaml.load(deploy);
-    } catch (err) {
-      console.error(err);
-    }
-    return context;
-  }
 }
 
 module.exports = ApiGateway;

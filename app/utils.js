@@ -72,5 +72,24 @@ class Utils{
             return cfg.deploy.check.name + " (push)";
         }
     }
+
+    mapToChecks(req) {
+        let all = [];
+        for(let i=0; i<req.checks.length ; i++) {
+            let check = {
+                owner: req.owner,
+                repo: req.repo,
+                sha: req.sha,
+                name: req.checks[i].name,
+                status: req.checks[i].status,
+                output: req.checks[i].output
+            };
+            if(req.checks[i].conclusion && req.checks[i].conclusion != null){
+                check.conclusion = req.checks[i].conclusion;
+            }
+            all.push(check);
+        }
+        return all;
+    }
 }
 module.exports = new Utils();
