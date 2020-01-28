@@ -15,6 +15,10 @@ class Cache {
     get(owner,repo) {
         return contexts.get(owner+ "/" + repo);
     }
+
+    keys() {
+        return contexts.keys();
+    }
 }
 
 module.exports = Cache;

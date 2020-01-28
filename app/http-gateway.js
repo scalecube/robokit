@@ -49,7 +49,7 @@ class ApiGateway {
         request.body.sha = request.params.sha;
         this.thenResponse(this.githubService.updateStatus(ctx, request.body), response);
       } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
+        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo + " in cache: " + JSON.stringify(this.cache.keys()));
       }
     });
 
