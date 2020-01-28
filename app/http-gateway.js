@@ -263,7 +263,7 @@ class ApiGateway {
       }
     }
 
-    deploy.github_gateway_url = process.env.CALLBACK_URL;
+    deploy.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
     deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
     return deploy;
   }
