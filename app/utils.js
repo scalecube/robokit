@@ -67,7 +67,7 @@ class Utils{
         };
         if (ctx.is_pull_request) {ctx.issue_number = this.issueNumber(context);}
 
-        ctx.target_namespace = this.targetNamespace(ctx);
+        ctx.namespace = this.targetNamespace(ctx);
         ctx.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
         ctx.callback_url = process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha;
         return ctx;
