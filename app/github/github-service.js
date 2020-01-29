@@ -70,6 +70,7 @@ class GithubService {
       }).catch(err=>{
         console.error(err);
       }));
+
     });
 
     return await Promise.all(all);
