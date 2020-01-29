@@ -24,7 +24,6 @@ nodeSelector:
   environment: dev
 
 service:
-  internalFirstPort: ""
   annotations: {}
   type: NodePort
 
