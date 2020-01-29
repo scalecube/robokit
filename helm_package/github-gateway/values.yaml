@@ -24,6 +24,7 @@ nodeSelector:
   environment: dev
 
 service:
+  servicePort: 7777
   annotations: {}
   type: NodePort
 
