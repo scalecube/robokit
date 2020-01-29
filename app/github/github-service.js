@@ -61,6 +61,7 @@ class GithubService {
   };
 
   async createCheckRun(github, checks) {
+
     let all = [];
     checks.forEach(async check => {
 
