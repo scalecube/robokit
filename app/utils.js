@@ -79,7 +79,7 @@ class Utils{
             let check = {
                 owner: req.owner,
                 repo: req.repo,
-                sha: req.sha,
+                head_sha: req.sha,
                 name: req.checks[i].name,
                 status: req.checks[i].status,
                 output: req.checks[i].output

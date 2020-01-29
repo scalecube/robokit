@@ -50,7 +50,7 @@ class GithubService {
       all.push(context.repos.createStatus({
         owner: msg.owner,
         repo: msg.repo,
-        sha: msg.sha,
+        head_sha: msg.sha,
         state: element.status || "pending",
         context: element.name,
         target_url: element.target_url,
