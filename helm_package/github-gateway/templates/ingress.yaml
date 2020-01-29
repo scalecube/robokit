@@ -15,5 +15,5 @@ spec:
       paths:
       - backend:
           serviceName: github-gateway-svc
-          servicePort: {{ .Values.service.internalFirstPort }}
+          servicePort: {{ .Values.env.PORT }}
 
