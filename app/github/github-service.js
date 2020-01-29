@@ -61,10 +61,8 @@ class GithubService {
   };
 
   async createCheckRun(github, checks) {
-
     let all = [];
     checks.forEach(async check => {
-
       let p = github.checks.create(check);
       console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(check));
       all.push(p);
