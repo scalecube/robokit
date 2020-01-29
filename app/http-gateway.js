@@ -185,22 +185,22 @@ class ApiGateway {
     return deploy;
   }
 
-  is_check_run_in_status(deploy, status) {
 
+  is_check_run_in_status(deploy, status) {
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
-          if (deploy.labeled) {
+        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
             return true;
-          } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
-            return true;
-          }
         }
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
         if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
-          return true;
+          for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
+            if(cfg.deploy.on.push.branches[j] == deploy.branch_name){
+              return true;
+            }
+          }
         }
       }
     }

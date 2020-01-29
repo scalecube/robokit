@@ -21,16 +21,20 @@ module.exports = {
         },
         on: {
             push: {
+                branches:[
+                    'master',
+                    'develop'
+                ],
                 actions:[
                     'Travis CI - Branch',
-                    'trigger_deploy'
+                    'robo_kit_deploy'
                 ]
             },
             pull_request: {
                 labeled: ["DEPLOY"],
                 actions:[
                     'Travis CI - Pull Request',
-                    'trigger_deploy'
+                    'robo_kit_deploy'
                 ]
             }
         }
