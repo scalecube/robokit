@@ -279,6 +279,7 @@ class ApiGateway {
     return result;
   }
 
+
   thenResponse(p, response) {
     p.then((r) => {
       response.send(r)
