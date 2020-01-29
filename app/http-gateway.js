@@ -211,15 +211,15 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.is_check_run_in_status(deploy, 'queued')) {
-      this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.queued);
-
-    } else if (this.is_check_run_in_status(deploy, 'completed')) {
-      this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
+    if (this.is_check_run_in_status(deploy, 'completed')) {
+      this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.queued)
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
-            this.route(deploy.owner, deploy.repo, deploy);
+            this.route(deploy.owner, deploy.repo, deploy).then(resp=>{
+              console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
+              this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
+            });
           }).catch(err => {
             console.log(err);
           });
@@ -237,7 +237,7 @@ class ApiGateway {
   }
 
   route(owner, repo, context) {
-    this.githubService.route(owner, repo, context);
+    return this.githubService.route(owner, repo, context);
   }
 
   /**

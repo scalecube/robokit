@@ -240,7 +240,7 @@ class GithubService {
   }
 
   route(owner,repo,context) {
-    this.router.route(owner,repo,context, (resp) => {
+    return this.router.route(owner,repo,context, (resp) => {
         if((resp) && resp instanceof String) {
           console.log('<<< ###  router response: \n' + resp);
         } else if(resp !== undefined){
