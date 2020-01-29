@@ -50,7 +50,7 @@ class GithubService {
       all.push(context.repos.createStatus({
         owner: msg.owner,
         repo: msg.repo,
-        sha: msg.sha,
+        head_sha: msg.sha,
         state: element.status || "pending",
         context: element.name,
         target_url: element.target_url,
@@ -60,28 +60,18 @@ class GithubService {
     return Promise.all(all);
   };
 
-  async createCheckRun(github, array) {
+  async createCheckRun(github, checks) {
+
     let all = [];
-    array.forEach(async check => {
-      let req = {
-        owner: check.owner,
-        repo: check.repo,
-        head_sha: check.sha,
-        name: check.name,
-        status: check.status,
-        output: check.output
-      };
+    checks.forEach(async check => {
 
-      if(check.conclusion && check.conclusion != null) {
-        req.conclusion = check.conclusion;
-      }
-
-      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
-      all.push(github.checks.create(req).then(res=>{
+      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(check));
+      all.push(github.checks.create(check).then(res=>{
         console.log(res);
       }).catch(err=>{
         console.error(err);
       }));
+
     });
 
     return await Promise.all(all);
@@ -250,7 +240,7 @@ class GithubService {
   }
 
   route(owner,repo,context) {
-    this.router.route(owner,repo,context, (resp) => {
+    return this.router.route(owner,repo,context, (resp) => {
         if((resp) && resp instanceof String) {
           console.log('<<< ###  router response: \n' + resp);
         } else if(resp !== undefined){
