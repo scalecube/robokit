@@ -60,24 +60,12 @@ class GithubService {
     return Promise.all(all);
   };
 
-  async createCheckRun(github, array) {
+  async createCheckRun(github, checks) {
     let all = [];
-    array.forEach(async check => {
-      let req = {
-        owner: check.owner,
-        repo: check.repo,
-        head_sha: check.sha,
-        name: check.name,
-        status: check.status,
-        output: check.output
-      };
+    checks.forEach(async check => {
 
-      if(check.conclusion && check.conclusion != null) {
-        req.conclusion = check.conclusion;
-      }
-
-      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(req));
-      all.push(github.checks.create(req).then(res=>{
+      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(check));
+      all.push(github.checks.create(check).then(res=>{
         console.log(res);
       }).catch(err=>{
         console.error(err);
@@ -94,7 +82,7 @@ class GithubService {
   createComment (context, msg) {
     return this.commentAction(msg, context.issues.createComment)
   }
-  
+
   labels(owner,repo,issue_number) {
     return new Promise((resolve, reject) => {
       let ctx = this.cache.get(owner,repo);
