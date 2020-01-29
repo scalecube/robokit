@@ -58,4 +58,3 @@ jobs:
       - name: trigger deploy
         run: |
           echo 'run webhook to spinaker'
-          #curl -X POST -H "Content-Type: application/json" -d '{"payload": "${{ secrets.SPINNAKER_TRIGGER_PAYLOAD }}"}'  ${{ secrets.SPINNAKER_TRIGGER_URL }}
