@@ -7,10 +7,15 @@ module.exports = {
                 summary: "deploy will start when check suite completes",
                 text: "waiting for CI to complete successfully"
             },
-            in_progress: {
-                title: "Robo-kit is Deploying branch: ",
-                summary: "Triggered a Continues-Deployment pipeline",
-                text: "Waiting for Continues deployment status updates"
+            trigger_pipeline: {
+                title: "Robo-kit Triggered a continues delivery pipeline ",
+                summary: "Triggered a Continues-Delivery pipeline",
+                text: "Waiting for Continues Delivery pipeline acknowledgment"
+            },
+            cd_pipeline_started: {
+                title: "Robo-kit Continues Delivery pipeline is running",
+                summary: "Continues-Delivery pipeline is running",
+                text: "Waiting for Continues Delivery pipeline status updates"
             }
         },
         on: {
