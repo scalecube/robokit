@@ -185,20 +185,25 @@ class ApiGateway {
     return deploy;
   }
 
-
-  is_check_run_in_status(deploy, status) {
+  is_check_run_in_status(deploy, propName) {
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
+        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i].name)){
+          if(deploy.status == cfg.deploy.on.pull_request.actions[i][propName]){
             return true;
+          }
         }
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
+        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i].name) &&
+            (deploy.status == cfg.deploy.on.push.actions[i].status)) {
+
           for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
             if(cfg.deploy.on.push.branches[j] == deploy.branch_name){
-              return true;
+              if(deploy.status == cfg.deploy.on.push.actions[j][propName]){
+                return true;
+              }
             }
           }
         }
@@ -212,10 +217,12 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.is_check_run_in_status(deploy, 'in_progress')) {
-      this.updateCheckRunStatus(context, deploy ,"queued", cfg.deploy.check.queued)
-    }else if (this.is_check_run_in_status(deploy, 'completed')) {
-      this.updateCheckRunStatus(context, deploy,"in_progress", cfg.deploy.check.trigger_pipeline)
+    if (this.is_check_run_in_status(deploy,'create_on')) {
+      let res = await this.updateCheckRunStatus(context, deploy ,"queued", cfg.deploy.check.queued)
+    }
+
+    if (this.is_check_run_in_status(deploy, 'trigger_on')) {
+      let res = this.updateCheckRunStatus(context, deploy,"in_progress", cfg.deploy.check.trigger_pipeline)
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
@@ -228,6 +235,8 @@ class ApiGateway {
           });
     }
   }
+
+
 
   updateCheckRunStatus(context, deploy, status, output) {
     let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);

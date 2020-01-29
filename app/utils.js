@@ -69,10 +69,9 @@ class Utils{
 
         ctx.namespace = this.targetNamespace(ctx);
         ctx.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
-        ctx.callback_url = process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha;
+        ctx.callback_url = (process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha).replace("${namespace}",ctx.namespace);
         return ctx;
     }
-
 
     deployCheckRunName(is_pull_request) {
         if(is_pull_request){
@@ -81,6 +80,7 @@ class Utils{
             return cfg.deploy.check.name + " (push)";
         }
     }
+
 
     mapToChecks(req) {
         let all = [];

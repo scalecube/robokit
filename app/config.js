@@ -25,17 +25,19 @@ module.exports = {
                     'master',
                     'develop'
                 ],
-                actions:[
-                    'Travis CI - Branch',
-                    'robo_kit_deploy'
-                ]
+                actions:[{
+                    name: 'Travis CI - Branch', create_on: "in_progress", trigger_on: "completed"
+                },{
+                    name: 'robo_kit_deploy', create_on: "queued", trigger_on: "completed"
+                }]
             },
             pull_request: {
                 labeled: ["DEPLOY"],
-                actions:[
-                    'Travis CI - Pull Request',
-                    'robo_kit_deploy'
-                ]
+                actions:[{
+                    name: 'Travis CI - Pull Request', create_on: "in_progress", trigger_on: "completed"
+                },{
+                    name: 'robo_kit_deploy', create_on: "queued", trigger_on: "queued"
+                }]
             }
         }
     },
