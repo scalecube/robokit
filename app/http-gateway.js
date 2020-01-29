@@ -218,7 +218,6 @@ class ApiGateway {
     if (this.is_check_run_in_status(deploy,'create_on')) {
       let res = await this.updateCheckRunStatus(context, deploy ,"queued", cfg.deploy.check.queued)
     }
-
     if (this.is_check_run_in_status(deploy, 'trigger_on')) {
       let res = this.updateCheckRunStatus(context, deploy,"in_progress", cfg.deploy.check.trigger_pipeline)
           .then(res => {
