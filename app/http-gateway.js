@@ -210,7 +210,6 @@ class ApiGateway {
       }
     }
 
-
     return false;
   }
 
