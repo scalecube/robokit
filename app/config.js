@@ -22,8 +22,8 @@ module.exports = {
         on: {
             push: {
                 branches:[
-                    master,
-                    develop
+                    'master',
+                    'develop'
                 ],
                 actions:[
                     'Travis CI - Branch',
