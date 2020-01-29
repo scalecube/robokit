@@ -215,10 +215,10 @@ class ApiGateway {
       this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.queued);
 
     } else if (this.is_check_run_in_status(deploy, 'completed')) {
-      return this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
+      this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.in_progress )
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
-            console.log(">>>>> SENDING TO CD >>> " + JSON.stringify(deploy));
+            console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
             this.route(deploy.owner, deploy.repo, deploy);
           }).catch(err => {
             console.log(err);
