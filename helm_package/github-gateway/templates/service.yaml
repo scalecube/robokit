@@ -13,10 +13,10 @@ metadata:
 {{- end }}
 spec:
   ports:
-  - name: port-{{ .Values.service.internalFirstPort  | toString }}
-    port: {{ .Values.service.internalFirstPort }}
+  - name: port-{{ .Values.env.PORT  | toString }}
+    port: {{ .Values.env.PORT }}
     protocol: TCP
-    targetPort: port-{{ .Values.service.internalFirstPort  | toString }}
+    targetPort: port-{{ .Values.env.PORT  | toString }}
   selector:
     app: github-gateway
   sessionAffinity: None
