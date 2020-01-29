@@ -192,16 +192,17 @@ class ApiGateway {
         if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
           if (deploy.labeled) {
             return true;
-          } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
-            return true;
           }
         }
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
         if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
-
-          return true;
+          for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
+            if(cfg.deploy.on.push.branches[j] == 'develop' || cfg.deploy.on.push.branches[j] === 'master'){
+              return true;
+            }
+          }
         }
       }
     }
