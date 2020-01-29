@@ -11,6 +11,7 @@ class Repository {
     return this
   }
 
+
   connect (collectionName) {
     return new Promise((resolve, reject) => {
       this.client.connect(err => {
