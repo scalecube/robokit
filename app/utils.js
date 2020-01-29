@@ -45,7 +45,14 @@ class Utils{
             return context.payload.check_run.check_suite.head_branch;
         }
     }
-
+    targetNamespace(ctx) {
+        if (ctx.is_pull_request) {
+            ctx.issue_number = this.issueNumber(context);
+            return ctx.owner + "-" + ctx.owner + "-" + "pr-" + ctx.issue_number;
+        } else {
+            return  ctx.owner + "-" + ctx.owner + "-" + ctx.branch_name;
+        }
+    }
     toDeployContext(context) {
         let ctx = {
             owner: context.payload.repository.owner.login,
@@ -59,7 +66,9 @@ class Utils{
             status: context.payload.check_run.status,
             action: context.payload.action
         };
-        if (ctx.is_pull_request) { ctx.issue_number = this.issueNumber(context); }
+        if (ctx.is_pull_request) {ctx.issue_number = this.issueNumber(context);}
+
+        ctx.target_namespace = this.targetNamespace(ctx);
         ctx.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
         ctx.callback_url = process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha;
         return ctx;
