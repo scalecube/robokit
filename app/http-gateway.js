@@ -195,7 +195,7 @@ class ApiGateway {
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
         if ((deploy.check_run_name == cfg.deploy.on.push.actions[i].name) &&
-            (deploy.status == cfg.deploy.on.push.actions[i].status)) {
+            (deploy.status == cfg.deploy.on.push.actions[i][propName])) {
 
           for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
             if(cfg.deploy.on.push.branches[j] == deploy.branch_name){
