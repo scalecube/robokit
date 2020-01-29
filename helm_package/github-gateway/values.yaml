@@ -24,11 +24,7 @@ nodeSelector:
   environment: dev
 
 service:
-  servicePort: 7777
+  internalFirstPort: ""
+  internalSecondPort: ""
   annotations: {}
   type: NodePort
-
-ingress:
-  hostname: ""
-
-namespace: scalecube-gw
