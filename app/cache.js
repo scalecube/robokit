@@ -21,4 +21,5 @@ class Cache {
         return contexts.keys();
     }
 }
+
 module.exports = Cache;
