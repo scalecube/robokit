@@ -237,6 +237,7 @@ class ApiGateway {
   }
 
 
+
   updateCheckRunStatus(context, deploy, status, output) {
     let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
     check_run.output = output;
