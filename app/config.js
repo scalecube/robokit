@@ -36,7 +36,7 @@ module.exports = {
                 actions:[{
                     name: 'Travis CI - Pull Request', create_on: "in_progress", trigger_on: "completed"
                 },{
-                    name: 'robo_kit_deploy', create_on: "queued", trigger_on: "completed"
+                    name: 'robo_kit_deploy', create_on: "queued", trigger_on: "queued"
                 }]
             }
         }
