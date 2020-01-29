@@ -7,31 +7,13 @@ metadata:
   labels:
     app: github-gateway
   name: github-gw-ingress7777
-  namespace: scalecube-gw
+  namespace: {{ .Values.namespace }}
 spec:
   rules:
-  - host: scalecube-7777.exchange.om2.com
+  - host: {{ .Values.ingress.hostname }}.exchange.om2.com
     http:
       paths:
       - backend:
           serviceName: github-gateway-svc
           servicePort: {{ .Values.service.internalFirstPort }}
 
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: traefik
-  labels:
-    app: github-gateway
-  name: github-gw-ingress7778
-  namespace: scalecube-gw
-spec:
-  rules:
-  - host: scalecube-7778.exchange.om2.com
-    http:
-      paths:
-      - backend:
-          serviceName: github-gateway-svc
-          servicePort: {{ .Values.service.internalSecondPort }}

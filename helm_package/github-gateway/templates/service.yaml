@@ -6,7 +6,7 @@ metadata:
     app: github-gateway
     release: {{ .Release.Name }}
   name: github-gateway-svc
-  namespace: scalecube-gw
+  namespace: {{ .Values.namespace }}
 {{- if .Values.service.annotations }}
   annotations:
 {{ toYaml .Values.service.annotations | indent 4 }}
@@ -17,10 +17,6 @@ spec:
     port: {{ .Values.service.internalFirstPort }}
     protocol: TCP
     targetPort: port-{{ .Values.service.internalFirstPort  | toString }}
-  - name: port-{{ .Values.service.internalSecondPort | toString }}
-    port: {{ .Values.service.internalSecondPort }}
-    protocol: TCP
-    targetPort: port-{{ .Values.service.internalSecondPort | toString }}
   selector:
     app: github-gateway
   sessionAffinity: None

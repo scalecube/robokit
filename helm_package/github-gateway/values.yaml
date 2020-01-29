@@ -25,6 +25,10 @@ nodeSelector:
 
 service:
   internalFirstPort: ""
-  internalSecondPort: ""
   annotations: {}
   type: NodePort
+
+ingress:
+  hostname: ""
+
+namespace: scalecube-gw

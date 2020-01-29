@@ -5,9 +5,9 @@ metadata:
     app: github-gateway
     release: {{ .Release.Name | quote }}
     chart: github-gateway
-    namespace: scalecube-gw
+    namespace: {{ .Values.namespace }}
   name: github-gateway-depl
-  namespace: scalecube-gw
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   revisionHistoryLimit: 5
@@ -33,8 +33,5 @@ spec:
         ports:
         - containerPort: {{ .Values.service.internalFirstPort }}
           name: port-{{ .Values.service.internalFirstPort  | toString }}
-          protocol: TCP
-        - containerPort: {{ .Values.service.internalSecondPort }}
-          name: port-{{ .Values.service.internalSecondPort  | toString }}
           protocol: TCP
       restartPolicy: Always
