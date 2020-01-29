@@ -186,19 +186,25 @@ class ApiGateway {
   }
 
 
-  is_check_run_in_status(deploy, status) {
+  is_check_run_in_status(deploy, propName) {
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
+        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i].name)){
+          if(deploy.status == cfg.deploy.on.pull_request.actions[i].getProperty(propName)){
             return true;
+          }
         }
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
+        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i].name) &&
+            (deploy.status == cfg.deploy.on.push.actions[i].status)) {
+
           for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
             if(cfg.deploy.on.push.branches[j] == deploy.branch_name){
-              return true;
+              if(deploy.status == cfg.deploy.on.push.actions[j].getProperty(propName)){
+                return true;
+              }
             }
           }
         }
@@ -212,9 +218,9 @@ class ApiGateway {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.is_check_run_in_status(deploy, 'in_progress')) {
+    if (this.is_check_run_in_status(deploy,'create_on')) {
       this.updateCheckRunStatus(context, deploy ,"queued", cfg.deploy.check.queued)
-    }else if (this.is_check_run_in_status(deploy, 'completed')) {
+    }else if (this.is_check_run_in_status(deploy, 'start_on')) {
       this.updateCheckRunStatus(context, deploy,"in_progress", cfg.deploy.check.trigger_pipeline)
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
