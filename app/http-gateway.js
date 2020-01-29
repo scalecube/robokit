@@ -186,7 +186,6 @@ class ApiGateway {
   }
 
   is_check_run_in_status(deploy, status) {
-
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
         if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
