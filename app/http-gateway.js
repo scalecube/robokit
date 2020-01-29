@@ -3,7 +3,7 @@ const cors = require('cors');
 const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
-const httpClient = require('./http-client');
+const util = require('./utils');
 
 class ApiGateway {
   constructor(app, cache) {
@@ -16,26 +16,6 @@ class ApiGateway {
     this.router.use(express.json());
     this.start(this.router);
   }
-
-  mapToChecks(req) {
-    let all = [];
-    for(let i=0; i<req.checks.length ; i++) {
-      let check = {
-        owner: req.owner,
-        repo: req.repo,
-        sha: req.sha,
-        name: req.checks[i].name,
-        status: req.checks[i].status,
-        output: req.checks[i].output
-      };
-      if(req.checks[i].conclusion && req.checks[i].conclusion != null){
-        check.conclusion = req.checks[i].conclusion;
-      }
-      all.push(check);
-    }
-    return all;
-  }
-
 
   start() {
     this.router.get('/server/ping/', (request, response) => {
@@ -62,8 +42,13 @@ class ApiGateway {
         request.body.owner = request.params.owner;
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
-        let array = this.mapToChecks(request.body);
-        this.thenResponse(this.githubService.createCheckRun(ctx, array), response);
+
+        this.thenResponse(
+            this.githubService.createCheckRun(
+              ctx,
+              util.mapToChecks(request.body),
+            response));
+
       } else {
         this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
       }
@@ -117,6 +102,7 @@ class ApiGateway {
       request.body.owner = request.params.owner;
       request.body.repo = request.params.repo;
       request.body.sha = request.params.sha;
+
       this.thenResponse(this.performanceService.addReport(
           request.body.owner,
           request.body.repo,
@@ -170,61 +156,8 @@ class ApiGateway {
     });
   }
 
-  async labels(owner, repo, issue_number) {
-    try {
-      return await this.githubService.labels(owner, repo, issue_number);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
   async onPullRequest(context) {
     return this.githubService.onPullRequest(context);
-  }
-
-  isLabeled(labels, names) {
-    let result = false;
-    if (labels && Array.isArray(labels)) {
-      labels.forEach(label => {
-        names.forEach(name => {
-          if (label.name == name) {
-            result = true;
-            return true;
-          }
-        });
-      });
-    }
-    return result;
-  }
-
-  isPullRequest(context) {
-    if (context.payload.check_suite) {
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests > 0);
-    } else {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0);
-    }
-  }
-
-  issueNumber(context) {
-    if (context.payload.check_run) {
-      if (context.payload.check_run.check_suite) {
-        if (context.payload.check_run.check_suite.pull_requests.length > 0) {
-          return context.payload.check_run.check_suite.pull_requests[0].number;
-        }
-      } else {
-        if (context.payload.check_run.pull_requests.length > 0) {
-          return context.payload.check_run.pull_requests[0].number;
-        }
-      }
-    }
-  }
-
-  branchName(context) {
-    if (context.payload.check_suite) {
-      return context.payload.check_suite.head_branch;
-    } else if (context.payload.check_run) {
-      return context.payload.check_run.check_suite.head_branch;
-    }
   }
 
   async onCheckSuite(context) {
@@ -240,37 +173,19 @@ class ApiGateway {
   }
 
   async deployContext(context) {
-    let deploy = {
-      owner: context.payload.repository.owner.login,
-      repo: context.payload.repository.name,
-      branch_name: this.branchName(context),
-      sha: context.payload.check_run.head_sha,
-      is_pull_request: this.isPullRequest(context),
+    let deploy = util.toDeployContext(context);
 
-      conclusion: context.payload.check_run.conclusion,
-      status: context.payload.check_run.status,
-      check_run_name: context.payload.check_run.name,
-      action: context.payload.action
-    };
-
-    if (deploy.is_pull_request) {
-      deploy.issue_number = this.issueNumber(context);
-
-      if (deploy.issue_number) {
-        let labels = await this.labels(deploy.owner, deploy.repo, deploy.issue_number);
-        deploy.labeled = this.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
-        deploy.labels = labels.map(i => i.name);
-      } else {
-        deploy.labeled = false;
-      }
+    if (deploy.is_pull_request && deploy.issue_number) {
+      let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number);
+      deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
+      deploy.labels = labels.map(i => i.name);
+    } else {
+      deploy.labeled = false;
     }
-
-    deploy.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
-    deploy.callback_url = process.env.CALLBACK_URL + deploy.owner + "/" + deploy.repo + "/" + deploy.sha;
     return deploy;
   }
 
-  ci_action_status(deploy, status) {
+  is_check_run_in_status(deploy, status) {
 
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
@@ -292,77 +207,39 @@ class ApiGateway {
     return false;
   }
 
-  getCheckName(deploy) {
-    if(deploy.is_pull_request){
-      return cfg.deploy.check.name + " (pull_request)";
-    } else {
-      return cfg.deploy.check.name + " (push)";
-    }
-  }
-
   async onCheckRun(context) {
     console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
     let deploy = await this.deployContext(context);
 
-    if (this.ci_action_status(deploy, 'queued')) {
-
-      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "queued");
-      check_run.output = cfg.deploy.check.queued;
-      this.githubService.createCheckRun(context.github, [check_run]);
-
-    } else if (this.ci_action_status(deploy, 'completed')) {
-      let check_run = this.checkStatus(deploy, this.getCheckName(deploy), "in_progress");
-      check_run.output = cfg.deploy.check.in_progress;
-      return this.githubService.createCheckRun(context.github, [check_run]).then(res => {
-        deploy.check_run_name = this.getCheckName(deploy);
-        console.log(">>>>> SENDING TO CD >>> " + JSON.stringify(deploy));
-        this.route(deploy.owner, deploy.repo, deploy);
-      }).catch(err => {
-        console.log(err);
-      });
+    if (this.is_check_run_in_status(deploy, 'completed')) {
+      this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.trigger_pipeline)
+          .then(res => {
+            deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
+            console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
+            this.route(deploy.owner, deploy.repo, deploy).then(resp=>{
+              console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
+              this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started)
+            });
+          }).catch(err => {
+            console.log(err);
+          });
     }
+  }
+
+  updateCheckRunStatus(context, deploy, status, output) {
+    let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
+    check_run.output = output;
+    return this.githubService.createCheckRun(context.github, [check_run]);
   }
 
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
   }
 
-  async deployYaml(context) {
-    try {
-      let deploy = await this.githubService.content(context.payload.repository.owner.login,
-          context.payload.repository.name,
-          "deploy.yml");
-
-      if (deploy) context.deploy = yaml.load(deploy);
-    } catch (err) {
-      console.error(err);
-    }
-    return context;
-  }
-
-  thenResponse(p, response) {
-    p.then((r) => {
-      response.send(r)
-    }).catch((err) => {
-      console.error(err);
-      response.status(500);
-      response.send(err.message)
-    });
-  };
-
-  sendResponse(response, result) {
-    if (result === 'ok') {
-      response.send(result)
-    } else {
-      response.status(500);
-      response.send(result);
-    }
-  };
-
 
 
   route(owner, repo, context) {
-    this.githubService.route(owner, repo, context);
+    return this.githubService.route(owner, repo, context);
   }
 
   /**
@@ -383,7 +260,7 @@ class ApiGateway {
       name: name,
       owner: deploy.owner,
       repo: deploy.repo,
-      sha: deploy.sha,
+      head_sha: deploy.sha,
       status: status
     };
 
@@ -401,6 +278,25 @@ class ApiGateway {
     }
     return result;
   }
+
+  thenResponse(p, response) {
+    p.then((r) => {
+      response.send(r)
+    }).catch((err) => {
+      console.error(err);
+      response.status(500);
+      response.send(err.message)
+    });
+  };
+
+  sendResponse(response, result) {
+    if (result === 'ok') {
+      response.send(result)
+    } else {
+      response.status(500);
+      response.send(result);
+    }
+  };
 }
 
 module.exports = ApiGateway;
