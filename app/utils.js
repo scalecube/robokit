@@ -47,9 +47,9 @@ class Utils{
     }
     targetNamespace(ctx) {
         if (ctx.is_pull_request) {
-            return ctx.owner + "-" + ctx.owner + "-" + "pr-" + ctx.issue_number;
+            return ctx.owner + "-" + ctx.repo + "-" + "pr-" + ctx.issue_number;
         } else {
-            return  ctx.owner + "-" + ctx.owner + "-" + ctx.branch_name;
+            return  ctx.owner + "-" + ctx.repo + "-" + ctx.branch_name;
         }
     }
     toDeployContext(context) {
