@@ -47,7 +47,6 @@ class Utils{
     }
     targetNamespace(ctx) {
         if (ctx.is_pull_request) {
-            ctx.issue_number = this.issueNumber(context);
             return ctx.owner + "-" + ctx.owner + "-" + "pr-" + ctx.issue_number;
         } else {
             return  ctx.owner + "-" + ctx.owner + "-" + ctx.branch_name;
