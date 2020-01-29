@@ -209,6 +209,7 @@ class ApiGateway {
         }
       }
     }
+
     return false;
   }
 
