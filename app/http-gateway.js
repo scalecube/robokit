@@ -43,11 +43,9 @@ class ApiGateway {
         request.body.repo = request.params.repo;
         request.body.sha = request.params.sha;
 
-        this.thenResponse(
-            this.githubService.createCheckRun(
-              ctx,
-              util.mapToChecks(request.body),
-            response));
+        this.githubService.createCheckRun(ctx,util.mapToChecks(request.body),response).then(res=>{
+          response.send(res);
+        });
 
       } else {
         this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);

@@ -65,13 +65,9 @@ class GithubService {
     let all = [];
     checks.forEach(async check => {
 
+      let p = github.checks.create(check);
       console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(check));
-      all.push(github.checks.create(check).then(res=>{
-        console.log(res);
-      }).catch(err=>{
-        console.error(err);
-      }));
-
+      all.push(p);
     });
 
     return await Promise.all(all);
