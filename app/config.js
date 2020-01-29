@@ -4,17 +4,17 @@ module.exports = {
         check:{
             name: "Robo-Kit Deploy",
             queued: {
-                title: "Deploy is Waiting for ci to complete.",
-                summary: "deploy will start when check suite completes",
-                text: "waiting for CI to complete successfully"
+                title: "Starting Continues-Delivery.",
+                summary: "Deploy pipeline initializing",
+                text: "About to trigger a deployment pipeline."
             },
             trigger_pipeline: {
-                title: "Robo-kit Triggered a continues delivery pipeline ",
+                title: "Triggered Pipeline ",
                 summary: "Triggered a Continues-Delivery pipeline",
                 text: "Waiting for Continues Delivery pipeline acknowledgment"
             },
             cd_pipeline_started: {
-                title: "Robo-kit Continues Delivery pipeline is running",
+                title: "Pipeline is Running",
                 summary: "Continues-Delivery pipeline is running",
                 text: "Waiting for Continues Delivery pipeline status updates"
             }
