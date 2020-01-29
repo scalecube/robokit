@@ -190,7 +190,7 @@ class ApiGateway {
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
         if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i].name)){
-          if(deploy.status == cfg.deploy.on.pull_request.actions[i].getProperty(propName)){
+          if(deploy.status == cfg.deploy.on.pull_request.actions[i][propName]){
             return true;
           }
         }
@@ -202,7 +202,7 @@ class ApiGateway {
 
           for(let j = 0 ; j< cfg.deploy.on.push.branches.length; j++ ) {
             if(cfg.deploy.on.push.branches[j] == deploy.branch_name){
-              if(deploy.status == cfg.deploy.on.push.actions[j].getProperty(propName)){
+              if(deploy.status == cfg.deploy.on.push.actions[j][propName]){
                 return true;
               }
             }
@@ -234,6 +234,7 @@ class ApiGateway {
           });
     }
   }
+
 
   updateCheckRunStatus(context, deploy, status, output) {
     let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
