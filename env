@@ -1,4 +1,4 @@
-WEBHOOK_PROXY_URL=https://smee.io/f74sOaXacyxBsDQs
+WEBHOOK_PROXY_URL=https://smee.io/robo-kit
 PORT=7777
 # Use `trace` to get verbose logging or `info` to show less
 LOG_LEVEL=debug
