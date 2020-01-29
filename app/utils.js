@@ -73,7 +73,6 @@ class Utils{
         return ctx;
     }
 
-
     deployCheckRunName(is_pull_request) {
         if(is_pull_request){
             return cfg.deploy.check.name + " (pull_request)";
