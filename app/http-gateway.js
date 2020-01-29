@@ -200,6 +200,7 @@ class ApiGateway {
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
         if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
+
           return true;
         }
       }
