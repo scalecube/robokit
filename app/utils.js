@@ -81,7 +81,6 @@ class Utils{
         }
     }
 
-
     mapToChecks(req) {
         let all = [];
         for(let i=0; i<req.checks.length ; i++) {
