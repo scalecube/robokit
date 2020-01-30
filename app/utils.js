@@ -52,7 +52,24 @@ class Utils{
             return  ctx.owner + "-" + ctx.repo + "-" + ctx.branch_name;
         }
     }
-    toDeployContext(context) {
+
+    toPullRequestDeployContext(context) {
+        let ctx = {
+            owner: context.payload.repository.owner.login,
+            repo: context.payload.repository.name,
+            branch_name: context.payload.pull_request.head.ref,
+            sha: context.payload.pull_request.head.sha,
+            is_pull_request: true,
+            action: context.payload.action,
+            issue_number: context.payload.number
+        };
+        ctx.namespace = this.targetNamespace(ctx);
+        ctx.github_gateway_url = process.env.GITHUB_GATEWAY_URL;
+        ctx.callback_url = (process.env.CALLBACK_URL + ctx.owner + "/" + ctx.repo + "/" + ctx.sha).replace("${namespace}",ctx.namespace);
+        return ctx;
+    }
+
+    toCheckRunDeployContext(context) {
         let ctx = {
             owner: context.payload.repository.owner.login,
             repo: context.payload.repository.name,

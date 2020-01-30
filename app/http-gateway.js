@@ -145,7 +145,13 @@ class ApiGateway {
   }
 
   async deployContext(context) {
-    let deploy = util.toDeployContext(context);
+    let deploy;
+
+    if(context.payload.check_run)
+      deploy = util.toCheckRunDeployContext(context);
+    else{
+      deploy = util.toPullRequestDeployContext(context);
+    }
 
     if (deploy.is_pull_request && deploy.issue_number) {
       let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number);
@@ -196,7 +202,6 @@ class ApiGateway {
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
             deploy.action_type = "deploy";
-
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
             this.route(deploy.owner, deploy.repo, deploy).then( resp => {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
@@ -217,7 +222,6 @@ class ApiGateway {
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
   }
-
 
 
   route(owner, repo, context) {
@@ -268,8 +272,6 @@ class ApiGateway {
     this.route(deploy.owner, deploy.repo, deploy).then( resp => {
       console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
     });
-
-    return undefined;
   }
 
   thenResponse(p, response) {
