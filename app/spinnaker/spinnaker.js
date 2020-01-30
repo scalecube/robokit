@@ -17,13 +17,13 @@ class Spinnaker {
     }
 
     async run() {
-        console.log("#### PIPELINE RESULT");
-        this.events.forEach(entry => {
-            const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",entry.key());
+        console.log("#### CHECK PIPELINE STATUS");
+        for (const [key, value] of this.events.entries()) {
+            const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",key);
             this.get(url).then( (pipeline) => {
                 console.log("#### PIPELINE RESULT: " + JSON.stringify(pipeline));
             });
-        });
+        }
 
         if(this.events.size==0){
             this.job.stop();
