@@ -227,17 +227,19 @@ class ApiGateway {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
+
               spinnaker.monitor({
                 eventId: resp.eventId,
-                owner: deploy.owner,
-                repo: deploy.repo
+                deploy: deploy
               });
+
             });
           }).catch(err => {
             console.log(err);
           });
     }
   }
+
 
   updateCheckRunStatus(context, deploy, status, output) {
     let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);

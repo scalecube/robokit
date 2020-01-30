@@ -9,7 +9,6 @@ class Spinnaker {
         this.job = new CronJob('*/4 * * * * *', () => {
             this.run();
         });
-        this.job.start();
     }
 
     monitor(event) {
