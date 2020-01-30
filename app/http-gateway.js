@@ -145,7 +145,13 @@ class ApiGateway {
   }
 
   async deployContext(context) {
-    let deploy = util.toDeployContext(context);
+    let deploy;
+
+    if(context.payload.check_run)
+      deploy = util.toCheckRunDeployContext(context);
+    else{
+      deploy = util.toPullRequestDeployContext(context);
+    }
 
     if (deploy.is_pull_request && deploy.issue_number) {
       let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number);
@@ -268,8 +274,6 @@ class ApiGateway {
     this.route(deploy.owner, deploy.repo, deploy).then( resp => {
       console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
     });
-
-    return undefined;
   }
 
   thenResponse(p, response) {
