@@ -31,6 +31,7 @@ class Spinnaker {
         }
     }
 
+
     get (uri) {
         return rp({
             method: 'GET',
