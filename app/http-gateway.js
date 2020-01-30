@@ -4,7 +4,7 @@ const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
 const util = require('./utils');
-const spinnaker = require('./spinnaker/spinnaker');
+const Notifications = require('./spinnaker/notifications');
 
 class ApiGateway {
   constructor(app, cache) {
@@ -16,24 +16,13 @@ class ApiGateway {
     this.router.use(cors());
     this.router.use(express.json());
     this.start(this.router);
+    this.notifications = new Notifications(this.githubService);
   }
 
   start() {
     this.router.get('/server/ping/', (request, response) => {
       console.log('ping request arrived -> reply with pong.');
       response.send({time: Date.now()})
-    });
-
-    this.router.post('/pulls/status/:owner/:repo/:sha', (request, response) => {
-      let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if (ctx) {
-        request.body.owner = request.params.owner;
-        request.body.repo = request.params.repo;
-        request.body.sha = request.params.sha;
-        this.thenResponse(this.githubService.updateStatus(ctx, request.body), response);
-      } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo + " in cache: " + JSON.stringify(this.cache.keys()));
-      }
     });
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
@@ -155,22 +144,6 @@ class ApiGateway {
     });
   }
 
-  async onPullRequest(context) {
-    return this.githubService.onPullRequest(context);
-  }
-
-  async onCheckSuite(context) {
-    /*
-    if (context.payload.action != 'completed') {
-      check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
-      check_run.checks[0].output = {
-        title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
-        summary: "Cancelled a Continues-Deployment pipeline",
-        text: "the deployment is cancelled because CI failed"
-      }
-    }*/
-  }
-
   async deployContext(context) {
     let deploy = util.toDeployContext(context);
 
@@ -222,21 +195,18 @@ class ApiGateway {
       let res = this.updateCheckRunStatus(context, deploy,"in_progress", cfg.deploy.check.trigger_pipeline)
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
+            deploy.action_type = "deploy";
+
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
             this.route(deploy.owner, deploy.repo, deploy).then( resp => {
-              console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
-
-              spinnaker.monitor(resp[0].eventId,deploy);
-
             });
           }).catch(err => {
             console.log(err);
           });
     }
   }
-
 
   updateCheckRunStatus(context, deploy, status, output) {
     let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
@@ -291,6 +261,16 @@ class ApiGateway {
     return result;
   }
 
+  async onPullRequest(context) {
+    let deploy = await this.deployContext(context);
+    deploy.action_type = "delete";
+    console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
+    this.route(deploy.owner, deploy.repo, deploy).then( resp => {
+      console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
+    });
+
+    return undefined;
+  }
 
   thenResponse(p, response) {
     p.then((r) => {
