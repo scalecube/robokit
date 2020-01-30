@@ -4,6 +4,7 @@ const yaml = require('js-yaml');
 const express = require('express');
 const cfg = require('./config');
 const util = require('./utils');
+const spinnaker = require('./spinnaker/spinnaker');
 
 class ApiGateway {
   constructor(app, cache) {
@@ -226,6 +227,11 @@ class ApiGateway {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
+              spinnaker.monitor({
+                eventId: resp.eventId,
+                owner: deploy.owner,
+                repo: deploy.repo
+              });
             });
           }).catch(err => {
             console.log(err);
