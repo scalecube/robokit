@@ -100,5 +100,4 @@ class Utils{
         return all;
     }
 }
-
 module.exports = new Utils();
