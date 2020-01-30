@@ -1,25 +1,35 @@
 const rp = require('request-promise');
-const URL_TEMPLATE = "https://spinnakerapi.genesis.om2.com/applications/${APP_NAME}/executions/search?triggerTypes=webhook&eventId=${EVENT_ID}";
+const URL_TEMPLATE = "https://spinnakerapi.genesis.om2.com/applications/${APPLICATION}/executions/search?triggerTypes=webhook&eventId=${EVENT_ID}";
+const CronJob = require('cron').CronJob;
 
 class Spinnaker {
 
     constructor() {
         this.events = new Map();
+        this.job = new CronJob('*/4 * * * * *', () => {
+            this.run();
+        });
+        this.job.start();
     }
 
-    monitor(props) {
-        this.events.set(props.eventId, props);
+    monitor(event) {
+        this.events.set(props.eventId, event);
+        this.job.start();
     }
 
     async run() {
+
+        console.log("#### PIPELINE RESULT");
+
         for(let entry in this.events.entries()) {
-
-            const url = URL_TEMPLATE.replace("${APP_NAME}", "scalecube-gw").replace("${EVENT_ID}",entry.key());
-
+            const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",entry.key());
             this.get(url).then( (pipeline) => {
-
+                console.log("#### PIPELINE RESULT: " + JSON.stringify(pipeline));
             });
+        }
 
+        if(this.events.size==0){
+            this.job.stop();
         }
     }
 
