@@ -21,7 +21,6 @@ module.exports = app => {
   });
 
   app.on('check_suite', async context => {
-
   });
 
   app.on('check_run', async context => {
