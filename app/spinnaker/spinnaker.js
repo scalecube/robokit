@@ -19,7 +19,6 @@ class Spinnaker {
     async run() {
 
         console.log("#### PIPELINE RESULT");
-
         for(let entry in this.events.entries()) {
             const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",entry.key());
             this.get(url).then( (pipeline) => {
