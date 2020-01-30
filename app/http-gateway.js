@@ -228,7 +228,6 @@ class ApiGateway {
     return this.githubService.route(owner, repo, context);
   }
 
-  
   /**
    * The current status. Can be one of queued, in_progress, or completed. Default: queued
    *

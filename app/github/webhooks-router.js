@@ -22,7 +22,8 @@ class WebhooksRouter {
           for (let [key, value] of Object.entries(ctx)) {
             route.url = route.url.replace("${"+ key + "}", value);
           }
-          promises.push(new Promise((resolve,reject)=>{
+          promises.push(new Promise((resolve,reject) => {
+            console.log(">>> ROUTE URL: " + route.url );
             httpClient.post(route.url, ctx).then((msg) => {
               onRoute(msg);
               resolve(msg);
