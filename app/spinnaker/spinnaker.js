@@ -19,9 +19,9 @@ class Spinnaker {
     async run() {
         console.log("#### CHECK PIPELINE STATUS");
         for (const [key, value] of this.events.entries()) {
-            const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",key);
+            const url = URL_TEMPLATE.replace("${APPLICATION}", value.application).replace("${EVENT_ID}",key);
             this.get(url).then( (pipeline) => {
-                console.log("#### PIPELINE RESULT: " + JSON.stringify(pipeline));
+                console.log("#### PIPELINE RESULT: " + pipeline);
             }).catch(err=>{
                 console.error(err);
             });
