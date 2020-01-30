@@ -32,8 +32,7 @@ module.exports = app => {
       //'pull_request.synchronize',
       //'pull_request.opened',
       //'pull_request.reopened',
-
-      'pull_request.labeled',
+      //'pull_request.labeled',
       'pull_request.unlabeled',
       'pull_request.closed'
   ], async context => {
