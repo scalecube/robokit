@@ -202,7 +202,6 @@ class ApiGateway {
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
             deploy.action_type = "deploy";
-
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
             this.route(deploy.owner, deploy.repo, deploy).then( resp => {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
@@ -223,7 +222,6 @@ class ApiGateway {
   createPullRequest(ctx) {
     this.githubService.createPullRequest(ctx);
   }
-
 
 
   route(owner, repo, context) {
