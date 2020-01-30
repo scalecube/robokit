@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: github-gateway
+    app: scalecube-github-gateway
     release: {{ .Release.Name | quote }}
     chart: github-gateway
     namespace: {{ .Values.namespace }}
@@ -13,12 +13,12 @@ spec:
   revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: github-gateway
+      app: scalecube-github-gateway
       release: {{ .Release.Name | quote }}
   template:
     metadata:
       labels:
-        app: github-gateway
+        app: scalecube-github-gateway
         release: {{ .Release.Name | quote }}
     spec:
       containers:
@@ -31,7 +31,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ .Chart.Name }}
         ports:
-        - containerPort: {{ .Values.service.internalFirstPort }}
-          name: port-{{ .Values.service.internalFirstPort  | toString }}
+        - containerPort: {{ .Values.env.PORT }}
+          name: port-{{ .Values.env.PORT  | toString }}
           protocol: TCP
       restartPolicy: Always

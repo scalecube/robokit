@@ -24,7 +24,10 @@ nodeSelector:
   environment: dev
 
 service:
-  internalFirstPort: ""
-  internalSecondPort: ""
   annotations: {}
   type: NodePort
+
+ingress:
+  hostname: ""
+
+namespace: ""
