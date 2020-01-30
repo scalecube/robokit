@@ -228,10 +228,7 @@ class ApiGateway {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
 
-              spinnaker.monitor({
-                event: resp[0].eventId,
-                deploy: deploy
-              });
+              spinnaker.monitor(resp[0].eventId,deploy);
 
             });
           }).catch(err => {
