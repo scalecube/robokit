@@ -19,12 +19,12 @@ class Spinnaker {
     async run() {
 
         console.log("#### PIPELINE RESULT");
-        for(let entry in this.events.entries()) {
+        this.events.forEach(event=> {
             const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",entry.key());
             this.get(url).then( (pipeline) => {
                 console.log("#### PIPELINE RESULT: " + JSON.stringify(pipeline));
             });
-        }
+        });
 
         if(this.events.size==0){
             this.job.stop();
