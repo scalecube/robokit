@@ -22,6 +22,8 @@ class Spinnaker {
             const url = URL_TEMPLATE.replace("${APPLICATION}", "scalecube-gw").replace("${EVENT_ID}",key);
             this.get(url).then( (pipeline) => {
                 console.log("#### PIPELINE RESULT: " + JSON.stringify(pipeline));
+            }).catch(err=>{
+                console.error(err);
             });
         }
 
