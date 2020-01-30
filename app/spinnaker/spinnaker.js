@@ -36,8 +36,7 @@ class Spinnaker {
     get (uri) {
         return rp({
             method: 'GET',
-            uri: uri,
-            json: true // Automatically stringifies the body to JSON
+            uri: uri
         })
     };
 }
