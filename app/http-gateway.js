@@ -208,7 +208,6 @@ class ApiGateway {
       }
     }
     return false;
-
   }
 
   async onCheckRun(context) {
@@ -223,8 +222,9 @@ class ApiGateway {
           .then(res => {
             deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
             console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
-            this.route(deploy.owner, deploy.repo, deploy).then(resp=>{
+            this.route(deploy.owner, deploy.repo, deploy).then( resp => {
               console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
+              console.log(">>>>> CONTINUES DELIVERY PIPELINE EVENT >>> " + JSON.stringify(resp));
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
             });
           }).catch(err => {
