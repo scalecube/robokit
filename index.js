@@ -21,6 +21,7 @@ module.exports = app => {
   });
 
   app.on('check_suite', async context => {
+
   });
 
   app.on('check_run', async context => {
@@ -29,9 +30,10 @@ module.exports = app => {
 
   app.on([
       //'pull_request.synchronize',
+      //'pull_request.labeled',
       //'pull_request.opened',
       //'pull_request.reopened',
-      //'pull_request.labeled',
+
       'pull_request.unlabeled',
       'pull_request.closed'
   ], async context => {
