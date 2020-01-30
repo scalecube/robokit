@@ -12,10 +12,8 @@ class Spinnaker {
     }
 
     monitor(eventId, event) {
-
         this.events.set(eventId, event);
         this.job.start();
-
     }
 
     async run() {
