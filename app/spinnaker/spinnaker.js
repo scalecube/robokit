@@ -11,9 +11,11 @@ class Spinnaker {
         });
     }
 
-    monitor(event) {
-        this.events.set(event.eventId, event);
+    monitor(eventId, event) {
+
+        this.events.set(eventId, event);
         this.job.start();
+
     }
 
     async run() {

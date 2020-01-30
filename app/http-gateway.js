@@ -229,7 +229,7 @@ class ApiGateway {
               this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started);
 
               spinnaker.monitor({
-                eventId: resp.eventId,
+                event: resp[0].eventId,
                 deploy: deploy
               });
 
