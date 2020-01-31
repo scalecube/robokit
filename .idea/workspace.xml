@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="39c091d6-4f9b-4a81-a004-124d90e2d0d6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env" beforeDir="false" afterPath="$PROJECT_DIR$/env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -20,28 +20,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/github/github-service.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="41">
-              <caret line="29" selection-start-line="29" selection-end-line="29" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/http-gateway.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="31">
-              <caret line="23" column="62" selection-start-line="23" selection-start-column="62" selection-end-line="23" selection-end-column="62" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" selection-start-line="2" selection-end-line="2" />
+            <state relative-caret-position="187">
+              <caret line="11" column="27" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -67,8 +49,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.env">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="51">
-              <caret line="3" column="8" lean-forward="true" selection-start-line="3" selection-start-column="8" selection-end-line="3" selection-end-column="8" />
+            <state relative-caret-position="85">
+              <caret line="5" selection-start-line="5" selection-end-line="7" selection-end-column="55" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Dockerfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="34">
+              <caret line="4" column="42" selection-start-line="4" selection-start-column="42" selection-end-line="4" selection-end-column="42" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.env.example">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="13" selection-start-line="13" selection-end-line="13" />
             </state>
           </provider>
         </entry>
@@ -82,7 +82,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="85">
@@ -120,7 +120,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>create_</find>
       <find>.num</find>
       <find>ciCom</find>
       <find>depli</find>
@@ -150,7 +149,11 @@
       <find>unla</find>
       <find>PRIVATE_KEY</find>
       <find>admin</find>
+      <find>\n</find>
     </findStrings>
+    <replaceStrings>
+      <replace>\\n</replace>
+    </replaceStrings>
     <dirStrings>
       <dir>C:\dev\sc\github-gateway</dir>
     </dirStrings>
@@ -166,7 +169,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/github-gateway/app/cache.js" />
         <option value="$PROJECT_DIR$/github-gateway/app/github/webhooks-router.js" />
         <option value="$PROJECT_DIR$/github-gateway/.env" />
         <option value="$PROJECT_DIR$/github-gateway/app.yml" />
@@ -179,7 +181,6 @@
         <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/app/perfromance/repository.js" />
         <option value="$PROJECT_DIR$/test/index.test.js" />
-        <option value="$PROJECT_DIR$/Dockerfile" />
         <option value="$PROJECT_DIR$/app/github/PullRequest.js" />
         <option value="$PROJECT_DIR$/app/perfromance/performance-service.js" />
         <option value="$PROJECT_DIR$/app/index.html" />
@@ -214,15 +215,17 @@
         <option value="$PROJECT_DIR$/app/github/github-service.js" />
         <option value="$PROJECT_DIR$/app/http-gateway.js" />
         <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/index.js" />
-        <option value="$PROJECT_DIR$/.env" />
+        <option value="$PROJECT_DIR$/.env.example" />
         <option value="$PROJECT_DIR$/env" />
+        <option value="$PROJECT_DIR$/.env" />
+        <option value="$PROJECT_DIR$/index.js" />
+        <option value="$PROJECT_DIR$/Dockerfile" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="180" />
-    <option name="y" value="106" />
+    <option name="x" value="-9" />
+    <option name="y" value="-9" />
     <option name="width" value="1089" />
     <option name="height" value="650" />
   </component>
@@ -358,98 +361,7 @@
       <workItem from="1580145463305" duration="64261000" />
       <workItem from="1580321399417" duration="29440000" />
       <workItem from="1580405240805" duration="4135000" />
-      <workItem from="1580411267182" duration="27044000" />
-    </task>
-    <task id="LOCAL-00298" summary="fix test">
-      <created>1580325912185</created>
-      <option name="number" value="00298" />
-      <option name="presentableId" value="LOCAL-00298" />
-      <option name="project" value="LOCAL" />
-      <updated>1580325912185</updated>
-    </task>
-    <task id="LOCAL-00299" summary="fix test">
-      <created>1580328825068</created>
-      <option name="number" value="00299" />
-      <option name="presentableId" value="LOCAL-00299" />
-      <option name="project" value="LOCAL" />
-      <updated>1580328825068</updated>
-    </task>
-    <task id="LOCAL-00300" summary="fix test">
-      <created>1580329201493</created>
-      <option name="number" value="00300" />
-      <option name="presentableId" value="LOCAL-00300" />
-      <option name="project" value="LOCAL" />
-      <updated>1580329201493</updated>
-    </task>
-    <task id="LOCAL-00301" summary="fix test">
-      <created>1580329819856</created>
-      <option name="number" value="00301" />
-      <option name="presentableId" value="LOCAL-00301" />
-      <option name="project" value="LOCAL" />
-      <updated>1580329819856</updated>
-    </task>
-    <task id="LOCAL-00302" summary="fix test">
-      <created>1580329886186</created>
-      <option name="number" value="00302" />
-      <option name="presentableId" value="LOCAL-00302" />
-      <option name="project" value="LOCAL" />
-      <updated>1580329886186</updated>
-    </task>
-    <task id="LOCAL-00303" summary="fix test">
-      <created>1580330022439</created>
-      <option name="number" value="00303" />
-      <option name="presentableId" value="LOCAL-00303" />
-      <option name="project" value="LOCAL" />
-      <updated>1580330022439</updated>
-    </task>
-    <task id="LOCAL-00304" summary="fix test">
-      <created>1580330493648</created>
-      <option name="number" value="00304" />
-      <option name="presentableId" value="LOCAL-00304" />
-      <option name="project" value="LOCAL" />
-      <updated>1580330493648</updated>
-    </task>
-    <task id="LOCAL-00305" summary="fix test">
-      <created>1580330652807</created>
-      <option name="number" value="00305" />
-      <option name="presentableId" value="LOCAL-00305" />
-      <option name="project" value="LOCAL" />
-      <updated>1580330652807</updated>
-    </task>
-    <task id="LOCAL-00306" summary="fix test">
-      <created>1580330850320</created>
-      <option name="number" value="00306" />
-      <option name="presentableId" value="LOCAL-00306" />
-      <option name="project" value="LOCAL" />
-      <updated>1580330850320</updated>
-    </task>
-    <task id="LOCAL-00307" summary="fix test">
-      <created>1580331252407</created>
-      <option name="number" value="00307" />
-      <option name="presentableId" value="LOCAL-00307" />
-      <option name="project" value="LOCAL" />
-      <updated>1580331252407</updated>
-    </task>
-    <task id="LOCAL-00308" summary="fix test">
-      <created>1580331647290</created>
-      <option name="number" value="00308" />
-      <option name="presentableId" value="LOCAL-00308" />
-      <option name="project" value="LOCAL" />
-      <updated>1580331647290</updated>
-    </task>
-    <task id="LOCAL-00309" summary="fix test">
-      <created>1580364527447</created>
-      <option name="number" value="00309" />
-      <option name="presentableId" value="LOCAL-00309" />
-      <option name="project" value="LOCAL" />
-      <updated>1580364527447</updated>
-    </task>
-    <task id="LOCAL-00310" summary="fix test">
-      <created>1580364572360</created>
-      <option name="number" value="00310" />
-      <option name="presentableId" value="LOCAL-00310" />
-      <option name="project" value="LOCAL" />
-      <updated>1580364572360</updated>
+      <workItem from="1580411267182" duration="34456000" />
     </task>
     <task id="LOCAL-00311" summary="fix test">
       <created>1580364947648</created>
@@ -703,11 +615,102 @@
       <option name="project" value="LOCAL" />
       <updated>1580470260200</updated>
     </task>
-    <option name="localTasksCounter" value="347" />
+    <task id="LOCAL-00347" summary="fix test">
+      <created>1580472859497</created>
+      <option name="number" value="00347" />
+      <option name="presentableId" value="LOCAL-00347" />
+      <option name="project" value="LOCAL" />
+      <updated>1580472859497</updated>
+    </task>
+    <task id="LOCAL-00348" summary="fix test">
+      <created>1580473686239</created>
+      <option name="number" value="00348" />
+      <option name="presentableId" value="LOCAL-00348" />
+      <option name="project" value="LOCAL" />
+      <updated>1580473686239</updated>
+    </task>
+    <task id="LOCAL-00349" summary="fix test">
+      <created>1580474198108</created>
+      <option name="number" value="00349" />
+      <option name="presentableId" value="LOCAL-00349" />
+      <option name="project" value="LOCAL" />
+      <updated>1580474198108</updated>
+    </task>
+    <task id="LOCAL-00350" summary="fix test">
+      <created>1580474352455</created>
+      <option name="number" value="00350" />
+      <option name="presentableId" value="LOCAL-00350" />
+      <option name="project" value="LOCAL" />
+      <updated>1580474352455</updated>
+    </task>
+    <task id="LOCAL-00351" summary="fix test">
+      <created>1580474640883</created>
+      <option name="number" value="00351" />
+      <option name="presentableId" value="LOCAL-00351" />
+      <option name="project" value="LOCAL" />
+      <updated>1580474640883</updated>
+    </task>
+    <task id="LOCAL-00352" summary="fix test">
+      <created>1580474731106</created>
+      <option name="number" value="00352" />
+      <option name="presentableId" value="LOCAL-00352" />
+      <option name="project" value="LOCAL" />
+      <updated>1580474731106</updated>
+    </task>
+    <task id="LOCAL-00353" summary="fix test">
+      <created>1580475321495</created>
+      <option name="number" value="00353" />
+      <option name="presentableId" value="LOCAL-00353" />
+      <option name="project" value="LOCAL" />
+      <updated>1580475321495</updated>
+    </task>
+    <task id="LOCAL-00354" summary="fix test">
+      <created>1580475567267</created>
+      <option name="number" value="00354" />
+      <option name="presentableId" value="LOCAL-00354" />
+      <option name="project" value="LOCAL" />
+      <updated>1580475567267</updated>
+    </task>
+    <task id="LOCAL-00355" summary="fix test">
+      <created>1580476340475</created>
+      <option name="number" value="00355" />
+      <option name="presentableId" value="LOCAL-00355" />
+      <option name="project" value="LOCAL" />
+      <updated>1580476340475</updated>
+    </task>
+    <task id="LOCAL-00356" summary="fix test">
+      <created>1580476568958</created>
+      <option name="number" value="00356" />
+      <option name="presentableId" value="LOCAL-00356" />
+      <option name="project" value="LOCAL" />
+      <updated>1580476568958</updated>
+    </task>
+    <task id="LOCAL-00357" summary="fix test">
+      <created>1580481011255</created>
+      <option name="number" value="00357" />
+      <option name="presentableId" value="LOCAL-00357" />
+      <option name="project" value="LOCAL" />
+      <updated>1580481011255</updated>
+    </task>
+    <task id="LOCAL-00358" summary="fix test">
+      <created>1580481691371</created>
+      <option name="number" value="00358" />
+      <option name="presentableId" value="LOCAL-00358" />
+      <option name="project" value="LOCAL" />
+      <updated>1580481691371</updated>
+    </task>
+    <task id="LOCAL-00359" summary="fix test">
+      <created>1580481941550</created>
+      <option name="number" value="00359" />
+      <option name="presentableId" value="LOCAL-00359" />
+      <option name="project" value="LOCAL" />
+      <updated>1580481941550</updated>
+    </task>
+    <option name="localTasksCounter" value="360" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="469889000" />
+    <option name="totallyTimeSpent" value="477301000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -722,20 +725,20 @@
     <frame x="-7" y="-7" width="1463" height="878" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.8465011" visible="true" weight="0.15848528" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.84517765" visible="true" weight="0.11220197" />
       <window_info id="Structure" order="1" sideWeight="0.5090253" side_tool="true" weight="0.15708275" />
-      <window_info id="npm" order="2" sideWeight="0.15349887" side_tool="true" visible="true" weight="0.15848528" />
+      <window_info id="npm" order="2" sideWeight="0.15482233" side_tool="true" visible="true" weight="0.11220197" />
       <window_info id="Favorites" order="3" sideWeight="0.26403326" side_tool="true" weight="0.15708275" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49789622" weight="0.3552279" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3378016" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.7454418" visible="true" weight="0.40616623" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.7454418" visible="true" weight="0.47184986" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49929875" weight="0.32841823" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.49789622" weight="0.34316355" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.2545582" side_tool="true" visible="true" weight="0.40616623" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.2545582" side_tool="true" visible="true" weight="0.47184986" />
       <window_info anchor="bottom" id="Terminal" order="10" sideWeight="0.49789622" weight="0.51340485" />
       <window_info anchor="bottom" id="TypeScript" order="11" />
       <window_info anchor="bottom" id="Messages" order="12" />
@@ -917,13 +920,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.travis.yml" />
-    <entry file="file://$PROJECT_DIR$/.env.example">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" selection-start-line="4" selection-end-line="5" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/nodejs/node_modules/npm/node_modules/npm-lifecycle/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1717">
@@ -1039,13 +1035,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Dockerfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="4" selection-start-line="4" selection-end-line="7" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/github/github-service.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="41">
@@ -1084,24 +1073,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.env">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="8" lean-forward="true" selection-start-line="3" selection-start-column="8" selection-end-line="3" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.github/workflows/ci-workflow.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="490">
           <caret line="58" column="14" lean-forward="true" selection-start-line="58" selection-start-column="14" selection-end-line="58" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.env.example">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
         </state>
       </provider>
     </entry>
@@ -1112,10 +1094,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="27" selection-start-line="11" selection-start-column="27" selection-end-line="11" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.env">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" selection-start-line="5" selection-end-line="7" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/env">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
           <caret line="5" selection-start-line="5" selection-end-line="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="4" column="42" selection-start-line="4" selection-start-column="42" selection-end-line="4" selection-end-column="42" />
         </state>
       </provider>
     </entry>
