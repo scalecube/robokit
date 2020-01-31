@@ -57,4 +57,5 @@ jobs:
     steps:
       - name: Robo-Kit Deploy
         run: |
+          echo ${GITHUB_WORKSPACE}
           echo 'Run Robo-Kit Deploy'

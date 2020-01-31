@@ -266,6 +266,12 @@ class ApiGateway {
   }
 
   async onPullRequest(context) {
+
+    // Verify that the lable removed is DEPLOY
+    if(context.payload.action == 'unlabeled' && context.payload.label.name != 'DEPLOY'){
+      return;
+    }
+
     let deploy = await this.deployContext(context);
     deploy.action_type = "delete";
     console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));

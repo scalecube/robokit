@@ -36,8 +36,8 @@ class GithubService {
             resolve(res.data);
           }).catch((err) => {
             reject(err);
-          })
-    })
+          });
+    });
   }
 
 
