@@ -14,6 +14,7 @@ COPY package.json /usr/
 COPY index.js /usr/
 COPY env /usr/.env
 
+RUN export PRIVATE_KEY=${PRIVATE_KEY} | base64 -d
 RUN npm install
 
 EXPOSE 7777
