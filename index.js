@@ -1,6 +1,6 @@
 const ApiGateway = require('./app/http-gateway');
 const Cache = require('./app/cache');
-
+console.log(process.env.PRIVATE_KEY);
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
