@@ -33,7 +33,6 @@ module.exports = app => {
       //'pull_request.labeled',
       //'pull_request.opened',
       //'pull_request.reopened',
-
       'pull_request.unlabeled',
       'pull_request.closed'
   ], async context => {
