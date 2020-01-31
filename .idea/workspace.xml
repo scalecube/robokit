@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="39c091d6-4f9b-4a81-a004-124d90e2d0d6" name="Default Changelist" comment="fix test">
-      <change afterPath="$PROJECT_DIR$/.idea/github-gateway.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="39c091d6-4f9b-4a81-a004-124d90e2d0d6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/env" beforeDir="false" afterPath="$PROJECT_DIR$/env" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -62,8 +58,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="56" column="4" selection-start-line="56" selection-start-column="4" selection-end-line="56" selection-end-column="4" />
+            <state>
+              <caret lean-forward="true" />
             </state>
           </provider>
         </entry>
@@ -151,9 +147,9 @@
       <find>CALLBACK</find>
       <find>onPull</find>
       <find>GITHUB_GATEWAY_URL</find>
-      <find>admin</find>
       <find>unla</find>
       <find>PRIVATE_KEY</find>
+      <find>admin</find>
     </findStrings>
     <dirStrings>
       <dir>C:\dev\sc\github-gateway</dir>
@@ -362,21 +358,7 @@
       <workItem from="1580145463305" duration="64261000" />
       <workItem from="1580321399417" duration="29440000" />
       <workItem from="1580405240805" duration="4135000" />
-      <workItem from="1580411267182" duration="25136000" />
-    </task>
-    <task id="LOCAL-00296" summary="fix test">
-      <created>1580325214051</created>
-      <option name="number" value="00296" />
-      <option name="presentableId" value="LOCAL-00296" />
-      <option name="project" value="LOCAL" />
-      <updated>1580325214051</updated>
-    </task>
-    <task id="LOCAL-00297" summary="fix test">
-      <created>1580325622376</created>
-      <option name="number" value="00297" />
-      <option name="presentableId" value="LOCAL-00297" />
-      <option name="project" value="LOCAL" />
-      <updated>1580325622376</updated>
+      <workItem from="1580411267182" duration="27044000" />
     </task>
     <task id="LOCAL-00298" summary="fix test">
       <created>1580325912185</created>
@@ -707,11 +689,25 @@
       <option name="project" value="LOCAL" />
       <updated>1580466528755</updated>
     </task>
-    <option name="localTasksCounter" value="345" />
+    <task id="LOCAL-00345" summary="fix test">
+      <created>1580468324296</created>
+      <option name="number" value="00345" />
+      <option name="presentableId" value="LOCAL-00345" />
+      <option name="project" value="LOCAL" />
+      <updated>1580468324297</updated>
+    </task>
+    <task id="LOCAL-00346" summary="fix test">
+      <created>1580470260200</created>
+      <option name="number" value="00346" />
+      <option name="presentableId" value="LOCAL-00346" />
+      <option name="project" value="LOCAL" />
+      <updated>1580470260200</updated>
+    </task>
+    <option name="localTasksCounter" value="347" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="467981000" />
+    <option name="totallyTimeSpent" value="469889000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -726,20 +722,20 @@
     <frame x="-7" y="-7" width="1463" height="878" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.8465991" visible="true" weight="0.15848528" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.8465011" visible="true" weight="0.15848528" />
       <window_info id="Structure" order="1" sideWeight="0.5090253" side_tool="true" weight="0.15708275" />
-      <window_info id="npm" order="2" sideWeight="0.15340087" side_tool="true" visible="true" weight="0.15848528" />
+      <window_info id="npm" order="2" sideWeight="0.15349887" side_tool="true" visible="true" weight="0.15848528" />
       <window_info id="Favorites" order="3" sideWeight="0.26403326" side_tool="true" weight="0.15708275" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49789622" weight="0.3552279" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3378016" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.91023844" visible="true" weight="0.07372654" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.7454418" visible="true" weight="0.40616623" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49929875" weight="0.32841823" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.49789622" weight="0.34316355" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.08976157" side_tool="true" visible="true" weight="0.07372654" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.2545582" side_tool="true" visible="true" weight="0.40616623" />
       <window_info anchor="bottom" id="Terminal" order="10" sideWeight="0.49789622" weight="0.51340485" />
       <window_info anchor="bottom" id="TypeScript" order="11" />
       <window_info anchor="bottom" id="Messages" order="12" />
@@ -1050,13 +1046,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="56" column="4" selection-start-line="56" selection-start-column="4" selection-end-line="56" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/github/github-service.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="41">
@@ -1113,6 +1102,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="490">
           <caret line="58" column="14" lean-forward="true" selection-start-line="58" selection-start-column="14" selection-end-line="58" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret lean-forward="true" />
         </state>
       </provider>
     </entry>
