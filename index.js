@@ -9,7 +9,6 @@ module.exports = app => {
   const cache = new Cache(app);
 
   app.log('Starting the TxBot service.');
-  console.log('PRIVATE_KEY=' +process.env.PRIVATE_KEY);
   const api = new ApiGateway(app,cache);
 
   app.on('schedule.repository', context => {
