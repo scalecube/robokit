@@ -1,3 +1,5 @@
+const deploy_label = ":rocket: DEPLOY (robo-kit)"
+
 module.exports = {
 
   deploy: {
@@ -52,7 +54,7 @@ module.exports = {
         }]
       },
       pull_request: {
-        labeled: ['DEPLOY'],
+        labeled: [deploy_label],
         actions: [{
           name: 'Travis CI - Pull Request', create_on: 'in_progress', trigger_on: 'completed'
         }, {
@@ -61,7 +63,10 @@ module.exports = {
       }
     }
   },
+  label: deploy_label,
   labels: [{
-    name: 'DEPLOY'
+    name: deploy_label,
+    description: "if Labeled Triggers deployment on next commit, Unlabeled/Merge will trigger environment destruction.",
+    color: "73ed58"
   }]
 }

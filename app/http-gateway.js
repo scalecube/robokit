@@ -7,6 +7,7 @@ const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 
 class ApiGateway {
+
   constructor (app, cache) {
     this.app = app
     this.cache = cache
@@ -15,7 +16,7 @@ class ApiGateway {
     this.router = app.route()
     this.router.use(cors())
     this.router.use(express.json())
-    this.start(this.router)
+    this.start()
     this.notifications = new Notifications(this.githubService)
   }
 
@@ -247,9 +248,20 @@ class ApiGateway {
     return result
   }
 
+  onAppInstall (context) {
+    let owner= context.payload.installation.account.login;
+    if(context.payload.repositories){
+      context.payload.repositories.forEach(repo => {
+        cfg.labels.forEach(label => {
+          this.githubService.createLabel(context.github, owner,repo.name,label);
+        });
+      })
+    }
+  }
+
   async onPullRequest (context) {
-    // Verify that the lable removed is DEPLOY
-    if (context.payload.action == 'unlabeled' && context.payload.label.name != 'DEPLOY') {
+    // Verify that the label removed is DEPLOY
+    if (context.payload.action == 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
       return
     }
 

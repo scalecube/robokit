@@ -16,6 +16,7 @@ module.exports = app => {
   })
 
   app.on('installation', async context => {
+    api.onAppInstall(context)
     console.log('installation event:' + JSON.stringify(context))
   })
 

@@ -39,7 +39,7 @@ class GithubService {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)
       if (ctx) {
-        ctx.request('GET /repos/' + owner + '/' + repo + '/issues/' + issue_number + '/labels')
+        ctx.request(`GET /repos/${owner}/${repo}/issues/${issue_number}/labels`)
           .then(res => {
             resolve(res.data)
           }).catch((err) => {
@@ -47,6 +47,18 @@ class GithubService {
           })
       }
     })
+  }
+
+
+  //  POST /repos/:owner/:repo/labels
+  //  Example:
+  // {
+  //   "name": "bug",
+  //   "description": "Something isn't working",
+  //   "color": "f29513"
+  // }
+  createLabel(github, owner, repo, label) {
+    return github.request(`POST /repos/${owner}/${repo}/labels`,label)
   }
 
   content (owner, repo, path, base64) {
