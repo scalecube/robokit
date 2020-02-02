@@ -20,6 +20,8 @@ npm install
 # Run the bot
 npm start
 ```
+## Enviroment variables:
+for reverence please see env file located at the root of this project.
 
 ## Getting started
 1. `github-gateway` once github application installed on a repositoy and asking for relevant access rights to listen on activity in github and update `check_run` status events. after the CI is completed it triggers continues delivery pipeline as webhook events that essetially will deploy the repos and artifacts to an enviroment for example kubernetes namespace.
