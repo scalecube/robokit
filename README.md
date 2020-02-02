@@ -27,6 +27,7 @@ For reverence please see env file located at the root of this project.
 1. `github-gateway` once github application installed on a repositoy and asking for relevant access rights to listen on activity in github and update `check_run` status events. after the CI is completed it triggers continues delivery pipeline as webhook events that essetially will deploy the repos and artifacts to an enviroment for example kubernetes namespace.
 
 the Continues delivery trigger bellow named `robo_kit_deploy` is activated when build docker and creation of helm push is completed:
+
 ```
 robo_kit_deploy:
 
