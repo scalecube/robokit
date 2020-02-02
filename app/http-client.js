@@ -1,4 +1,4 @@
-const rp = require('request-promise');
+const rp = require('request-promise')
 
 class HttpClient {
   post (uri, msg) {

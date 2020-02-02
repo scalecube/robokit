@@ -19,9 +19,9 @@ class PerformanceService {
     })
   };
 
-  createTemplate(owner,repo,name,data){
+  createTemplate (owner, repo, name, data) {
     return new Promise((resolve, reject) => {
-      this.getOrCreate("scalecube", "github-gateway").then(repo => {
+      this.getOrCreate('scalecube', 'github-gateway').then(repo => {
         resolve(repo.insert(name, data))
       })
     })

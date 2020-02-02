@@ -1,3 +1,4 @@
+const ObjectID = require('mongodb').ObjectID
 const MongoClient = require('mongodb').MongoClient
 
 class Repository {
@@ -8,6 +9,14 @@ class Repository {
       this.client = new MongoClient(this.uri, { useNewUrlParser: true, useUnifiedTopology: true })
     })
     return this
+  }
+
+  async count() {
+    if(this.collection){
+      return await this.collection.countDocuments();
+    } else {
+      return 0;
+    }
   }
 
   connect (collectionName) {
@@ -32,56 +41,27 @@ class Repository {
     })
   }
 
-  insert (sha, data) {
+  insert (data) {
     return new Promise((resolve, reject) => {
-      const timestamp = Date.now()
-      if (Array.isArray(data)) {
-        const many = []
-
-        data.forEach(item =>
-          many.push({
-            sha: sha,
-            timestamp: timestamp,
-            data: item
-          })
-        )
-
-        this.collection.insertMany(many, (err, result) => {
-          if (err) reject(err)
-          resolve(result)
-        })
-      } else {
-        this.collection.insertOne({
-          sha: sha,
-          timestamp: timestamp,
-          data: data
-        }, (err, result) => {
-          if (err) reject(err)
-          resolve(result)
-        })
-      }
-    })
-  }
-
-  find (sha, where) {
-    return new Promise((resolve, reject) => {
-      let query = { sha: sha }
-
-      if (where && where instanceof Object) {
-        query = where
-        query.sha = sha
-      }
-      this.collection.find(query).toArray(function (err, result) {
+      this.collection.insertOne(data, (err, result) => {
         if (err) reject(err)
-        resolve(result)
+        data._id = result.insertedId
+        resolve(data)
       })
     })
   }
 
-  distinct (field) {
+  findOldest () {
+    return this.collection.findOneAndDelete({},
+      { sort : { "_id" : 1 } });
+
+  }
+  delete(oid){
     return new Promise((resolve, reject) => {
-      resolve(this.collection.distinct(field))
-    })
+      this.collection.remove({"_id": oid})
+        .then(resolve)
+        .catch(reject);
+    });
   }
 }
 

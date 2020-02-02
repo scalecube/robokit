@@ -1,41 +1,38 @@
-const httpClient = require('../http-client');
-const Repository = require('./repository');
+const httpClient = require('../http-client')
+const Repository = require('./repository')
 
 class WebhooksRouter {
-
   constructor () {
     new Repository('github-gateway').connect('webhooks').then(r => {
-      this.repo = r;
+      this.repo = r
       this.loadRoutes().then(routes => {
         console.log('routes loaded: ' + JSON.stringify(routes))
       })
     })
   }
 
-
-  route (owner,repo, ctx, onRoute, onError) {
-    let promises = [];
+  route (owner, repo, ctx, onRoute, onError) {
+    const promises = []
     this.routes.forEach(route => {
       if (route.owner && route.owner === owner) {
         if (route.repo === repo || !route.repo) {
-
-          for (let [key, value] of Object.entries(ctx)) {
-            route.url = route.url.replace("${"+ key + "}", value);
+          for (const [key, value] of Object.entries(ctx)) {
+            route.url = route.url.replace('${' + key + '}', value)
           }
-          promises.push(new Promise((resolve,reject) => {
-            console.log(">>> ROUTE URL: " + route.url );
+          promises.push(new Promise((resolve, reject) => {
+            console.log('>>> ROUTE URL: ' + route.url)
             httpClient.post(route.url, ctx).then((msg) => {
-              onRoute(msg);
-              resolve(msg);
+              onRoute(msg)
+              resolve(msg)
             }).catch(function (err) {
-              onError(err);
-              reject(err);
+              onError(err)
+              reject(err)
             })
-          }));
+          }))
         }
       }
     })
-    return Promise.all(promises);
+    return Promise.all(promises)
   }
 
   loadRoutes () {
@@ -66,4 +63,4 @@ class WebhooksRouter {
   }
 }
 
-module.exports = WebhooksRouter;
+module.exports = WebhooksRouter
