@@ -1,22 +1,17 @@
 ## The problem
 
-Code quality is important. To help with code quality we have various tasks / scripts / apps and bots that we need to run to assert our quality does not drop.
-
-Continuous integration is a great way to make sure our quality does not drop and we have confidence with our software.
-
-GitHub have done a great job allowing us to integrate with the platform and run various checks before code gets merged. 
-You can automate these checks with GitHub using status checks and GitHub actions.
+Continues delivey is important to speed up your development team. and its more relevant with complex microservices architecture. the more microservices are added to your echo system the more hassle is invoved for creating a standard how to continuesly deploy these services without making them slow down your ability to deliver them.
 
 
 ## This solution
 
 ![image](https://user-images.githubusercontent.com/1706296/70527292-38a8a280-1b54-11ea-9eff-7401614c4c42.png)
 
-`github-gateway` is a track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
+`github-gateway` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
 ## Setup
 
-> A GitHub App built with [Probot](https://github.com/probot/probot) 
+> `github-gateway` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
 
 ```sh
 # Install dependencies
@@ -27,16 +22,9 @@ npm start
 ```
 
 ## Getting started
-1. `github-gateway` expects a github token and secret so it can integrate with github api.
-2. you need to configure a webhook in github to call `status-checks` when there is pull-request check.
-3. on pull-request change your server will be called in a request response over http request containing the original data provided from github.
-   in this stage if provided a status check message then 'status-checks' will update github pull request.
-4. when the different jobs are running they should update with the progress of each task until `success` of th`failure`.
+1. `github-gateway` once github application installed on a repositoy and asking for relevant access rights to listen on activity in github and update `check_run` status events. after the CI is completed it triggers continues delivery pipeline as webhook events that essetially will deploy the repos and artifacts to an enviroment for example kubernetes namespace.
 
-status-checks expects the following environment variables so it can perform its actions:
-
-example .env file:
-
+the Continues delivery trigger bellow named `robo_kit_deploy` is activated when build docker and creation of helm push is completed:
 ```
 robo_kit_deploy:
 
@@ -51,25 +39,3 @@ robo_kit_deploy:
         run: |
           echo 'Run Robo-Kit Deploy'
 ```
-
-```javascript
-example = {
-  pull_request_url : "https://api.github.com/repos/<ownder>/<repo>.github.io/pulls/<PR NUM>",
-  sha :"262e1e9097f5ce412d5751b0dd37b434ebab17",
-  statuses: [{    // the list of statuses to be updated 1 to N.
-    name : "integration-testing",
-    status: "pending", // pending, error, failure, success.
-    message  : "initializing integration-testing",
-    target_url : "http://scalecube.io"
-  },{
-    name : "performance-testing",
-    status: "pending",
-    message  : "initializing performance-testing",
-    target_url : "http://scalecube.io"
-  }]
-}
-
-```
-
-
-![image](https://user-images.githubusercontent.com/1706296/70513398-32a5c800-1b3a-11ea-9813-9c7f876117a0.png)
