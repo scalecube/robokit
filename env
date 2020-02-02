@@ -1,6 +1,6 @@
 WEBHOOK_PROXY_URL=https://smee.io/robo-kit
 PORT=7777
 # Use `trace` to get verbose logging or `info` to show less
-LOG_LEVEL=debug
+LOG_LEVEL=info
 CALLBACK_URL=https://scalecube-github-gateway-develop.exchange.om2.com/pipeline/notifications/
 GITHUB_GATEWAY_URL=https://scalecube-7777.exchange.om2.com/

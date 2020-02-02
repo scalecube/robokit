@@ -1,6 +1,6 @@
 name: Pipeline github-gateway
 
-on: [pull_request,push]
+on: [push]
 
 jobs:
 
