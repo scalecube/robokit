@@ -175,7 +175,7 @@ class ApiGateway {
     if (util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.trigger_pipeline)
         .then(res => {
-          deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request)
+          deploy.check_run_name = cfg.deploy.check.name;
           deploy.action_type = 'deploy'
           //deploy.status = "completed";
           //deploy.conclusion = "success";
@@ -197,9 +197,9 @@ class ApiGateway {
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status)
-    check_run.output = output
-    return this.githubService.createCheckRun(context.github, [check_run],deploy)
+    const check_run = this.checkStatus(deploy, cfg.deploy.check.name, status);
+    check_run.output = output;
+    return this.githubService.createCheckRun(context.github, [check_run],deploy);
   }
 
   createPullRequest (ctx) {
