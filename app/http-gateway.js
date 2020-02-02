@@ -203,7 +203,7 @@ class ApiGateway {
   }
 
   createPullRequest (ctx) {
-    this.githubService.createPullRequest(ctx)
+    this.githubService.createPullRequest(ctx);
   }
 
   route (owner, repo, context) {
