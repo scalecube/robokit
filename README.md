@@ -12,23 +12,11 @@ You can automate these checks with GitHub using status checks and GitHub actions
 
 ![image](https://user-images.githubusercontent.com/1706296/70527292-38a8a280-1b54-11ea-9eff-7401614c4c42.png)
 
-`status-checks` is a gateway that accept webhooks request from github and proxy these request to your server / http endpoint you provide.
-your server runs tasks and update regarding the status of these tasks.
-
-when there was a commit on a pull request, `status-checks` will trigger api call to your server.
-your server may respond with the list of tasks and checks it is planning to execute in 'pending' state.
-as the tasks progress they can call back the status of the jobs currently running.
-
-
-## Tools
-
-- [@octokit/rest](https://github.com/octokit/rest.js)
-- [@octokit/webhooks](https://github.com/octokit/webhooks.js)
-
+`github-gateway` is a track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
 ## Setup
 
-> A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
+> A GitHub App built with [Probot](https://github.com/probot/probot) 
 
 ```sh
 # Install dependencies
@@ -39,7 +27,7 @@ npm start
 ```
 
 ## Getting started
-1. `status-checks` expects a github token and secret so it can integrate with github api.
+1. `github-gateway` expects a github token and secret so it can integrate with github api.
 2. you need to configure a webhook in github to call `status-checks` when there is pull-request check.
 3. on pull-request change your server will be called in a request response over http request containing the original data provided from github.
    in this stage if provided a status check message then 'status-checks' will update github pull request.
@@ -50,12 +38,18 @@ status-checks expects the following environment variables so it can perform its 
 example .env file:
 
 ```
-GITHUB_TOKEN=<YOUR GITHUB TOKEN>
-GITHUB_SECRET=<YOUR GITHUB SECRET>
-YOUR_SERVER_URL=<YOUR SERVER HTTP URL WHERE YOU LIKE TO GET REQUESTS>
-GITHUB_API_PORT=7777 //the github webhock port
-STATUS_API_PORT=7778 // the status update callback API port you replay here.
+robo_kit_deploy:
 
+    needs:
+      - build_push_docker
+      - create_helm
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Robo-Kit Deploy
+        run: |
+          echo 'Run Robo-Kit Deploy'
 ```
 
 ```javascript
