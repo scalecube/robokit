@@ -207,7 +207,7 @@ class ApiGateway {
   }
 
   route (owner, repo, context) {
-    return this.githubService.route(owner, repo, context)
+    return this.githubService.route(owner, repo, context);
   }
 
   /**
