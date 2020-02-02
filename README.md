@@ -1,6 +1,6 @@
 ## The problem
 
-Continues delivey is important to speed up your development team. and its more relevant with complex microservices architecture. the more microservices are added to your echo system the more hassle is invoved for creating a standard how to continuesly deploy these services without making them slow down your ability to deliver them.
+Continues delivey is important to speed up the development of your team. and its more relevant with complex microservices architecture. the more microservices are added to your echo system the more hassle is invoved for creating a standard how to continuesly deploy these services without making them slow down your ability to deliver them.
 
 
 ## This solution
@@ -21,7 +21,7 @@ npm install
 npm start
 ```
 ## Enviroment variables:
-for reverence please see env file located at the root of this project.
+For reverence please see env file located at the root of this project.
 
 ## Getting started
 1. `github-gateway` once github application installed on a repositoy and asking for relevant access rights to listen on activity in github and update `check_run` status events. after the CI is completed it triggers continues delivery pipeline as webhook events that essetially will deploy the repos and artifacts to an enviroment for example kubernetes namespace.
