@@ -1,4 +1,3 @@
-const ObjectID = require('mongodb').ObjectID
 const MongoClient = require('mongodb').MongoClient
 
 class Repository {
@@ -11,11 +10,11 @@ class Repository {
     return this
   }
 
-  async count() {
-    if(this.collection){
-      return await this.collection.countDocuments();
+  async count () {
+    if (this.collection) {
+      return await this.collection.countDocuments()
     } else {
-      return 0;
+      return 0
     }
   }
 
@@ -53,15 +52,15 @@ class Repository {
 
   findOldest () {
     return this.collection.findOneAndDelete({},
-      { sort : { "_id" : 1 } });
-
+      { sort: { _id: 1 } })
   }
-  delete(oid){
+
+  delete (oid) {
     return new Promise((resolve, reject) => {
-      this.collection.remove({"_id": oid})
+      this.collection.remove({ _id: oid })
         .then(resolve)
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   }
 }
 

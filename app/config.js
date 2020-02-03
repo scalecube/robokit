@@ -1,4 +1,4 @@
-const deploy_label = ":rocket: DEPLOY (robo-kit)"
+const deploy_label = ':rocket: DEPLOY (robo-kit)'
 
 module.exports = {
 
@@ -33,7 +33,7 @@ module.exports = {
           'branch: `${branch_name}`',
         text: 'This repository is not supported by Robo-kit or the installation was not completed please contact us for support.'
       },
-      cd_pipeline_status_update:{
+      cd_pipeline_status_update: {
         title: 'Pipeline execution is ${status}',
         summary: 'Continues-Delivery pipeline result is ${conclusion}<br>' +
           'sha: `${sha}`<br>' +
@@ -66,7 +66,7 @@ module.exports = {
   label: deploy_label,
   labels: [{
     name: deploy_label,
-    description: "if Labeled Triggers deployment on next commit, Unlabeled/Merge will trigger environment destruction.",
-    color: "73ed58"
+    description: 'if Labeled Triggers deployment on next commit, Unlabeled/Merge will trigger environment destruction.',
+    color: '73ed58'
   }]
 }

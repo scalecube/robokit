@@ -1,5 +1,5 @@
-const WebhooksRouter = require('./webhooks-router');
-const util = require('../utils');
+const WebhooksRouter = require('./webhooks-router')
+const util = require('../utils')
 
 class GithubService {
   constructor (app, cache) {
@@ -8,10 +8,10 @@ class GithubService {
     this.cache = cache
   }
 
-  async createCheckRun (github, checks,context) {
+  async createCheckRun (github, checks, context) {
     const all = []
     checks.forEach(async check => {
-      check.output = this.formatOutput(check.output,context);
+      check.output = this.formatOutput(check.output, context)
       const p = github.checks.create(check)
       console.log('>>>> UPDATE STATUS  >>>> ' + JSON.stringify(check))
       all.push(p)
@@ -19,14 +19,16 @@ class GithubService {
 
     return await Promise.all(all)
   }
-  formatOutput(output, context) {
-    if(output && context){
-      output.title = util.format(output.title, context);
-      output.summary = util.format(output.summary, context);
-      output.text = util.format(output.text, context);
+
+  formatOutput (output, context) {
+    if (output && context) {
+      output.title = util.format(output.title, context)
+      output.summary = util.format(output.summary, context)
+      output.text = util.format(output.text, context)
     }
-    return output;
+    return output
   }
+
   updateComment (context, msg) {
     return this.commentAction(msg, context.issues.updateComment)
   }
@@ -49,7 +51,6 @@ class GithubService {
     })
   }
 
-
   //  POST /repos/:owner/:repo/labels
   //  Example:
   // {
@@ -57,8 +58,9 @@ class GithubService {
   //   "description": "Something isn't working",
   //   "color": "f29513"
   // }
-  createLabel(github, owner, repo, label) {
-    return github.request(`POST /repos/${owner}/${repo}/labels`,label)
+  createLabel (owner, repo, label) {
+    const github = this.cache.get(owner, repo)
+    return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
   content (owner, repo, path, base64) {

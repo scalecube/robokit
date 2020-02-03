@@ -84,13 +84,13 @@ class Utils {
     if (ctx.is_pull_request) { ctx.issue_number = this.issueNumber(context) }
 
     ctx.namespace = this.targetNamespace(ctx)
-    ctx.pipeline_callback = (process.env.CALLBACK_URL).replace('${namespace}', ctx.namespace);
-    return ctx;
+    ctx.pipeline_callback = (process.env.CALLBACK_URL).replace('${namespace}', ctx.namespace)
+    return ctx
   }
 
   deployCheckRunName (is_pull_request) {
     if (is_pull_request) {
-      return  + ' (pull_request)'
+      return +' (pull_request)'
     } else {
       return cfg.deploy.check.name + ' (push)'
     }
@@ -140,7 +140,8 @@ class Utils {
     }
     return false
   }
-  format (field,values) {
+
+  format (field, values) {
     Object.entries(values).forEach((e) => {
       field = field.replace('${' + e[0] + '}', e[1])
     })

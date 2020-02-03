@@ -1,6 +1,8 @@
 const ApiGateway = require('./app/http-gateway')
 const Cache = require('./app/cache')
-
+const { registerAuthRoutes } = require('auth-routes')
+const request = require('request');
+const GitHubAPI = require('@octokit/rest')
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app

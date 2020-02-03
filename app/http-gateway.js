@@ -7,7 +7,6 @@ const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 
 class ApiGateway {
-
   constructor (app, cache) {
     this.app = app
     this.cache = cache
@@ -176,20 +175,20 @@ class ApiGateway {
     if (util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.trigger_pipeline)
         .then(res => {
-          deploy.check_run_name = cfg.deploy.check.name;
+          deploy.check_run_name = cfg.deploy.check.name
           deploy.action_type = 'deploy'
-          //deploy.status = "completed";
-          //deploy.conclusion = "success";
-          //this.notifications.store(deploy);
+          // deploy.status = "completed";
+          // deploy.conclusion = "success";
+          // this.notifications.store(deploy);
           console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> ' + JSON.stringify(deploy))
           this.route(deploy.owner, deploy.repo, deploy).then(resp => {
             console.log('>>>>> CONTINUES DELIVERY PIPELINE EVENT >>> ' + JSON.stringify(resp))
-            if(resp.length > 0) {
-              this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.cd_pipeline_started);
-            } else{
-              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.cd_pipeline_not_found);
+            if (resp.length > 0) {
+              this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.cd_pipeline_started)
+            } else {
+              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.cd_pipeline_not_found)
             }
-            this.notifications.start();
+            this.notifications.start()
           })
         }).catch(err => {
           console.log(err)
@@ -198,17 +197,17 @@ class ApiGateway {
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const check_run = this.checkStatus(deploy, cfg.deploy.check.name, status);
-    check_run.output = output;
-    return this.githubService.createCheckRun(context.github, [check_run],deploy);
+    const check_run = this.checkStatus(deploy, cfg.deploy.check.name, status)
+    check_run.output = output
+    return this.githubService.createCheckRun(context.github, [check_run], deploy)
   }
 
   createPullRequest (ctx) {
-    this.githubService.createPullRequest(ctx);
+    this.githubService.createPullRequest(ctx)
   }
 
   route (owner, repo, context) {
-    return this.githubService.route(owner, repo, context);
+    return this.githubService.route(owner, repo, context)
   }
 
   /**
@@ -249,12 +248,26 @@ class ApiGateway {
   }
 
   onAppInstall (context) {
-    let owner= context.payload.installation.account.login;
-    if(context.payload.repositories){
+    this.installCache(context)
+    this.installAppLabels(context)
+  }
+
+  installCache (context) {
+    const owner = context.payload.installation.account.login
+    if (context.payload.repositories) {
+      context.payload.repositories.forEach(repo => {
+        this.cache.set(owner, repo.name, context.github)
+      })
+    }
+  }
+
+  installAppLabels (context) {
+    const owner = context.payload.installation.account.login
+    if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
         cfg.labels.forEach(label => {
-          this.githubService.createLabel(context.github, owner,repo.name,label);
-        });
+          this.githubService.createLabel(owner, repo.name, label)
+        })
       })
     }
   }
