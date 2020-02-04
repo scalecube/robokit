@@ -13,5 +13,5 @@ sha: ${sha}
 
 Pipeline stages:
 ```diff
-> (Trigger) robo-kit pipeline triggered.
+> (Trigger) robo-kit pipeline queued.
 ```

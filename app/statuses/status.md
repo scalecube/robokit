@@ -13,8 +13,7 @@ sha: ${sha}
 
 Pipeline stages:
 ```diff
-> (Trigger) robo-kit pipeline triggered.
-> (Trigger) robo-kit deployment pipeline started  
-> (Trigger) Deploy Kubernetes Environment completed
+> (Trigger) robo-kit pipeline queued.
+> (Trigger) robo-kit deployment pipeline was triggered successfully  
 ${details}
 ```
