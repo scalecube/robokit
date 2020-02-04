@@ -7,7 +7,7 @@ Continues delivey is important to speed up the development of your team. and its
 
 `github-gateway` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
-![Picture3](https://user-images.githubusercontent.com/1706296/73779867-1ae36c80-4796-11ea-8f69-3a76e577b87a.png)
+<img align="center" src="https://tinyurl.com/rootojr">
 
 ## Setup
 
