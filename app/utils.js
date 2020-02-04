@@ -179,7 +179,10 @@ class Utils {
   }
 
   getMarker(status){
-    return (status=="SUCCEEDED") ? ">" : "<";
+    if (status=="SUCCEEDED") return ">"
+    else if (status == "TERMINAL" || "FAILED_CONTINUE") return "<"
+    else if (status == "NOT_STARTED") return "&nbsp"
+    else return "&nbsp"
   }
 }
 
