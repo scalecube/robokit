@@ -56,5 +56,4 @@ class Notifications {
     return [req]
   }
 }
-
 module.exports = Notifications
