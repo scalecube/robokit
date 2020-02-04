@@ -1,0 +1,496 @@
+{
+  "owner": "scalecube",
+  "action_type": "deploy",
+  "pipeline_callback": "https://scalecube-github-gateway-develop.exchange.om2.com/pipeline/notifications/",
+  "repo": "github-gateway",
+  "labeled": false,
+  "sha": "6617a89038b55f4c24cff4b5f25d54740adfe5fe",
+  "conclusion": "success",
+  "check_run_name": "Robo-Kit Deploy",
+  "branch_name": "develop",
+  "namespace": "scalecube-github-gateway-develop",
+  "stages": {
+    "Create_ns": {
+      "Status": "FAIL",
+      "Details": [
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Initializing Orchestration Task"
+        },
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Processing op: KubernetesDeployManifestOperation"
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Beginning deployment of manifest..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for namespace..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in namespace scalecube-github-gateway-develop from context..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Checking if all requested artifacts were bound..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Sorting manifests by priority..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Deploy order is: namespace scalecube-github-gateway-develop"
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for namespace..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Annotating manifest namespace scalecube-github-gateway-develop with artifact, relationships & moniker..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in namespace scalecube-github-gateway-develop from other deployments..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Submitting manifest namespace scalecube-github-gateway-develop to kubernetes master..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Deploy manifest task completed successfully."
+        },
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Orchestration completed."
+        }
+      ],
+      "Tasks": [
+        {
+          "stageStart": true,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "deployManifest",
+          "startTime": 1580805488666,
+          "id": "1",
+          "endTime": 1580805488771,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.DeployManifestTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "monitorDeploy",
+          "startTime": 1580805488774,
+          "id": "2",
+          "endTime": 1580805493904,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.MonitorKatoTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "promoteOutputs",
+          "startTime": 1580805493906,
+          "id": "3",
+          "endTime": 1580805493960,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.PromoteManifestKatoOutputsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "forceCacheRefresh",
+          "startTime": 1580805494011,
+          "id": "4",
+          "endTime": 1580805494169,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.ManifestForceCacheRefreshTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "waitForManifestToStabilize",
+          "startTime": 1580805494171,
+          "id": "5",
+          "endTime": 1580805494380,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.WaitForManifestStableTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "cleanupArtifacts",
+          "startTime": 1580805494382,
+          "id": "6",
+          "endTime": 1580805494486,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.artifacts.CleanupArtifactsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "monitorCleanup",
+          "startTime": 1580805494489,
+          "id": "7",
+          "endTime": 1580805494594,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.MonitorKatoTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "promoteOutputs",
+          "startTime": 1580805494646,
+          "id": "8",
+          "endTime": 1580805494700,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.PromoteManifestKatoOutputsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "forceCacheRefresh",
+          "startTime": 1580805494753,
+          "id": "9",
+          "endTime": 1580805494806,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.ManifestForceCacheRefreshTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": true,
+          "name": "bindProducedArtifacts",
+          "startTime": 1580805494812,
+          "id": "10",
+          "endTime": 1580805494865,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.pipeline.tasks.artifacts.BindProducedArtifactsTask",
+          "status": "SUCCEEDED"
+        }
+      ],
+      "Id": "2"
+    },
+    "Deploy (Manifest)": {
+      "Status": "SUCCEEDED",
+      "Details": [
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Initializing Orchestration Task"
+        },
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Processing op: KubernetesDeployManifestOperation"
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Beginning deployment of manifest..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for service..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in service github-gateway-svc from context..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for deployment..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in deployment github-gateway-depl from context..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for ingress..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in ingress github-gw-ingress7777 from context..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Checking if all requested artifacts were bound..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Sorting manifests by priority..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for deployment..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for service..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for ingress..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for deployment..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for ingress..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for deployment..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for ingress..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for service..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Deploy order is: service github-gateway-svc, ingress github-gw-ingress7777, deployment github-gateway-depl"
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for service..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Annotating manifest service github-gateway-svc with artifact, relationships & moniker..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in service github-gateway-svc from other deployments..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Submitting manifest service github-gateway-svc to kubernetes master..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for ingress..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Annotating manifest ingress github-gw-ingress7777 with artifact, relationships & moniker..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in ingress github-gw-ingress7777 from other deployments..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Submitting manifest ingress github-gw-ingress7777 to kubernetes master..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Finding deployer for deployment..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Annotating manifest deployment github-gateway-depl with artifact, relationships & moniker..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Swapping out artifacts in deployment github-gateway-depl from other deployments..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Submitting manifest deployment github-gateway-depl to kubernetes master..."
+        },
+        {
+          "phase": "DEPLOY_KUBERNETES_MANIFEST",
+          "status": "Deploy manifest task completed successfully."
+        },
+        {
+          "phase": "ORCHESTRATION",
+          "status": "Orchestration completed."
+        }
+      ],
+      "Tasks": [
+        {
+          "stageStart": true,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "deployManifest",
+          "startTime": 1580805494971,
+          "id": "1",
+          "endTime": 1580805495077,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.DeployManifestTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "monitorDeploy",
+          "startTime": 1580805495079,
+          "id": "2",
+          "endTime": 1580805500227,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.MonitorKatoTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "promoteOutputs",
+          "startTime": 1580805500230,
+          "id": "3",
+          "endTime": 1580805500284,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.PromoteManifestKatoOutputsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "forceCacheRefresh",
+          "startTime": 1580805500335,
+          "id": "4",
+          "endTime": 1580805500441,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.ManifestForceCacheRefreshTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "waitForManifestToStabilize",
+          "startTime": 1580805500495,
+          "id": "5",
+          "endTime": 1580805501503,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.WaitForManifestStableTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "cleanupArtifacts",
+          "startTime": 1580805501556,
+          "id": "6",
+          "endTime": 1580805501662,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.artifacts.CleanupArtifactsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "monitorCleanup",
+          "startTime": 1580805501665,
+          "id": "7",
+          "endTime": 1580805501770,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.MonitorKatoTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "promoteOutputs",
+          "startTime": 1580805501778,
+          "id": "8",
+          "endTime": 1580805501886,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.PromoteManifestKatoOutputsTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "forceCacheRefresh",
+          "startTime": 1580805501889,
+          "id": "9",
+          "endTime": 1580805501944,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.clouddriver.tasks.manifest.ManifestForceCacheRefreshTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": true,
+          "name": "bindProducedArtifacts",
+          "startTime": 1580805501997,
+          "id": "10",
+          "endTime": 1580805502053,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.pipeline.tasks.artifacts.BindProducedArtifactsTask",
+          "status": "SUCCEEDED"
+        }
+      ],
+      "Id": "3"
+    },
+    "Bake Helm github-gateway": {
+      "Status": "SUCCEEDED",
+      "Details": "${#stage('Bake Helm github-gateway')['context']['kato.tasks']['0']['history']}",
+      "Tasks": [
+        {
+          "stageStart": true,
+          "loopStart": false,
+          "stageEnd": false,
+          "name": "createBake",
+          "startTime": 1580805487148,
+          "id": "1",
+          "endTime": 1580805488506,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.bakery.tasks.manifests.CreateBakeManifestTask",
+          "status": "SUCCEEDED"
+        },
+        {
+          "stageStart": false,
+          "loopStart": false,
+          "stageEnd": true,
+          "name": "bindProducedArtifacts",
+          "startTime": 1580805488509,
+          "id": "2",
+          "endTime": 1580805488561,
+          "loopEnd": false,
+          "implementingClass": "com.netflix.spinnaker.orca.pipeline.tasks.artifacts.BindProducedArtifactsTask",
+          "status": "SUCCEEDED"
+        }
+      ],
+      "Id": "1"
+    }
+  },
+  "action": "completed",
+  "is_pull_request": false,
+  "status": "completed"
+}

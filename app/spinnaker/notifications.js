@@ -1,6 +1,8 @@
 const Repository = require('./repository')
 const CronJob = require('cron').CronJob
 const cfg = require('../config')
+
+
 class Notifications {
   constructor (githubService) {
     this.githubService = githubService
@@ -24,7 +26,7 @@ class Notifications {
   async _poll () {
     if (this.repository) {
       let count = await this.repository.count()
-      while (count !== 0) {
+      if (count !== 0) {
         this.repository.findOldest()
           .then(item => {
             console.log(item.value)
@@ -37,10 +39,10 @@ class Notifications {
             console.error(err)
           })
         count = await this.repository.count()
+      } else{
+        this.job.stop()
       }
-    }
-    const count = await this.repository.count()
-    if (count == 0) {
+    } else{
       this.job.stop()
     }
   }
@@ -54,7 +56,7 @@ class Notifications {
       status: data.status
     }
     req.conclusion = data.conclusion
-    req.output = cfg.deploy.check.cd_pipeline_status_update
+    req.output = cfg.deploy.check.update
     return [req]
   }
 }

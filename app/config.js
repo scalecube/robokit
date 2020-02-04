@@ -6,39 +6,34 @@ module.exports = {
     check: {
       name: 'Robo-Kit Deploy',
       queued: {
-        title: 'Starting Continues-Delivery.',
-        summary: 'Deploy pipeline initializing<br>' +
-          'sha: `${sha}`<br>' +
-          'branch: `${branch_name}`',
-        text: 'About to trigger a deployment pipeline'
+        title: 'Waiting',
+        summary: 'Deploy pipeline initializing',
+        text: 'About to trigger a deployment pipeline',
+        template: 'waiting'
       },
-      trigger_pipeline: {
-        title: 'Triggered Pipeline ',
-        summary: 'Triggered a Continues-Delivery pipeline<br>' +
-          'sha: `${sha}`<br>' +
-          'branch: `${branch_name}`',
-        text: 'Waiting for Continues Delivery pipeline acknowledgment'
+      starting: {
+        title: 'Starting',
+        summary: 'Triggered a Continues-Delivery pipeline',
+        text: 'Waiting for Continues Delivery pipeline acknowledgment',
+        template: 'starting'
       },
-      cd_pipeline_started: {
-        title: 'Pipeline is Running',
-        summary: 'Continues-Delivery pipeline is running<br>' +
-          'sha: `${sha}`<br>' +
-          'branch: `${branch_name}`',
-        text: 'Waiting for Continues Delivery pipeline status updates'
+      running: {
+        title: 'Running',
+        summary: 'Continues-Delivery pipeline is running',
+        text: 'Waiting for Continues Delivery pipeline status updates',
+        template: 'running'
       },
-      cd_pipeline_not_found: {
-        title: 'Pipeline execution is Canceled',
-        summary: 'Continues-Delivery pipeline was not found<br>' +
-          'sha: `${sha}`<br>' +
-          'branch: `${branch_name}`',
-        text: 'This repository is not supported by Robo-kit or the installation was not completed please contact us for support.'
+      canceled: {
+        title: 'Canceled',
+        summary: 'Continues-Delivery pipeline was not found',
+        text: 'This repository is not supported by Robo-kit or the installation was not completed please contact us for support.',
+        template: 'canceled'
       },
-      cd_pipeline_status_update: {
-        title: 'Pipeline execution is ${status}',
-        summary: 'Continues-Delivery pipeline result is ${conclusion}<br>' +
-          'sha: `${sha}`<br>' +
-          'branch: `${branch_name}`',
-        text: 'Namespace: `${namespace}`'
+      update: {
+        title: '${status}',
+        summary: 'Continues-Delivery pipeline result is ${conclusion}',
+        text: 'Namespace: `${namespace}`',
+        template: 'status'
       }
     },
     on: {

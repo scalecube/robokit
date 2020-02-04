@@ -1,5 +1,6 @@
 const WebhooksRouter = require('./webhooks-router')
 const util = require('../utils')
+const templates = require('../statuses/templates')
 
 class GithubService {
   constructor (app, cache) {
@@ -24,7 +25,15 @@ class GithubService {
     if (output && context) {
       output.title = util.format(output.title, context)
       output.summary = util.format(output.summary, context)
-      output.text = util.format(output.text, context)
+      context.progress = util.getPrgress(context.status,context.conclusion)
+      if(output.template){
+        if(context.stages){
+          context.details = util.toDetails(context)
+        }
+        output.text = util.format(templates.get(output.template), context)
+      } else{
+        output.text = util.format(output.text, context)
+      }
     }
     return output
   }
