@@ -7,13 +7,13 @@ module.exports = {
       name: 'Robo-Kit Deploy',
       queued: {
         title: 'Waiting',
-        summary: 'Deploy pipeline initializing',
+        summary: 'Continues-Delivery pipeline is pending...',
         text: 'About to trigger a deployment pipeline',
         template: 'waiting'
       },
       starting: {
         title: 'Starting',
-        summary: 'Triggered a Continues-Delivery pipeline',
+        summary: 'Continues-Delivery pipeline is starting...',
         text: 'Waiting for Continues Delivery pipeline acknowledgment',
         template: 'starting'
       },
@@ -31,7 +31,7 @@ module.exports = {
       },
       update: {
         title: '${status}',
-        summary: 'Continues-Delivery pipeline result is ${conclusion}',
+        summary: 'Continues-Delivery pipeline: ${conclusion}',
         text: 'Namespace: `${namespace}`',
         template: 'status'
       }

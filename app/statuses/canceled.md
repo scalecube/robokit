@@ -16,4 +16,8 @@ Pipeline stages:
 > (Trigger) robo-kit pipeline queued.
 > (Trigger) robo-kit deployment pipeline was triggered successfully
 # (Trigger) pipeline was cancelled
+# -----------------------------------------------------------------------------------
+# This repository is not supported by Robo-kit or the installation was not completed.
+# please contact us for support
+# -----------------------------------------------------------------------------------
 ```
