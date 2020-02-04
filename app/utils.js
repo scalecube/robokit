@@ -151,7 +151,9 @@ class Utils {
   toDetails (context) {
     let stages = context.stages
     let details = ""
-    Object.entries(stages).forEach(stage => {
+    Object.entries(stages).sort(function(stageA, stageB) {
+      return  Number(stageA[1].Id) -  Number(stageB[1].Id)
+    }).forEach(stage => {
       details += `${this.getMarker( stage[1].Status )} ${ stage[0]} ${ stage[1].Status } \n`
       for (let j = 0 ; j < stage[1].Tasks.length ; j++ ) {
         let startDate = new Date (stage[1].Tasks[j].startTime)
