@@ -39,11 +39,7 @@ class Notifications {
             console.error(err)
           })
         count = await this.repository.count()
-      } else{
-        this.job.stop()
       }
-    } else{
-      this.job.stop()
     }
   }
 
