@@ -40,3 +40,6 @@ robo_kit_deploy:
         run: |
           echo 'Run Robo-Kit Deploy'
 ```
+
+# Check Run status update from spinnaker: 
+![image](https://user-images.githubusercontent.com/1706296/73777078-7ceda300-4791-11ea-9095-2bc58cdf7d61.png)
