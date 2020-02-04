@@ -180,4 +180,5 @@ class Utils {
     return (status=="SUCCEEDED") ? ">" : "<";
   }
 }
+
 module.exports = new Utils()
