@@ -173,7 +173,7 @@ class ApiGateway {
       const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
     if (util.is_check_run_in_status(deploy, 'trigger_on')) {
-      const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.trigger_pipeline)
+      const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           deploy.check_run_name = cfg.deploy.check.name
           deploy.action_type = 'deploy'
@@ -184,9 +184,10 @@ class ApiGateway {
           this.route(deploy.owner, deploy.repo, deploy).then(resp => {
             console.log('>>>>> CONTINUES DELIVERY PIPELINE EVENT >>> ' + JSON.stringify(resp))
             if (resp.length > 0) {
-              this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.cd_pipeline_started)
+              this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
             } else {
-              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.cd_pipeline_not_found)
+              deploy.conclusion = 'cancelled'
+              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
             }
             this.notifications.start()
           })

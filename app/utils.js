@@ -147,6 +147,38 @@ class Utils {
     })
     return field
   }
+
+  toDetails (context) {
+    let stages = context.stages
+    let details = ""
+    Object.entries(stages).forEach(stage => {
+      details += `${this.getMarker( stage[1].Status )} ${ stage[0]} ${ stage[1].Status } \n`
+      for (let j = 0 ; j < stage[1].Tasks.length ; j++ ) {
+        let startDate = new Date (stage[1].Tasks[j].startTime)
+        let endDate = new Date (stage[1].Tasks[j].endTime)
+        let duration  = endDate.getSeconds() - startDate.getSeconds()
+        details += `${ this.getMarker( stage[1].Tasks[j].status ) } ${startDate.toISOString()} ${duration}s ${ stage[1].Tasks[j].name } : ${ stage[1].Tasks[j].status } \n`
+      }
+    }) 
+    return details
+  }
+
+  getPrgress(status, conclusion) {
+    if(conclusion=="success" ) {
+      return `:heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  `
+    }else if(conclusion== "cancelled") {
+        return `:no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  `
+    } else if(status=="completed" && conclusion && conclusion!=null) {
+      return `:x: &nbsp;&nbsp;&nbsp; FAILED!  `
+    } else {
+      console.log("Deploying "+ status + " " + conclusion)
+      return `<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...`
+    }
+  }
+
+  getMarker(status){
+    return (status=="SUCCEEDED") ? ">" : "<";
+  }
 }
 
 module.exports = new Utils()
