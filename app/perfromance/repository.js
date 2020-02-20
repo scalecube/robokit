@@ -10,6 +10,10 @@ class Repository {
     return this
   }
 
+  connected(){
+    return this.collection != undefined
+  }
+
   connect (collectionName) {
     return new Promise((resolve, reject) => {
       this.client.connect(err => {
@@ -63,25 +67,61 @@ class Repository {
     })
   }
 
+  templates () {
+    return new Promise((resolve, reject) => {
+      if(this.collection) {
+        this.collection.find({}).toArray(function (err, result) {
+          if (err) reject(err)
+          resolve(result)
+        })
+      } else {
+        resolve([])
+      }
+    })
+  }
+
   find (sha, where) {
     return new Promise((resolve, reject) => {
+
       let query = { sha: sha }
 
       if (where && where instanceof Object) {
         query = where
         query.sha = sha
       }
-      this.collection.find(query).toArray(function (err, result) {
+      if(this.collection) {
+        this.collection.find(query).toArray(function (err, result) {
+          if (err) reject(err)
+          resolve(result)
+        })
+      } else {
+        resolve([])
+      }
+
+    })
+  }
+
+  map(array) {
+    let a = new Map()
+    array.map(x => {
+    if(!a.get(x.sha)) {
+      a.set(x.sha,new Date(x._id.getTimestamp()).toISOString())
+    }})
+    return a
+  };
+
+  distinct (field) {
+    return new Promise((resolve,reject) =>{
+      this.collection.find({},{sha:1}).project({ sha: 1, _id: 1 }).toArray((err, result) => {
         if (err) reject(err)
-        resolve(result)
+        let reduce = this.map(result)
+        resolve(reduce)
       })
     })
   }
 
-  distinct (field) {
-    return new Promise((resolve, reject) => {
-      resolve(this.collection.distinct(field))
-    })
+  listDatabases() {
+    console.log(this.dbo.listDatabases(true));
   }
 }
 

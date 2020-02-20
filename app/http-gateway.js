@@ -1,34 +1,53 @@
 const GithubService = require('./github/github-service')
 const cors = require('cors')
-const yaml = require('js-yaml')
+const path = require('path')
+const fs = require('fs');
 const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
+const passport = require('passport');
 
 class ApiGateway {
+
   constructor (app, cache) {
     this.app = app
     this.cache = cache
-    this.githubService = new GithubService(app, cache)
-    this.performanceService = require('./perfromance/performance-service')
+
     this.router = app.route()
+    this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
     this.router.use(cors())
     this.router.use(express.json())
-    this.start()
+
+    this.githubService = new GithubService(app, cache)
+    this.performanceService = require('./perfromance/performance-service')
     this.notifications = new Notifications(this.githubService)
+    this.start()
+
+    //const GithubPassport = require('./lib/github-passport')
+    //new GithubPassport(passport);
   }
 
   start () {
-    this.router.get('/server/ping/', (request, response) => {
-      console.log('ping request arrived -> reply with pong.')
-      response.send({ time: Date.now() })
+    //this.router.use(passport.initialize());
+
+    this.router.get('/server/ping/', async (request, response) => {
+      response.render('home', {layout: 'default', template: 'home-template'});
     })
 
-    this.router.post('/pipeline/notifications/', (request, response) => {
-      this.notifications.store(request.body)
-      response.send('OK')
-    })
+    this.router.get('/items/*', (req, res) => {
+      let file = req.originalUrl.replace("/items/","")
+      let fullPath = path.join(__dirname, file)
+      fs.readFile(fullPath, (err, json) => {
+        try{
+          let obj = JSON.parse(json);
+          res.json(obj);
+        } catch (e) {
+          console.log(e)
+        }
+      });
+
+    });
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log('### checks status request: ' + JSON.stringify(request.body))
@@ -69,10 +88,17 @@ class ApiGateway {
       }
     })
 
+    this.router.get('/templates/', (request, response) => {
+      this.thenResponse(this.performanceService.getTemplates(), response)
+    })
+
     this.router.get('/commits/:owner/:repo/', (request, response) => {
-      this.thenResponse(this.performanceService.listCommits(
+      this.performanceService.listCommits(
         request.params.owner,
-        request.params.repo), response)
+        request.params.repo).then(commits=>{
+          response.send(Array.from(commits.entries()))
+        })
+
     })
 
     this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
@@ -138,7 +164,8 @@ class ApiGateway {
         })
     })
 
-    this.router.get('/commits/:owner/:repo/', (request, response) => {
+    this.router.get('/commits/:owner?/:repo?/', (request, response) => {
+
       this.performanceService.listCommits(request.params.owner,
         request.params.repo).then((r) => {
         writeResponse(r, response)
@@ -146,6 +173,7 @@ class ApiGateway {
         console.log(err)
       })
     })
+
   }
 
   async deployContext (context) {
@@ -156,9 +184,13 @@ class ApiGateway {
     }
 
     if (deploy.is_pull_request && deploy.issue_number) {
-      const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
-      deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
-      deploy.labels = labels.map(i => i.name)
+      try {
+        let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
+        deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
+        deploy.labels = labels.map(i => i.name)
+      } catch (e) {
+        console.error(e)
+      }
     } else {
       deploy.labeled = false
     }
@@ -183,6 +215,10 @@ class ApiGateway {
           this.route(deploy.owner, deploy.repo, deploy).then(resp => {
             console.log('>>>>> CONTINUES DELIVERY PIPELINE EVENT >>> ' + JSON.stringify(resp))
             if (resp.length > 0) {
+              let event = resp[0];
+              event.application = `${deploy.owner}-${deploy.repo}`
+              event.status = 'in_progress'
+              this.notifications.store(event)
               this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
             } else {
               deploy.conclusion = 'cancelled'

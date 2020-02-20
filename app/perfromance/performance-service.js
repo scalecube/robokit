@@ -14,10 +14,24 @@ class PerformanceService {
           resolve(this.repo.get(key))
         })
       } else {
-        resolve(this.repo.get(key))
+        if(!this.repo.get(key).connected()){
+          this.repo.get(key).connect(repoName).then(r=>{
+            resolve(this.repo.get(key))
+          })
+        } else{
+          resolve(this.repo.get(key))
+        }
       }
     })
   };
+
+  getTemplates () {
+    return new Promise((resolve, reject) => {
+      this.getOrCreate('github-gateway', "templates").then(repo => {
+        resolve(repo.templates())
+      })
+    })
+  }
 
   createTemplate (owner, repo, name, data) {
     return new Promise((resolve, reject) => {
@@ -45,9 +59,14 @@ class PerformanceService {
 
   listCommits (owner, repoName) {
     return new Promise((resolve, reject) => {
-      this.getOrCreate(owner, repoName).then(repo => {
-        resolve(repo.distinct('sha'))
-      })
+      if(owner && repoName){
+        this.getOrCreate(owner, repoName).then(repo => {
+          let x = repo.distinct('sha')
+          resolve(x)
+        })
+      } else {
+        reject(new Error())
+      }
     })
   }
 };

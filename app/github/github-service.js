@@ -9,10 +9,9 @@ class GithubService {
     this.cache = cache
   }
 
-  async createCheckRun (github, checks, context) {
+  async createCheckRun (github, checks) {
     const all = []
     checks.forEach(async check => {
-      check.output = this.formatOutput(check.output, context)
       const p = github.checks.create(check)
       console.log('>>>> UPDATE STATUS  >>>> ' + JSON.stringify(check))
       all.push(p)

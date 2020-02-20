@@ -154,17 +154,32 @@ class Utils {
     Object.entries(stages).sort(function(stageA, stageB) {
       return  Number(stageA[1].Id) -  Number(stageB[1].Id)
     }).forEach(stage => {
-      details += `${this.getMarker( stage[1].Status )} ${ stage[0]} ${ stage[1].Status } \n`
-      for (let j = 0 ; j < stage[1].Tasks.length ; j++ ) {
-        let startDate = new Date (stage[1].Tasks[j].startTime)
-        let endDate = new Date (stage[1].Tasks[j].endTime)
+      let startDate = new Date (stage[1].startTime)
+      let endDate = new Date (stage[1].endTime)
+      let duration  = this.duration(endDate,startDate)
+      details += `${this.getMarker( stage[1].status )} STAGE[${ stage[0]}, ${duration}s, ${this.time(stage[1].endTime)}] ${ stage[1].name} : ${ stage[1].status } \n`
+      for (let j = 0 ; j < stage[1].tasks.length ; j++ ) {
+        let startDate = new Date (stage[1].tasks[j].startTime)
+        let endDate = new Date (stage[1].tasks[j].endTime)
         let duration  = endDate.getSeconds() - startDate.getSeconds()
-        details += `${ this.getMarker( stage[1].Tasks[j].status ) } ${startDate.toISOString()} ${duration}s ${ stage[1].Tasks[j].name } : ${ stage[1].Tasks[j].status } \n`
+        details += `${ this.getMarker( stage[1].tasks[j].status ) } ${endDate.toISOString()} ${duration}s ${ stage[1].tasks[j].name } : ${ stage[1].tasks[j].status } \n`
       }
     }) 
     return details
   }
-
+  duration(endDate, startDate) {
+    let t= endDate.getSeconds() - startDate.getSeconds()
+    if(t.toString() == "NaN") {
+      return "--"
+    } else {
+      return t
+    }
+  }
+  time(t){
+    if(t){
+      return new Date (t).toISOString()
+    } else return "....-..-..T..:..:.....z"
+  }
   getPrgress(status, conclusion) {
     if(conclusion=="success" ) {
       return `:heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  `
@@ -178,11 +193,50 @@ class Utils {
     }
   }
 
+  toPrgress(status) {
+    if(status=="SUCCEEDED" ) {
+      return `:heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  `
+    } else if(status == "TERMINAL" || status =="FAILED_CONTINUE") {
+      return `:x: &nbsp;&nbsp;&nbsp; FAILED!  `
+    } else if (status == "NOT_STARTED"|| status =="RUNNING"){
+      console.log("Deploying "+ status)
+      return `<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...`
+    } else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") {
+      return `:no_entry_sign: &nbsp;&nbsp;&nbsp; ${status}!`
+    }
+  }
+
   getMarker(status){
-    if (status=="SUCCEEDED") return ">"
-    else if (status == "TERMINAL" || "FAILED_CONTINUE") return "<"
-    else if (status == "NOT_STARTED") return "&nbsp"
-    else return "&nbsp"
+    if (status=="SUCCEEDED") {
+      return ">"
+    }else if (status == "TERMINAL" || status == "FAILED_CONTINUE") {
+      return "<"
+    }else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") {
+      return "#"
+    }else if(status=="RUNNING"){
+      return "*"
+    }else return " "
+  }
+
+  /*
+   Required if you provide completed_at or a status of completed. The final conclusion of the check.
+   Can be one of success, failure, neutral, cancelled, timed_out, or action_required.
+   When the conclusion is action_required, additional details should be provided on the site specified by details_url.
+   Note: Providing conclusion will automatically set the status parameter to completed. Only GitHub can change a check run conclusion to stale.
+   */
+  getStatus (status) {
+    if (status==="SUCCEEDED") { return {
+      status: "completed",
+      conclusion: "success"
+    }} else if (status == "TERMINAL" || status =="FAILED_CONTINUE") { return {
+      status: "completed",
+      conclusion: "failure"
+    }} else if (status == "NOT_STARTED"|| status =="RUNNING") { return {
+      status: "in_progress"
+    }} else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") { return {
+      status: "completed",
+      conclusion: "cancelled"
+    }}
   }
 }
 

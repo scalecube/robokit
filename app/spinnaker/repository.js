@@ -51,13 +51,13 @@ class Repository {
   }
 
   findOldest () {
-    return this.collection.findOneAndDelete({},
+    return this.collection.findOne({},
       { sort: { _id: 1 } })
   }
 
   delete (oid) {
     return new Promise((resolve, reject) => {
-      this.collection.remove({ _id: oid })
+      this.collection.deleteOne({ _id: oid })
         .then(resolve)
         .catch(reject)
     })
