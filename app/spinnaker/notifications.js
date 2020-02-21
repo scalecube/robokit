@@ -52,6 +52,8 @@ class Notifications {
           })
 
         count = await this.repository.count()
+      } else {
+        this.job.stop()
       }
     }
   }

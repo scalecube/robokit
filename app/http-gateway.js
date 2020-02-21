@@ -23,7 +23,7 @@ class ApiGateway {
     this.performanceService = require('./perfromance/performance-service')
     this.notifications = new Notifications(this.githubService)
     this.start()
-
+    this.notifications.start()
     //const GithubPassport = require('./lib/github-passport')
     //new GithubPassport(passport);
   }
@@ -224,7 +224,6 @@ class ApiGateway {
               deploy.conclusion = 'cancelled'
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
             }
-            this.notifications.start()
           })
         }).catch(err => {
           console.log(err)
