@@ -107,7 +107,7 @@ class Repository {
     let a = new Map()
     array.map(x => {
     if(!a.get(x.sha)) {
-      a.set(x.sha,new Date(x._id.getTimestamp()).toISOString())
+      a.set(x.sha,new Date(x._id.getTimestamp()).toISOString().replace("T"," ----> ").slice(0,-5))
     }})
     return a
   };
