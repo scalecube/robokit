@@ -51,7 +51,7 @@ class Catrgory extends React.Component {
                 </CopyToClipboard>
                 <label>{"..."+item.sha.slice(item.sha.length - 20)}</label>
                 <br/>
-                <li style={{fontSize:'9px'}} key={item.id}>{new Date().toISOString()}</li>
+                <li style={{fontSize:'9px'}} key={item.id}>{item.date}</li>
               </div>)
             })
           }

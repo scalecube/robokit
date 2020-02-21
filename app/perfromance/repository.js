@@ -114,7 +114,7 @@ class Repository {
 
   distinct (field) {
     return new Promise((resolve,reject) =>{
-      this.collection.find({},{sha:1}).project({ sha: 1, _id: 1 }).toArray((err, result) => {
+      this.collection.find({},{sha:-1}).project({ sha: 1, _id: 1 }).sort( { _id: -1 } ).toArray((err, result) => {
         if (err) reject(err)
         let reduce = this.map(result)
         resolve(reduce)
