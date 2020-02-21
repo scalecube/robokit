@@ -18,12 +18,12 @@ function param(variable) {
 }
 
 
-let draw = (containerId, input,sha) => {
+let draw = (containerId, template, sha) => {
   let array = []
-  if(input.charts){
-    input = input.charts
+  if(template.charts){
+    template = template.charts
   }
-  input.map(async (chart) => {
+  template.map(async (chart) => {
     array.push(new Promise(async (resolve,reject)=>{
       let data = await axios.get(chart.traces.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data)
       let layout = await axios.get(chart.template.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data)
@@ -45,8 +45,8 @@ async function init () {
   let template = param('template')
   let sha = param('sha')
   if(template && sha) {
-    let input = await axios.get(template).then(resp=>resp.data)
-    draw('main-view', input,sha)
+    template = await axios.get(`${SERVER_URL}/templates/${template}`).then(resp=>resp.data)
+    draw('main-view', template[0],sha)
   }
   window.eventBus.on('draw-charts', async (e) => {
     if(e.url){

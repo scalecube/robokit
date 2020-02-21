@@ -25,10 +25,10 @@ class PerformanceService {
     })
   };
 
-  getTemplates () {
+  getTemplates (template) {
     return new Promise((resolve, reject) => {
       this.getOrCreate('github-gateway', "templates").then(repo => {
-        resolve(repo.templates())
+          resolve(repo.templates(template))
       })
     })
   }

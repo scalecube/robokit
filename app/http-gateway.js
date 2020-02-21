@@ -88,8 +88,8 @@ class ApiGateway {
       }
     })
 
-    this.router.get('/templates/', (request, response) => {
-      this.thenResponse(this.performanceService.getTemplates(), response)
+    this.router.get('/templates/:template?', (request, response) => {
+      this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
     })
 
     this.router.get('/commits/:owner/:repo/', (request, response) => {

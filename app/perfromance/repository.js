@@ -67,10 +67,12 @@ class Repository {
     })
   }
 
-  templates () {
+  templates (template) {
     return new Promise((resolve, reject) => {
       if(this.collection) {
-        this.collection.find({}).toArray(function (err, result) {
+        let query = {}
+        if(template) query = { templateId : template }
+        this.collection.find(query).toArray(function (err, result) {
           if (err) reject(err)
           resolve(result)
         })
