@@ -14,14 +14,10 @@ class Notifications {
       this._poll()
     }, null, true, 'America/Los_Angeles')
     spinnakerAPI.login()
-
-    this.loginjob = new CronJob('10 * * * * *', async () => {
-      spinnakerAPI.login()
-    }, null, true, 'America/Los_Angeles')
-    this.loginjob.start()
   }
 
-  start () {
+  async start () {
+    if(!this.job.running) await spinnakerAPI.login()
     this.job.start()
   }
 
