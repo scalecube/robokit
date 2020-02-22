@@ -17,6 +17,7 @@ class Notifications {
   }
 
   async start () {
+    // login if job is not running.
     if(!this.job.running) await spinnakerAPI.login()
     this.job.start()
   }
