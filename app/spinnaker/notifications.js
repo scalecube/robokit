@@ -17,8 +17,6 @@ class Notifications {
   }
 
   async start () {
-    // login if job is not running.
-    if(!this.job.running) await spinnakerAPI.login()
     this.job.start()
   }
 
@@ -34,8 +32,12 @@ class Notifications {
       if (count !== 0) {
         this.repository.findOldest()
           .then(async item => {
-
-            let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+            let res = []
+            try {
+              res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+            } catch (err){
+              spinnakerAPI.login()
+            }
             if(res.length>0) {
               let pipeline = res[0]
               if(pipeline.status != "RUNNING" || pipeline.status=="NOT_STARTED") {
