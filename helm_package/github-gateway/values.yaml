@@ -15,6 +15,7 @@ env:
   LOG_LEVEL: ""
   SPINNAKER: ""
   SPINNAKER_ACCESS_TOKEN: ""
+  VAR: ""
 
 podTemplate:
   annotations: {}
