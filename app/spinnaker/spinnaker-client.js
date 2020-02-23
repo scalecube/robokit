@@ -64,7 +64,8 @@ class SpinnakerAPI {
         url: url,
         headers: {
           cookie: 'SESSION=' + this.session,
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"
+          accept: "application/vnd.github.v3.patch",
+          "user-agent": "octokit.js/16.13.4 Node.js/10.15.0 (macOS High Sierra; x64)",
         }
       }).then((res) => {
         resolve(res.data)
