@@ -14,6 +14,7 @@ class Notifications {
       this._poll()
     }, null, true, 'America/Los_Angeles')
     spinnakerAPI.login()
+    this.lastActivity = new Date()
   }
 
   async start () {
@@ -25,13 +26,20 @@ class Notifications {
       this.job.start()
     })
   }
-
+  async checkLogin() {
+    let diff =(new Date().getTime() - this.lastActivity.getTime()) / 60000;
+    if( Math.abs(Math.round(diff)) > 30){
+      await spinnakerAPI.login()
+    }
+    this.lastActivity = new Date()
+  }
   async _poll () {
     if (this.repository) {
       let count = await this.repository.count()
       if (count !== 0) {
         this.repository.findOldest()
           .then(async item => {
+            await this.checkLogin()
             let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
             if(res.length>0) {
               let pipeline = res[0]
