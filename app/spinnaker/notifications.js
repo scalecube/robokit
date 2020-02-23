@@ -32,12 +32,8 @@ class Notifications {
       if (count !== 0) {
         this.repository.findOldest()
           .then(async item => {
-            let res = []
-            try {
-              res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
-            } catch (err){
-              spinnakerAPI.login()
-            }
+            let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+
             if(res.length>0) {
               let pipeline = res[0]
               if(pipeline.status != "RUNNING" || pipeline.status=="NOT_STARTED") {
@@ -56,8 +52,6 @@ class Notifications {
           })
 
         count = await this.repository.count()
-      } else {
-        this.job.stop()
       }
     }
   }
