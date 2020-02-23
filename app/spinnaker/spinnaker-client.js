@@ -1,26 +1,19 @@
-const axios = require('axios')
-const axiosCookieJarSupport = require('axios-cookiejar-support').default;
-const tough = require('tough-cookie')
-axiosCookieJarSupport(axios);
-const cookieJar = new tough.CookieJar();
-
+var req = require('request-promise'); // just this line is changed
+const cookieJar = req.jar();
 class SpinnakerAPI {
 
   constructor (){
 
   }
 
-  login(access_token) {
-
-    return new Promise((resolve, reject) => {
-      if(!access_token){
-        access_token = process.env.SPINNAKER_ACCESS_TOKEN
-      }
-      axios({
+  login(access_token){
+    if(!access_token){
+      access_token = process.env.SPINNAKER_ACCESS_TOKEN
+    }
+    return req ({
         // make a POST request
-        method: 'get',
+        method: 'GET',
         jar: cookieJar, // tough.CookieJar or boolean
-        withCredentials: true,
         // to the Github authentication API, with the client ID, client secret
         // and request token
         url: `https://${process.env.SPINNAKER}/login`,
@@ -28,13 +21,19 @@ class SpinnakerAPI {
         headers: {
           Authorization: 'Bearer ' + access_token
         }
-      }).then((response) => {
-        this.session = cookieJar.store.idx[process.env.SPINNAKER]['/']['SESSION'].value
-        resolve(this.session)
-      }).catch(err => {
-        reject(err)
-      });
-    });
+    }).then((response) => {
+      this.session = cookieJar._jar.store.idx[process.env.SPINNAKER]['/']['SESSION'].value
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  get(url) {
+    return req({
+        uri: url,
+        method: "GET",
+        jar: cookieJar}
+      );
   }
 
   async executions(){
@@ -57,21 +56,5 @@ class SpinnakerAPI {
     return this.get(`https://${process.env.SPINNAKER}/applications/${application}/executions/search?triggerTypes=webhook${params}`)
   }
 
-  get(url){
-    return new Promise((resolve, reject) => {
-      axios({
-        method: 'get',
-        url: url,
-        headers: {
-          cookie: 'SESSION=' + this.session,
-          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
-        }
-      }).then((res) => {
-        resolve(res.data)
-      }).catch(err => {
-        reject(err)
-      })
-    })
-  }
 }
 module.exports= new SpinnakerAPI()

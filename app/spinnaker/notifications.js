@@ -14,6 +14,13 @@ class Notifications {
       this._poll()
     }, null, true, 'America/Los_Angeles')
     spinnakerAPI.login()
+      .then(se=>{
+        spinnakerAPI.applications('scalecube-github=gateway','1').then(res=>{
+          console.log(res)
+        }).catch(err=>{
+          console.error(err)
+        })
+      })
   }
 
   async start () {
