@@ -36,16 +36,21 @@ class Notifications {
             console.log(JSON.stringify(res))
             if(res.length>0) {
               let pipeline = res[0]
-              if(pipeline.status != "RUNNING" || pipeline.status=="NOT_STARTED") {
-                this.repository.delete(item._id)
+              if (pipeline.trigger) {
+                let owner = pipeline.trigger.payload.owner;
+                let repo = pipeline.trigger.payload.repo;
+                if (owner && repo) {
+                  const check = this.toChecks(pipeline)
+                  const github = this.githubService.cache.get(owner, repo)
+                  this.githubService.createCheckRun(github, check).then(res => {
+                    if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
+                      this.repository.delete(item._id)
+                    }
+                  })
+                }
               }
-              let owner =  pipeline.trigger.payload.owner;
-              let repo = pipeline.trigger.payload.repo;
-              if(owner && repo){
-                const check = this.toChecks(pipeline)
-                const github = this.githubService.cache.get(owner, repo)
-                this.githubService.createCheckRun(github, check )
-              }
+            } else {
+              spinnakerAPI.login()
             }
           }).catch(err => {
             console.error(err)
