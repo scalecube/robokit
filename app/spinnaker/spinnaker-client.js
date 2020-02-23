@@ -32,7 +32,9 @@ class SpinnakerAPI {
     return req({
         uri: url,
         method: "GET",
-        jar: cookieJar}
+        jar: cookieJar,
+        json: true
+       }
       );
   }
 
