@@ -61,6 +61,7 @@ class Notifications {
     }
   }
 
+
   toChecks (pipeline) {
     let startDate = new Date (pipeline.startTime)
     let endDate = new Date (pipeline.endTime)
