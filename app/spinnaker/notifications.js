@@ -33,7 +33,6 @@ class Notifications {
         this.repository.findOldest()
           .then(async item => {
             let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
-            console.log(JSON.stringify(res))
             if(res.length>0) {
               let pipeline = res[0]
               if (pipeline.trigger) {
