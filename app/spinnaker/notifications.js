@@ -38,6 +38,7 @@ class Notifications {
       }
     }
   }
+
   async _poll () {
     await this.checkLogin()
     if (this.repository) {
