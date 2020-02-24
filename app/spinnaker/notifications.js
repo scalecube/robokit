@@ -29,8 +29,8 @@ class Notifications {
   async checkLogin() {
     let diff =(new Date().getTime() - this.lastActivity.getTime()) / 60000;
     let diffMinutes = Math.abs(Math.round(diff))
-    if( diffMinutes > 30) {
-      console.log(`Time diff from last activity : ${diffMinutes}`)
+    console.log(`Time diff from last activity : ${diffMinutes}`)
+    if( diffMinutes > 30 ) {
       let resp = await spinnakerAPI.login()
       if(resp && resp.auth){
         console.log(`Auth result: ${resp.auth}`)
@@ -111,6 +111,5 @@ class Notifications {
       text: md
     }
   }
-
 }
 module.exports = Notifications
