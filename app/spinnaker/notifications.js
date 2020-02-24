@@ -42,35 +42,42 @@ class Notifications {
     if (this.repository) {
       let count = await this.repository.count()
       if (count !== 0) {
-        this.repository.findOldest()
-          .then(async item => {
-            await this.checkLogin()
-            let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
-            if(res.length>0) {
-              let pipeline = res[0]
-              if (pipeline.trigger) {
-                let owner = pipeline.trigger.payload.owner;
-                let repo = pipeline.trigger.payload.repo;
-                if (owner && repo) {
-                  const check = this.toChecks(pipeline)
-                  const github = this.githubService.cache.get(owner, repo)
-                  this.githubService.createCheckRun(github, check).then(res => {
-                    if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
-                      this.repository.delete(item._id)
-                    }
-                  })
+        for(let i = 0 ; i < count ; i++) {
+          this.repository.findOldest()
+            .then(async item => {
+              await this.checkLogin()
+              let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+              if(res.length>0) {
+                let pipeline = res[0]
+                if (pipeline.trigger) {
+                  let owner = pipeline.trigger.payload.owner;
+                  let repo = pipeline.trigger.payload.repo;
+                  if (owner && repo) {
+                    const check = this.toChecks(pipeline)
+                    const github = this.githubService.cache.get(owner, repo)
+                    this.githubService.createCheckRun(github, check).then(res => {
+                      if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
+                        this.repository.delete(item._id)
+                      }
+                    })
+                  }
                 }
               }
-            }
-          }).catch(err => {
-            console.error(err)
-          })
-
+            }).catch(err => {
+              console.error(err)
+            })
+          await this.delay(2)
+        }
         count = await this.repository.count()
       }
     }
   }
 
+  async delay(sec){
+    return new Promise((resolve, reject)=>{
+      setTimeout(() => {  resolve(new Date()) }, sec*1000);
+    })
+  }
 
   toChecks (pipeline) {
     let startDate = new Date (pipeline.startTime)
