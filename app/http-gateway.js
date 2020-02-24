@@ -204,7 +204,7 @@ class ApiGateway {
     if (util.is_check_run_in_status(deploy, 'create_on')) {
       const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
-    if (util.is_check_run_in_status(deploy, 'trigger_on')) {
+    if (context.user_action=="deploy_now" || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           deploy.check_run_name = cfg.deploy.check.name
