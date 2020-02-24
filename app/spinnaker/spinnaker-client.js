@@ -20,7 +20,8 @@ class SpinnakerAPI {
         // Set the content type header, so that we get the response in JSOn
         headers: {
           Authorization: 'Bearer ' + access_token
-        }
+        },
+        json: true
     }).then((response) => {
       this.session = cookieJar._jar.store.idx[process.env.SPINNAKER]['/']['SESSION'].value
     }).catch(err => {

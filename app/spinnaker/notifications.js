@@ -56,8 +56,6 @@ class Notifications {
                   })
                 }
               }
-            } else {
-              spinnakerAPI.login()
             }
           }).catch(err => {
             console.error(err)
