@@ -52,12 +52,12 @@ class Notifications {
               } catch(err) {
                 if(err.statusCode == 403) {
                   if(item.deploy) {
+                    await this.delay(5)
                     const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
                     const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
                     this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
                       this.repository.delete(item._id)
                     })
-                    await this.delay(2)
                   } else {
                     this.repository.delete(item._id)
                   }
@@ -90,6 +90,7 @@ class Notifications {
 
   async delay(sec){
     return new Promise((resolve, reject)=>{
+      sec = Math.floor(Math.random() * Math.floor(sec))
       setTimeout(() => {  resolve(new Date()) }, sec*1000);
     })
   }
