@@ -36,7 +36,7 @@ module.exports = app => {
   })
 
   app.on('check_run.requested_action', async context => {
-
+    console.log()
   })
 
   app.on([
