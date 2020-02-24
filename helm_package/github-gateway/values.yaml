@@ -12,9 +12,11 @@ env:
   WEBHOOK_SECRET: ""
   PORT: ""
   MONGO_DB_CONNECTION_STRING: ""
-  WEBHOOK_PROXY_URL: ""
   LOG_LEVEL: ""
-  
+  SPINNAKER: ""
+  SPINNAKER_ACCESS_TOKEN: ""
+  VAR: ""
+
 podTemplate:
   annotations: {}
 

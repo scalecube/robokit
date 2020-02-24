@@ -43,6 +43,18 @@ module.exports = app => {
   })
 
   console.log('Server Started.')
+
+  if(process.env.SUBDOMAIN){
+    const SmeeClient = require('smee-client')
+
+    const smee = new SmeeClient({
+      source: `https://smee.io/${process.env.SUBDOMAIN}`,
+      target: `http://localhost:${process.env.PORT}`,
+      logger: console
+    })
+
+    const events = smee.start()
+  }
 }
 // For more information on building apps:
 // https://probot.github.io/docs/
