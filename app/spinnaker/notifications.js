@@ -28,8 +28,13 @@ class Notifications {
   }
   async checkLogin() {
     let diff =(new Date().getTime() - this.lastActivity.getTime()) / 60000;
-    if( Math.abs(Math.round(diff)) > 30){
-      await spinnakerAPI.login()
+    let diffMinutes = Math.abs(Math.round(diff))
+    if( diffMinutes > 30) {
+      console.log(`Time diff from last activity : ${diffMinutes}`)
+      let resp = await spinnakerAPI.login()
+      if(resp && resp.auth){
+        console.log(`Auth result: ${resp.auth}`)
+      }
     }
     this.lastActivity = new Date()
   }

@@ -24,6 +24,10 @@ class SpinnakerAPI {
         json: true
     }).then((response) => {
       this.session = cookieJar._jar.store.idx[process.env.SPINNAKER]['/']['SESSION'].value
+      return {
+        auth: true,
+        session: this.session
+      }
     }).catch(err => {
       console.error(err)
     })
