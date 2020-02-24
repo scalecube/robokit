@@ -50,6 +50,21 @@ class Repository {
     })
   }
 
+  find () {
+    return new Promise((resolve,reject )=>{
+      let recSet = []
+      this.collection.find({}).sort({ _id: 1 }).each((err, item) => {
+        // If the item is null then the cursor is exhausted/empty and closed
+        if(item==null){
+          resolve(recSet)
+        } else{
+          recSet.push(item)
+        }
+        // otherwise, do something with the item
+      })
+    })
+  }
+
   findOldest () {
     return this.collection.findOne({},
       { sort: { _id: 1 } })

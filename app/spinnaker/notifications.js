@@ -39,51 +39,52 @@ class Notifications {
     }
   }
   async _poll () {
+    await this.checkLogin()
     if (this.repository) {
       let count = await this.repository.count()
-      for(let i = 0 ; i < count ; i++) {
-        this.repository.findOldest()
-          .then(async item => {
-            await this.checkLogin()
+        this.repository.find()
+          .then(async items => {
             let res = []
-            try{
-               res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
-            } catch(err) {
-              if(err.statusCode == 403) {
-                if(item.deploy) {
-                  const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
-                  const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
-                  this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
-                    this.repository.delete(item._id)
-                  })
-                } else {
-                  this.repository.delete(item._id)
-                }
-              }else{
-                spinnakerAPI.login()
-              }
-            }
-            if(res.length>0) {
-              let pipeline = res[0]
-              if (pipeline.trigger) {
-                let owner = pipeline.trigger.payload.owner;
-                let repo = pipeline.trigger.payload.repo;
-                if (owner && repo) {
-                  const check = this.toChecks(pipeline)
-                  const github = this.githubService.cache.get(owner, repo)
-                  this.githubService.createCheckRun(github, check).then(res => {
-                    if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
+            items.forEach(async (item)=> {
+              if(!item) return
+              try{
+                 res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+              } catch(err) {
+                if(err.statusCode == 403) {
+                  if(item.deploy) {
+                    const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
+                    const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
+                    this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
                       this.repository.delete(item._id)
-                    }
-                  })
+                    })
+                    await this.delay(2)
+                  } else {
+                    this.repository.delete(item._id)
+                  }
+                }else{
+                  spinnakerAPI.login()
                 }
               }
-            }
-          }).catch(err => {
-            console.error(err)
+              if(res.length>0) {
+                let pipeline = res[0]
+                if (pipeline.trigger) {
+                  let owner = pipeline.trigger.payload.owner;
+                  let repo = pipeline.trigger.payload.repo;
+                  if (owner && repo) {
+                    const check = this.toChecks(pipeline)
+                    const github = this.githubService.cache.get(owner, repo)
+                    this.githubService.createCheckRun(github, check).then(res => {
+                      if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
+                        this.repository.delete(item._id)
+                      }
+                    })
+                  }
+                }
+              }
+            }).catch(err => {
+              console.error(err)
+            })
           })
-        await this.delay(2)
-      }
     }
   }
 
