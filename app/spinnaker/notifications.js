@@ -111,8 +111,10 @@ class Notifications {
       }]
     }
     if(util.getStatus(pipeline.status).conclusion) {
-      check.completed_at = endDate.toISOString()
-      check.started_at = startDate.toISOString()
+      try{
+        check.completed_at = endDate.toISOString()
+        check.started_at = startDate.toISOString()
+      } catch (e) {}
       check.conclusion = util.getStatus(pipeline.status).conclusion
     }
     return [check]

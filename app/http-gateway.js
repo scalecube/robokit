@@ -218,6 +218,7 @@ class ApiGateway {
               let event = resp[0];
               event.application = `${deploy.owner}-${deploy.repo}`
               event.status = 'in_progress'
+              event.deploy = deploy
               this.notifications.store(event)
               this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
             } else {
