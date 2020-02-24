@@ -111,6 +111,7 @@ class Notifications {
         identifier: "deploy_now"
       }]
     }
+
     if(util.getStatus(pipeline.status).conclusion) {
       try{
         check.completed_at = endDate.toISOString()
