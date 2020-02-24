@@ -106,7 +106,7 @@ class Notifications {
       status: util.getStatus(pipeline.status).status,
       output : this.toOutput(cfg.deploy.check.update, pipeline),
       actions: [{
-        label: "Deploy",
+        label: ":repeat: Deploy",
         description: "Trigger the Deploy pipeline",
         identifier: "deploy_now"
       }]
