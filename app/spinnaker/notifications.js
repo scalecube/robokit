@@ -73,6 +73,7 @@ class Notifications {
                   if (owner && repo) {
                     const check = this.toChecks(pipeline)
                     const github = this.githubService.cache.get(owner, repo)
+                    await this.delay(5)
                     this.githubService.createCheckRun(github, check).then(res => {
                       if (pipeline.status != "RUNNING" || pipeline.status == "NOT_STARTED") {
                         this.repository.delete(item._id)
