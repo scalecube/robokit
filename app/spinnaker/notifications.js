@@ -29,14 +29,14 @@ class Notifications {
   async checkLogin() {
     let diff =(new Date().getTime() - this.lastActivity.getTime()) / 60000;
     let diffMinutes = Math.abs(Math.round(diff))
-    console.log(`Time diff from last activity : ${diffMinutes}`)
     if( diffMinutes > 30 ) {
+      console.log(`Time diff from last activity : ${diffMinutes}`)
       let resp = await spinnakerAPI.login()
+      this.lastActivity = new Date()
       if(resp && resp.auth){
         console.log(`Auth result: ${resp.auth}`)
       }
     }
-    this.lastActivity = new Date()
   }
   async _poll () {
     if (this.repository) {
@@ -45,7 +45,24 @@ class Notifications {
         this.repository.findOldest()
           .then(async item => {
             await this.checkLogin()
-            let res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+            let res = []
+            try{
+               res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
+            } catch(err) {
+              if(err.statusCode == 403) {
+                if(item.deploy) {
+                  const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
+                  const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
+                  this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
+                    this.repository.delete(item._id)
+                  })
+                } else {
+                  this.repository.delete(item._id)
+                }
+              }else{
+                spinnakerAPI.login()
+              }
+            }
             if(res.length>0) {
               let pipeline = res[0]
               if (pipeline.trigger) {
@@ -119,6 +136,35 @@ class Notifications {
       summary: template.summary.replace("${conclusion}",util.getStatus(pipeline.status).conclusion),
       text: md
     }
+  }
+  updateCheckRunStatus (context, deploy, status, output) {
+    const check_run = this.githubService.checkStatus(deploy, cfg.deploy.check.name, status)
+    check_run.output = output
+    return this.githubService.createCheckRun(context.github, [check_run], deploy)
+  }
+
+  checkStatus (deploy, name, status) {
+    const result = {
+      name: name,
+      owner: deploy.owner,
+      repo: deploy.repo,
+      head_sha: deploy.sha,
+      status: status
+    }
+
+    if (status == 'completed') {
+      result.conclusion = 'success'
+      result.completed_at = new Date().toISOString()
+    } else if (status == 'cancelled') {
+      result.status = 'completed'
+      result.conclusion = 'cancelled'
+    } else if (status == 'in_progress') {
+      result.status = 'in_progress'
+      result.started_at = new Date().toISOString()
+    } else if (status == 'queued') {
+      result.status = 'queued'
+    }
+    return result
   }
 }
 module.exports = Notifications
