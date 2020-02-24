@@ -86,7 +86,12 @@ class Notifications {
       head_sha: pipeline.trigger.payload.sha,
       name: pipeline.trigger.payload.check_run_name,
       status: util.getStatus(pipeline.status).status,
-      output : this.toOutput(cfg.deploy.check.update, pipeline)
+      output : this.toOutput(cfg.deploy.check.update, pipeline),
+      actions: [{
+        label: "Deploy",
+        description: "Trigger the Deploy pipeline",
+        identifier: "deploy_now"
+      }]
     }
     if(util.getStatus(pipeline.status).conclusion) {
       check.completed_at = endDate.toISOString()

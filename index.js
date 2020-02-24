@@ -35,6 +35,10 @@ module.exports = app => {
     return api.onPullRequest(context)
   })
 
+  app.on('check_run.requested_action', async context => {
+
+  })
+
   app.on([
     'issue_comment',
     'issues',
