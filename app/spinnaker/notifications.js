@@ -10,7 +10,7 @@ class Notifications {
     this.githubService = githubService
     this.repository = new Repository('github-gateway')
     this.repository.connect('executions')
-    this.job = new CronJob('*/25 * * * * *', async () => {
+    this.job = new CronJob('*/30 * * * * *', async () => {
       this._poll()
     }, null, true, 'America/Los_Angeles')
     spinnakerAPI.login()
