@@ -207,7 +207,7 @@ class ApiGateway {
     }
 
     if(context.user_action=="cancel_deploy_now") {
-      if(context.payload.check_run.external_id)
+      if(context.payload.check_run.external_id) {
         let application = `${deploy.owner}-${deploy.repo}`
         spinnakerAPI.pipelineCancel(application, context.payload.check_run.external_id)
           .then(res=>{
