@@ -207,7 +207,7 @@ class ApiGateway {
     }
 
     if(context.user_action=="cancel_deploy_now") {
-      if(context.payload.check_run.external_id) {
+      if(context.payload.check_run.external_id){
         let application = `${deploy.owner}-${deploy.repo}`
         spinnakerAPI.pipelineCancel(application, context.payload.check_run.external_id)
           .then(res=>{
@@ -215,6 +215,7 @@ class ApiGateway {
         }).catch(err=> {
             console.error(err)
         })
+      }
     } else if (context.user_action=="deploy_now" || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
