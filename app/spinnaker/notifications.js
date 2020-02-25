@@ -108,11 +108,7 @@ class Notifications {
       name: pipeline.trigger.payload.check_run_name,
       status: util.getStatus(pipeline.status).status,
       output : this.toOutput(cfg.deploy.check.update, pipeline),
-      actions: [{
-        label: "Re-Deploy",
-        description: "Trigger the Deploy pipeline",
-        identifier: "deploy_now"
-      }]
+      external_id: pipeline.id
     }
 
     if(util.getStatus(pipeline.status).conclusion) {
@@ -121,6 +117,9 @@ class Notifications {
         check.started_at = startDate.toISOString()
       } catch (e) {}
       check.conclusion = util.getStatus(pipeline.status).conclusion
+      check.actions = cfg.user_actions.done
+    }else{
+      check.actions = cfg.user_actions.in_progress
     }
     return [check]
   }

@@ -43,6 +43,18 @@ class SpinnakerAPI {
       );
   }
 
+  put(url) {
+    console.log(url)
+    return req.put({
+        uri: url,
+        jar: cookieJar,
+        json: true
+      }
+    ).then(res=>{
+      console.log(res)
+    });
+  }
+
   async executions(){
     let executions = [];
     let apps = await this.applications()
@@ -51,6 +63,10 @@ class SpinnakerAPI {
       executions.push(exec)
     }
     return executions;
+  }
+
+  pipelineCancel(application, id){
+    return this.put(`https://${process.env.SPINNAKER}/applications/${application}/pipelines/${id}/cancel`)
   }
 
   applications(){

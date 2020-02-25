@@ -7,6 +7,7 @@ const cfg = require('./config')
 const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 const passport = require('passport');
+const spinnakerAPI = require('./spinnaker/spinnaker-client')
 
 class ApiGateway {
 
@@ -204,7 +205,17 @@ class ApiGateway {
     if (util.is_check_run_in_status(deploy, 'create_on')) {
       const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
-    if (context.user_action=="deploy_now" || util.is_check_run_in_status(deploy, 'trigger_on')) {
+
+    if(context.user_action=="cancel_deploy_now") {
+      if(context.payload.check_run.external_id)
+        let application = `${deploy.owner}-${deploy.repo}`
+        spinnakerAPI.pipelineCancel(application, context.payload.check_run.external_id)
+          .then(res=>{
+          this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+        }).catch(err=> {
+            console.error(err)
+        })
+    } else if (context.user_action=="deploy_now" || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           deploy.check_run_name = cfg.deploy.check.name
@@ -271,12 +282,15 @@ class ApiGateway {
     if (status == 'completed') {
       result.conclusion = 'success'
       result.completed_at = new Date().toISOString()
+      result.actions = cfg.user_actions.done
     } else if (status == 'cancelled') {
       result.status = 'completed'
       result.conclusion = 'cancelled'
+      result.actions = cfg.user_actions.done
     } else if (status == 'in_progress') {
       result.status = 'in_progress'
       result.started_at = new Date().toISOString()
+      result.actions = cfg.user_actions.in_progress
     } else if (status == 'queued') {
       result.status = 'queued'
     }

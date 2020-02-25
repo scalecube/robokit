@@ -21,6 +21,10 @@ module.exports = app => {
   })
 
   app.on('check_run', async context => {
+    if(context.payload.requested_action){
+      let action = context.payload.requested_action.identifier
+      context.user_action = action
+    }
     return api.onCheckRun(context)
   })
 
@@ -33,10 +37,6 @@ module.exports = app => {
     'pull_request.closed'
   ], async context => {
     return api.onPullRequest(context)
-  })
-
-  app.on('check_run.requested_action', async context => {
-    console.log()
   })
 
   app.on([

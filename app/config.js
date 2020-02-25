@@ -63,5 +63,17 @@ module.exports = {
     name: deploy_label,
     description: 'if Labeled Triggers deployment on next commit, Unlabeled/Merge will trigger environment destruction.',
     color: '73ed58'
-  }]
+  }],
+  user_actions: {
+    done: [{
+      label: "Re-Deploy",
+      description: "Trigger the Deploy pipeline",
+      identifier: "deploy_now"
+    }],
+    in_progress: [{
+      label: "Cancel-Deploy",
+      description: "Cancel the Deploy pipeline",
+      identifier: "cancel_deploy_now"
+    }]
+  }
 }
