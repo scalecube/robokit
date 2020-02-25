@@ -52,15 +52,12 @@ class Repository {
 
   find () {
     return new Promise((resolve,reject )=>{
-      let recSet = []
-      this.collection.find({}).sort({ _id: 1 }).each((err, item) => {
-        // If the item is null then the cursor is exhausted/empty and closed
-        if(item==null){
-          resolve(recSet)
-        } else{
-          recSet.push(item)
-        }
-        // otherwise, do something with the item
+      this.collection.find({})
+        .sort({ _id: 1 })
+        .limit(20)
+        .toArray((err, items) => {
+          if(err) reject(err)
+          resolve(items)
       })
     })
   }
