@@ -291,7 +291,6 @@ class ApiGateway {
     } else if (status == 'in_progress') {
       result.status = 'in_progress'
       result.started_at = new Date().toISOString()
-      result.actions = cfg.user_actions.in_progress
     } else if (status == 'queued') {
       result.status = 'queued'
     }
