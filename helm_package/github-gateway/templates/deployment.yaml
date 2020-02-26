@@ -27,7 +27,7 @@ spec:
         - name: {{ $pkey }}
           value: {{ $pval | quote }}
 {{- end }}
-{{- range $pkey, $pval := .Values.env.VAR | fromJson }}
+{{- range $pkey, $pval := .Values.var.VAR | fromJson }}
         - name: {{ $pkey }}
           value: {{ $pval | quote }}
 {{- end }}
