@@ -27,8 +27,6 @@ spec:
         - name: {{ $pkey }}
           value: {{ $pval | quote }}
 {{- end }}
-        - name: VAR
-          value: {{ .Values.var.VAR | fromJson }}
         image: {{ .Values.image.repository.user }}/{{ .Values.image.repository.name }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ .Chart.Name }}
