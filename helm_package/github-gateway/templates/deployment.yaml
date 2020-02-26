@@ -23,7 +23,11 @@ spec:
     spec:
       containers:
       - env:
-{{- range $pkey, $pval := .Values.env | fromJson}}
+{{- range $pkey, $pval := .Values.env }}
+        - name: {{ $pkey }}
+          value: {{ $pval | quote }}
+{{- end }}
+{{- range $pkey, $pval := .Values.env.VAR | fromJson }}
         - name: {{ $pkey }}
           value: {{ $pval | quote }}
 {{- end }}
