@@ -1,6 +1,6 @@
 dependencies:
-  - name: minio
-    version: 5.0.11
+  - name: tomcat
+    version: 0.4.1
     repository: https://kubernetes-charts.storage.googleapis.com
   - name: memcached
     version: 3.2.2
