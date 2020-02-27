@@ -38,7 +38,6 @@ jobs:
       run: |
         echo 'cd helm_package'
         cd ./helm_package
-        helm dep update ./github-gateway
         echo "helm lint ./github-gateway"
         helm lint ./github-gateway
         echo "helm package ./github-gateway"
