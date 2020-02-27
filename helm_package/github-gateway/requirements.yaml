@@ -1,6 +1,6 @@
 dependencies:
-  - name: mariadb
-    version: 7.3.12
+  - name: minio
+    version: 5.0.11
     repository: https://kubernetes-charts.storage.googleapis.com
   - name: memcached
     version: 3.2.2
