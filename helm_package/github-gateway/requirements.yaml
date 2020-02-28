@@ -1,7 +1,0 @@
-dependencies:
-  - name: tomcat
-    version: 0.4.1
-    repository: https://nexus.repo.marketspulse.com/repository/helm/
-  - name: memcached
-    version: 3.2.2
-    repository: https://nexus.repo.marketspulse.com/repository/helm/
