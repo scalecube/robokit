@@ -10,7 +10,7 @@ env:
   APP_ID: ""
   PRIVATE_KEY: ""
   WEBHOOK_SECRET: ""
-  PORT: ""
+  PORT: "7777"
   MONGO_DB_CONNECTION_STRING: ""
   LOG_LEVEL: ""
   SPINNAKER: ""
