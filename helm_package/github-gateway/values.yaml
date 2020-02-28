@@ -6,7 +6,7 @@ image:
   pullPolicy: Always
 
 env:
-  timestamp: 111111
+  timestamp: 1111111
   APP_ID: ""
   PRIVATE_KEY: ""
   WEBHOOK_SECRET: ""
