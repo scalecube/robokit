@@ -6,11 +6,11 @@ image:
   pullPolicy: Always
 
 env:
-  timestamp: 111111
+  timestamp: 1111111
   APP_ID: ""
   PRIVATE_KEY: ""
   WEBHOOK_SECRET: ""
-  PORT: ""
+  PORT: "7777"
   MONGO_DB_CONNECTION_STRING: ""
   LOG_LEVEL: ""
   SPINNAKER: ""
