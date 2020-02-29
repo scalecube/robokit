@@ -8,7 +8,7 @@ const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 const passport = require('passport');
 const spinnakerAPI = require('./spinnaker/spinnaker-client')
-const k8s = require('./kubernetes/kubernetes-service')
+//const k8s = require('./kubernetes/kubernetes-service')
 
 class ApiGateway {
 
