@@ -8,6 +8,7 @@ const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 const passport = require('passport');
 const spinnakerAPI = require('./spinnaker/spinnaker-client')
+const k8s = require('./kubernetes/kubernetes-service')
 
 class ApiGateway {
 
@@ -32,8 +33,12 @@ class ApiGateway {
   start () {
     //this.router.use(passport.initialize());
 
+    this.router.get('/namespaces/', async (request, response) => {
+      this.thenResponse(k8s.namespaces(), response);
+    })
+
     this.router.get('/server/ping/', async (request, response) => {
-      response.render('home', {layout: 'default', template: 'home-template'});
+      this.sendResponse(response,{time: Date.now()})
     })
 
     this.router.get('/items/*', (req, res) => {

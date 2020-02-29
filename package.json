@@ -19,6 +19,7 @@
     "lint": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
+    "@kubernetes/client-node": "^0.11.1",
     "@octokit/auth": "^1.1.1",
     "auth-routes": "0.0.1",
     "axios": "^0.19.2",
