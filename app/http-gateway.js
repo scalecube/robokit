@@ -228,9 +228,9 @@ class ApiGateway {
           deploy.action_type = 'deploy'
           deploy.status = "in_progress";
           deploy.conclusion = null;
-          console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> ' + JSON.stringify(deploy))
-          this.route(deploy.owner, deploy.repo, deploy).then(resp => {
-            console.log('>>>>> CONTINUES DELIVERY PIPELINE EVENT >>> ' + JSON.stringify(resp))
+          console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
+          this.route(deploy.owner, deploy.repo, this.trigger(deploy)).then(resp => {
+            console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp))
             if (resp.length > 0) {
               let event = resp[0];
               event.application = `${deploy.owner}-${deploy.repo}`
@@ -246,6 +246,21 @@ class ApiGateway {
         }).catch(err => {
           console.log(err)
         })
+    }
+  }
+
+  trigger(deploy) {
+    return {
+      action_type: deploy.action_type,
+      owner: deploy.owner,
+      repo: deploy.repo,
+      branch_name: deploy.branch_name,
+      sha: deploy.sha,
+      is_pull_request: deploy.is_pull_request,
+      issue_number: deploy.issue_number,
+      namespace: deploy.namespace,
+      labeled: deploy.labeled,
+      labels: deploy.labels
     }
   }
 
