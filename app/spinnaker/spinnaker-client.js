@@ -29,7 +29,7 @@ class SpinnakerAPI {
         session: this.session
       }
     }).catch(err => {
-      console.error(err)
+      console.log(err.statusCode + " - " + err.message)
     })
   }
 

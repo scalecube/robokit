@@ -102,10 +102,10 @@ class Notifications {
     let endDate = new Date (pipeline.endTime)
     let duration  = endDate.getSeconds() - startDate.getSeconds()
     let check = {
+      name:cfg.deploy.check.name,
       owner: pipeline.trigger.payload.owner,
       repo: pipeline.trigger.payload.repo,
       head_sha: pipeline.trigger.payload.sha,
-      name:cfg.deploy.check.name,
       status: util.getStatus(pipeline.status).status,
       output : this.toOutput(cfg.deploy.check.update, pipeline),
       external_id: pipeline.id
