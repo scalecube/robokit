@@ -105,7 +105,7 @@ class Notifications {
       owner: pipeline.trigger.payload.owner,
       repo: pipeline.trigger.payload.repo,
       head_sha: pipeline.trigger.payload.sha,
-      name: pipeline.trigger.payload.check_run_name,
+      name:cfg.deploy.check.name,
       status: util.getStatus(pipeline.status).status,
       output : this.toOutput(cfg.deploy.check.update, pipeline),
       external_id: pipeline.id
