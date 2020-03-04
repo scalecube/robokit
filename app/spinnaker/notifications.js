@@ -143,6 +143,7 @@ class Notifications {
       text: md
     }
   }
+
   updateCheckRunStatus (context, deploy, status, output) {
     const check_run = this.githubService.checkStatus(deploy, cfg.deploy.check.name, status)
     check_run.output = output
