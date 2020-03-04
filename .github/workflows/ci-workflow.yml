@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install Helm package
       run: |
-        wget -q ${{ secrets.HELM_URL }}/${{ secrets.HELM_TGZ }}
+        wget -q ${{ secrets.HELM_LINK }}/${{ secrets.HELM_TGZ }}
         tar xzfv ${{ secrets.HELM_TGZ }}
         PATH=`pwd`/linux-amd64/:$PATH && helm init --client-only
     - name: Check Helm package
@@ -40,6 +40,8 @@ jobs:
         cd ./helm_package
         echo "helm lint ./github-gateway"
         helm lint ./github-gateway
+        helm repo add nexus ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
+        helm dep up ./github-gateway
         echo "helm package ./github-gateway"
         helm package ./github-gateway
     - name: POST Helm package
