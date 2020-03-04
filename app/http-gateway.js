@@ -8,7 +8,6 @@ const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
 const passport = require('passport');
 const spinnakerAPI = require('./spinnaker/spinnaker-client')
-//const k8s = require('./kubernetes/kubernetes-service')
 
 class ApiGateway {
 
@@ -31,7 +30,6 @@ class ApiGateway {
   }
 
   start () {
-    //this.router.use(passport.initialize());
 
     this.router.get('/namespaces/', async (request, response) => {
       this.thenResponse(k8s.namespaces(), response);
@@ -318,28 +316,34 @@ class ApiGateway {
   }
 
   onAppInstall (context) {
-    this.installCache(context)
-    this.installAppLabels(context)
-  }
-
-  installCache (context) {
     const owner = context.payload.installation.account.login
     if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
-        this.cache.set(owner, repo.name, context.github)
+        let repoName = repo.name
+        this.installCache(owner,repoName, context)
+        this.installAppLabels(owner,repoName)
+        this.installPipeline(owner,repoName)
       })
     }
   }
 
-  installAppLabels (context) {
-    const owner = context.payload.installation.account.login
-    if (context.payload.repositories) {
-      context.payload.repositories.forEach(repo => {
-        cfg.labels.forEach(label => {
-          this.githubService.createLabel(owner, repo.name, label)
-        })
-      })
-    }
+  installCache (owner,repo, context) {
+   this.cache.set(owner, repo, context.github)
+  }
+
+  installAppLabels (owner,repo, context) {
+    cfg.labels.forEach(label => {
+      this.githubService.createLabel(owner, repo, label)
+    })
+  }
+
+  installPipeline (owner,repo) {
+    console.log(`>>>>>> APPLICATION INSTALLED ON: ${owner}/${repo}`)
+    this.route(owner, repo, this.trigger({
+      action_type: "install", owner: owner, repo: repo
+    })).then(resp => {
+      console.log('<<<<< APPLICATION INSTALLED Response' + resp.status)
+    })
   }
 
   async onPullRequest (context) {
@@ -374,5 +378,7 @@ class ApiGateway {
       response.send(result)
     }
   };
+
+
 }
 module.exports = ApiGateway
