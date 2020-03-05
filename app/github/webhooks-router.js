@@ -16,12 +16,13 @@ class WebhooksRouter {
     this.routes.forEach(route => {
       if (route.owner && route.owner === owner) {
         if (route.repo === repo || !route.repo) {
+          let url = route.url
           for (const [key, value] of Object.entries(ctx)) {
-            route.url = route.url.replace('${' + key + '}', value)
+            url = route.url.replace('${' + key + '}', value)
           }
           promises.push(new Promise((resolve, reject) => {
-            console.log('>>> ROUTE URL: ' + route.url)
-            httpClient.post(route.url, ctx).then((msg) => {
+            console.log('>>> ROUTE URL: ' + url)
+            httpClient.post(url, ctx).then((msg) => {
               onRoute(msg)
               resolve(msg)
             }).catch(function (err) {
