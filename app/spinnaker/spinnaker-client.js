@@ -76,7 +76,9 @@ class SpinnakerAPI {
   applicationExecutions(application,eventId){
     let params="";
     if(eventId) params= params + `&eventId=${eventId}`
-    return this.get(`https://${process.env.SPINNAKER}/applications/${application}/executions/search?triggerTypes=webhook${params}`)
+    let url = `https://${process.env.SPINNAKER}/applications/${application}/executions/search?triggerTypes=webhook${params}`
+    console.log("Event URL: " + url)
+    return this.get(url)
   }
 
 }

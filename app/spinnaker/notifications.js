@@ -39,7 +39,6 @@ class Notifications {
     }
   }
 
-
   async _poll () {
     await this.checkLogin()
     if (this.repository) {
@@ -53,16 +52,7 @@ class Notifications {
                  res = await spinnakerAPI.applicationExecutions(item.application, item.eventId)
               } catch(err) {
                 if(err.statusCode == 403) {
-                  if(item.deploy) {
-                    await this.delay(5)
-                    const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
-                    const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
-                    this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
-                      this.repository.delete(item._id)
-                    })
-                  } else {
-                    this.repository.delete(item._id)
-                  }
+                  this.cancel(item)
                 }else{
                   spinnakerAPI.login()
                 }
@@ -83,6 +73,8 @@ class Notifications {
                     })
                   }
                 }
+              } else {
+                this.cancel(item)
               }
             })
           }).catch(err => {
@@ -173,6 +165,19 @@ class Notifications {
       result.status = 'queued'
     }
     return result
+  }
+
+  async cancel (item) {
+    if(item.deploy) {
+      await this.delay(5)
+      const github = this.githubService.cache.get(item.deploy.owner, item.deploy.repo)
+      const check_run = this.checkStatus(item.deploy, cfg.deploy.check.name, 'cancelled')
+      this.githubService.createCheckRun(github, [check_run], item.deploy).then(res => {
+        this.repository.delete(item._id)
+      })
+    } else {
+      this.repository.delete(item._id)
+    }
   }
 }
 module.exports = Notifications
