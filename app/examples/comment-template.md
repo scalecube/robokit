@@ -5,13 +5,13 @@ when sending a createComment request and passing parameters in the json request 
 ```json
 {
   "owner":"scalecube",
-  "repo":"github-gateway",
+  "repo":robokit,
   "issue_number":1,
   
   "a-param":"some value",
   
   "path":"src/examples/comment-template.md",
-  "url":"https://raw.githubusercontent.com/scalecube/github-gateway/test1/src/examples/comment-template.md",
+  "url":robokit,
   "data":"comment data example ${a-param}"
 }
 

@@ -1,6 +1,6 @@
-name: github-gateway
+name: robokit
 version: 0.0.1
-description: Helm chart github-gateway
+description: Helm chart robokit
 maintainers:
   - name: Serhii Lypnytskyi
     email: serhii.lypnytskiy@jivygroup.com

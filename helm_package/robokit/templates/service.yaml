@@ -2,10 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    chart: github-gateway
-    app: scalecube-github-gateway
+    chart: robokit
+    app: scalecube-robokit
     release: {{ .Release.Name }}
-  name: github-gateway-svc
+  name: robokit-svc
   namespace: {{ .Values.namespace }}
 {{- if .Values.service.annotations }}
   annotations:
@@ -18,6 +18,6 @@ spec:
     protocol: TCP
     targetPort: port-{{ .Values.env.PORT  | toString }}
   selector:
-    app: scalecube-github-gateway
+    app: scalecube-robokit
   sessionAffinity: None
   type: {{ .Values.service.type }}

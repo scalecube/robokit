@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: scalecube-github-gateway
+    app: scalecube-robokit
     release: {{ .Release.Name | quote }}
-    chart: github-gateway
+    chart: robokit
     namespace: {{ .Values.namespace }}
-  name: github-gateway-depl
+  name: robokit-depl
   namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: scalecube-github-gateway
+      app: scalecube-robokit
       release: {{ .Release.Name | quote }}
   template:
     metadata:
       labels:
-        app: scalecube-github-gateway
+        app: scalecube-robokit
         release: {{ .Release.Name | quote }}
     spec:
       containers:
