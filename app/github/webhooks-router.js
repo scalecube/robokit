@@ -62,5 +62,4 @@ class WebhooksRouter {
     return this.repo.find(query)
   }
 }
-
 module.exports = WebhooksRouter
