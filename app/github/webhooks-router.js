@@ -18,7 +18,7 @@ class WebhooksRouter {
         if (route.repo === repo || !route.repo) {
           let url = route.url
           for (const [key, value] of Object.entries(ctx)) {
-            url = route.url.replace('${' + key + '}', value)
+            url = url.replace('${' + key + '}', value)
           }
           promises.push(new Promise((resolve, reject) => {
             console.log('>>> ROUTE URL: ' + url)

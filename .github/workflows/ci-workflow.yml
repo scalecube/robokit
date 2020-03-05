@@ -1,4 +1,4 @@
-name: Pipeline github-gateway
+name: Pipeline robokit
 
 on: [push]
 
@@ -19,7 +19,7 @@ jobs:
         login-server: ${{ secrets.DOCKER_REGISTRY }}
         username: ${{ secrets.D_USER}}
         password: ${{ secrets.D_PASS }}
-    - name: push github-gateway container to registry
+    - name: push robokit container to registry
       run: |
         cat $DOCKER_CONFIG/*
         docker login -u ${{ secrets.D_USER }} -p ${{ secrets.D_PASS }} docker.io && docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
@@ -38,25 +38,13 @@ jobs:
       run: |
         echo 'cd helm_package'
         cd ./helm_package
-        echo "helm lint ./github-gateway"
-        helm lint ./github-gateway
+        echo "helm lint ./robokit"
+        helm lint ./robokit
         helm repo add nexus ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
-        helm dep up ./github-gateway
-        echo "helm package ./github-gateway"
-        helm package ./github-gateway
+        helm dep up ./robokit
+        echo "helm package ./robokit"
+        helm package ./robokit
     - name: POST Helm package
       run: |
         for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
 
-  robo_kit_deploy:
-
-    needs:
-      - build_push_docker
-      - create_helm
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Robo-Kit Deploy
-        run: |
-          echo 'Run Robo-Kit Deploy'
