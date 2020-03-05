@@ -1,3 +1,7 @@
+name: Pipeline robokit
+
+on: [push]
+
 robo_kit_deploy:
 
   needs:
