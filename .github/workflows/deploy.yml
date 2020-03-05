@@ -1,4 +1,4 @@
-name: Robokit-Deploy
+name: Robokit Deploy
 
 on: [push]
 
