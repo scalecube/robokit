@@ -1,4 +1,4 @@
-name: Pipeline robokit
+name: Robo-kit Deploy
 
 on: [push]
 
