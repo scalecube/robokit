@@ -1,4 +1,4 @@
-name: Robo-kit Deploy
+name: Robo-kit-CD
 
 on: [push]
 
