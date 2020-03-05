@@ -2,15 +2,17 @@ name: Robo-kit Deploy
 
 on: [push]
 
-robo_kit_deploy:
+jobs:
 
-  needs:
-    - build_push_docker
-    - create_helm
+  robo_kit_deploy:
 
-  runs-on: ubuntu-latest
+    needs:
+      - build_push_docker
+      - create_helm
 
-  steps:
-    - name: Robo-Kit Deploy
-      run: |
-        echo 'Run Robo-Kit Deploy'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Robo-Kit Deploy
+        run: |
+          echo 'Run Robo-Kit Deploy'

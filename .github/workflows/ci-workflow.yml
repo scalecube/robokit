@@ -1,4 +1,4 @@
-name: Continues Integration
+name: Pipeline robokit
 
 on: [push]
 
