@@ -183,7 +183,9 @@ class ApiGateway {
   async deployContext (context) {
     let deploy
 
-    if (context.payload.check_run) { deploy = util.toCheckRunDeployContext(context) } else {
+    if (context.payload.check_run) {
+      deploy = util.toCheckRunDeployContext(context)
+    } else {
       deploy = util.toPullRequestDeployContext(context)
     }
 
