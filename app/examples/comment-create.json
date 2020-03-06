@@ -1,6 +1,6 @@
 {
   "owner": "scalecube",
-  "repo": "github-gateway",
+  "repo": "robokit",
   "issue_number": 1,
   "body": "greetings ${owner} ppl of ${repo}"
 }

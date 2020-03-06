@@ -1,9 +1,10 @@
 const httpClient = require('../http-client')
 const Repository = require('./repository')
+const cfg = require('../config')
 
 class WebhooksRouter {
   constructor () {
-    new Repository('github-gateway').connect('webhooks').then(r => {
+    new Repository(cfg.ROBOKIT_DB).connect('webhooks').then(r => {
       this.repo = r
       this.loadRoutes().then(routes => {
         console.log('routes loaded: ' + JSON.stringify(routes))

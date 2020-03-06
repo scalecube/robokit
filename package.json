@@ -5,9 +5,9 @@
   "description": "Robo-Kit",
   "author": "scalecube.io <scalecube.io@gmail.com>",
   "license": "ISC",
-  "repository": "https://github.com/ronenhamias/github-gateway.git",
-  "homepage": "https://github.com/ronenhamias/github-gateway",
-  "bugs": "https://github.com/ronenhamias/github-gateway/issues",
+  "repository": "https://github.com/scalecube/robokit.git",
+  "homepage": "https://github.com/scalecube/robokit",
+  "bugs": "https://github.com/scalecube/robokit/issues",
   "keywords": [
     "probot",
     "github",

@@ -1,7 +1,7 @@
 const deploy_label = ':rocket: DEPLOY (robo-kit)'
 
 module.exports = {
-
+  ROBOKIT_DB: 'robokit',
   deploy: {
     check: {
       name: 'Robokit',
