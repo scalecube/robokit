@@ -64,7 +64,6 @@ class Utils {
       issue_number: context.payload.number
     }
     ctx.namespace = this.targetNamespace(ctx)
-    ctx.pipeline_callback = (process.env.CALLBACK_URL).replace('${namespace}', ctx.namespace)
     return ctx
   }
 
@@ -84,7 +83,6 @@ class Utils {
     if (ctx.is_pull_request) { ctx.issue_number = this.issueNumber(context) }
 
     ctx.namespace = this.targetNamespace(ctx)
-    ctx.pipeline_callback = (process.env.CALLBACK_URL).replace('${namespace}', ctx.namespace)
     return ctx
   }
 
