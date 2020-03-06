@@ -200,6 +200,7 @@ class ApiGateway {
     } else {
       deploy.labeled = false
     }
+
     return deploy
   }
 
