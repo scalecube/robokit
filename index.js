@@ -21,8 +21,8 @@ const robokit = app => {
   const cache = new Cache(app)
 
   // Use `.hbs` for extensions and find partials in `views/partials`.
-  expressApp.engine('handlebars', hbs());
-  expressApp.set('view engine', 'handlebars');
+  //expressApp.engine('handlebars', hbs());
+  //expressApp.set('view engine', 'handlebars');
 
   app.log('Starting the TxBot service.')
   const api = new ApiGateway(app, cache)
