@@ -328,6 +328,8 @@ class ApiGateway {
         this.installAppLabels(owner,repoName)
         this.installPipeline(owner,repoName)
       })
+    } else if(context.payload.repositories && context.payload.action=='deleted') {
+      this.uninstallPipeline(owner,repoName)
     }
   }
 
@@ -347,6 +349,15 @@ class ApiGateway {
       action_type: "install", owner: owner, repo: repo
     }).then(resp => {
       console.log('<<<<< APPLICATION INSTALLED Response' + resp.status)
+    })
+  }
+
+  uninstallPipeline (owner, repoName) {
+    console.log(`>>>>>> APPLICATION UNINSTALLED FROM: ${owner}/${repo}`)
+    this.route(owner, repo, {
+      action_type: "uninstall", owner: owner, repo: repo
+    }).then(resp => {
+      console.log('<<<<< APPLICATION UNINSTALL Response' + resp.status)
     })
   }
 
@@ -382,6 +393,5 @@ class ApiGateway {
       response.send(result)
     }
   };
-
 }
 module.exports = ApiGateway
