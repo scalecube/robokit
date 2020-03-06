@@ -1,4 +1,4 @@
-name: Robokit-CI
+name: Robo-Kit
 
 on: [push]
 
