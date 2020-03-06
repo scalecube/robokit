@@ -26,7 +26,7 @@ module.exports = {
       canceled: {
         title: 'Canceled',
         summary: 'Continues-Delivery pipeline was not found',
-        text: 'This repository is not supported by Robo-kit or the installation was not completed please contact us for support.',
+        text: 'This repository is not supported by Robokit or the installation was not completed please contact us for support.',
         template: 'canceled'
       },
       update: {
