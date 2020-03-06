@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
 
-  build_push_docker:
+  docker-build-push:
 
     runs-on: ubuntu-latest
 
@@ -23,7 +23,8 @@ jobs:
       run: |
         cat $DOCKER_CONFIG/*
         docker login -u ${{ secrets.D_USER }} -p ${{ secrets.D_PASS }} docker.io && docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.REPO }}:${GITHUB_REF##*/}
-  create_helm:
+
+  helm-package-post:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +52,8 @@ jobs:
   robokit-deploy:
 
     needs:
-      - build_push_docker
-      - create_helm
+      - docker-build-push
+      - helm-package-post
 
     runs-on: ubuntu-latest
 
