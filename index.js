@@ -1,28 +1,12 @@
-const { createProbot } = require('probot')
-
 const ApiGateway = require('./app/http-gateway')
 const Cache = require('./app/cache')
-const hbs  = require('express-handlebars');
-
-const probot = createProbot({
-  id: process.env.APP_ID,
-  port: process.env.PORT || 3000,
-  secret: process.env.WEBHOOK_SECRET,
-  cert: process.env.PRIVATE_KEY
-})
-
-const expressApp = probot.server
 
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
  */
-const robokit = app => {
+module.exports = app => {
   const cache = new Cache(app)
-
-  // Use `.hbs` for extensions and find partials in `views/partials`.
-  //expressApp.engine('handlebars', hbs());
-  //expressApp.set('view engine', 'handlebars');
 
   app.log('Starting the TxBot service.')
   const api = new ApiGateway(app, cache)
@@ -76,8 +60,6 @@ const robokit = app => {
     const events = smee.start()
   }
 }
-probot.load(robokit)
-module.exports = robokit
 // For more information on building apps:
 // https://probot.github.io/docs/
 
