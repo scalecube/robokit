@@ -27,7 +27,7 @@ For reverence please see env file located at the root of this project.
 the Continues delivery trigger bellow named `robo_kit_deploy` is activated when build docker and creation of helm push is completed:
 
 ```
-robo_kit_deploy:
+robokit-deploy:
 
     needs:
       - docker-build-push
@@ -43,4 +43,3 @@ robo_kit_deploy:
 
 # Check Run status update from spinnaker: 
 ![image](https://user-images.githubusercontent.com/1706296/73777078-7ceda300-4791-11ea-9095-2bc58cdf7d61.png)
-
