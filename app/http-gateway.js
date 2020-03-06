@@ -321,7 +321,7 @@ class ApiGateway {
 
   onAppInstall (context) {
     const owner = context.payload.installation.account.login
-    if (context.payload.repositories) {
+    if (context.payload.repositories && context.payload.action=='created' ) {
       context.payload.repositories.forEach(repo => {
         let repoName = repo.name
         this.installCache(owner,repoName, context)
@@ -343,9 +343,9 @@ class ApiGateway {
 
   installPipeline (owner,repo) {
     console.log(`>>>>>> APPLICATION INSTALLED ON: ${owner}/${repo}`)
-    this.route(owner, repo, this.trigger({
+    this.route(owner, repo, {
       action_type: "install", owner: owner, repo: repo
-    })).then(resp => {
+    }).then(resp => {
       console.log('<<<<< APPLICATION INSTALLED Response' + resp.status)
     })
   }
