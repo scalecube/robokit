@@ -30,8 +30,8 @@ the Continues delivery trigger bellow named `robo_kit_deploy` is activated when 
 robo_kit_deploy:
 
     needs:
-      - build_push_docker
-      - create_helm
+      - docker-build-push
+      - helm-package-post
 
     runs-on: ubuntu-latest
 
