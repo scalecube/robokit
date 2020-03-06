@@ -5,11 +5,11 @@ Continues delivey is important to speed up the development of your team. and its
 
 ## This solution
 
-`github-gateway` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
+`robokit` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
 ## Setup
 
-> `github-gateway` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
+> `robokit` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
 
 ```sh
 # Install dependencies
