@@ -245,6 +245,7 @@ class ApiGateway {
           console.log(err)
         })
     }
+    return 'OK'
   }
 
   trigger(deploy) {

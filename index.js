@@ -15,12 +15,12 @@ module.exports = app => {
     cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.github)
   })
 
-  app.on('installation', async context => {
+  app.on('installation', context => {
     api.onAppInstall(context)
     console.log('installation event:' + JSON.stringify(context))
   })
 
-  app.on('check_run', async context => {
+  app.on('check_run', context => {
     if(context.payload.requested_action){
       let action = context.payload.requested_action.identifier
       context.user_action = action
@@ -35,7 +35,7 @@ module.exports = app => {
     // 'pull_request.reopened',
     'pull_request.unlabeled',
     'pull_request.closed'
-  ], async context => {
+  ], context => {
     return api.onPullRequest(context)
   })
 
