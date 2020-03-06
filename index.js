@@ -25,7 +25,7 @@ module.exports = app => {
       let action = context.payload.requested_action.identifier
       context.user_action = action
     }
-    return api.onCheckRun(context)
+    api.onCheckRun(context)
   })
 
   app.on([
