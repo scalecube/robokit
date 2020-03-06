@@ -4,7 +4,7 @@ module.exports = {
 
   deploy: {
     check: {
-      name: 'Robokit',
+      name: 'Robo-Kit Deploy',
       queued: {
         title: 'Waiting',
         summary: 'Continues-Delivery pipeline is pending...',
