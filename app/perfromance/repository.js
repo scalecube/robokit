@@ -16,10 +16,10 @@ class Repository {
 
   connect (collectionName) {
     return new Promise((resolve, reject) => {
-      this.client.connect(err => {
+      this.client.connect(async err => {
         this.dbo = this.client.db(this.dbName)
-        this.collection = this.dbo.collection(collectionName)
-        if (!this.collection) {
+        const collections = await this.dbo.collections();
+        if (!collections.map(c => c.s.name).includes(collectionName)) {
           console.log('creating ' + collectionName + ' collection')
           this.dbo.createCollection(collectionName, (err, res) => {
             if (err) reject(err)
@@ -28,10 +28,9 @@ class Repository {
             console.log(collectionName + ' was Collection created!')
             resolve(this)
           })
-        } else {
-          this.collection = this.dbo.collection(collectionName)
-          resolve(this)
         }
+        this.collection = this.dbo.collection(collectionName)
+        resolve(this)
       })
     })
   }

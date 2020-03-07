@@ -27,7 +27,7 @@ class PerformanceService {
 
   getTemplates (template) {
     return new Promise((resolve, reject) => {
-      this.getOrCreate('github-gateway', "templates").then(repo => {
+      this.getOrCreate(process.env.MONGO_DB_COLLECTION, "templates").then(repo => {
           resolve(repo.templates(template))
       })
     })
@@ -35,7 +35,7 @@ class PerformanceService {
 
   createTemplate (owner, repo, name, data) {
     return new Promise((resolve, reject) => {
-      this.getOrCreate('scalecube', 'github-gateway').then(repo => {
+      this.getOrCreate('scalecube', process.env.MONGO_DB_COLLECTION).then(repo => {
         resolve(repo.insert(name, data))
       })
     })

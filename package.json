@@ -5,9 +5,9 @@
   "description": "Robo-Kit",
   "author": "scalecube.io <scalecube.io@gmail.com>",
   "license": "ISC",
-  "repository": "https://github.com/ronenhamias/github-gateway.git",
-  "homepage": "https://github.com/ronenhamias/github-gateway",
-  "bugs": "https://github.com/ronenhamias/github-gateway/issues",
+  "repository": "https://github.com/scalecube/robokit.git",
+  "homepage": "https://github.com/scalecube/robolit",
+  "bugs": "https://github.com/scalecube/robokit/issues",
   "keywords": [
     "probot",
     "github",
@@ -19,7 +19,7 @@
     "lint": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "probot": "^9.9.5",
+    "probot": "^9.9.7",
     "probot-scheduler": "^2.0.0-beta.1",
     "@octokit/auth": "^1.1.1",
     "auth-routes": "0.0.1",

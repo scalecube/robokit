@@ -1,14 +1,14 @@
 {
   "owner": "scalecube",
   "action_type": "deploy",
-  "pipeline_callback": "https://scalecube-github-gateway-develop.exchange.om2.com/pipeline/notifications/",
-  "repo": "github-gateway",
+  "pipeline_callback": "https://scalecube-robokit.exchange.om2.com/pipeline/notifications/",
+  "repo": "robokit",
   "labeled": false,
   "sha": "6617a89038b55f4c24cff4b5f25d54740adfe5fe",
   "conclusion": "success",
   "check_run_name": "Robo-Kit Deploy",
   "branch_name": "develop",
-  "namespace": "scalecube-github-gateway-develop",
+  "namespace": "scalecube-robokit-develop",
   "stages": {
     "Create_ns": {
       "Status": "FAIL",
@@ -31,7 +31,7 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in namespace scalecube-github-gateway-develop from context..."
+          "status": "Swapping out artifacts in namespace scalecube-robokit-develop from context..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -43,7 +43,7 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Deploy order is: namespace scalecube-github-gateway-develop"
+          "status": "Deploy order is: namespace scalecube-robokit-develop"
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -51,15 +51,15 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Annotating manifest namespace scalecube-github-gateway-develop with artifact, relationships & moniker..."
+          "status": "Annotating manifest namespace scalecube-robokit-develop with artifact, relationships & moniker..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in namespace scalecube-github-gateway-develop from other deployments..."
+          "status": "Swapping out artifacts in namespace scalecube-robokit-develop from other deployments..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Submitting manifest namespace scalecube-github-gateway-develop to kubernetes master..."
+          "status": "Submitting manifest namespace scalecube-robokit-develop to kubernetes master..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -215,7 +215,7 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in service github-gateway-svc from context..."
+          "status": "Swapping out artifacts in service robokit-svc from context..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -223,7 +223,7 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in deployment github-gateway-depl from context..."
+          "status": "Swapping out artifacts in deployment robokit-depl from context..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -275,7 +275,7 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Deploy order is: service github-gateway-svc, ingress github-gw-ingress7777, deployment github-gateway-depl"
+          "status": "Deploy order is: service robokit-svc, ingress github-gw-ingress7777, deployment robokit-depl"
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -283,15 +283,15 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Annotating manifest service github-gateway-svc with artifact, relationships & moniker..."
+          "status": "Annotating manifest service robokit-svc with artifact, relationships & moniker..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in service github-gateway-svc from other deployments..."
+          "status": "Swapping out artifacts in service robokit-svc from other deployments..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Submitting manifest service github-gateway-svc to kubernetes master..."
+          "status": "Submitting manifest service robokit-svc to kubernetes master..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -315,15 +315,15 @@
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Annotating manifest deployment github-gateway-depl with artifact, relationships & moniker..."
+          "status": "Annotating manifest deployment robokit-depl with artifact, relationships & moniker..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Swapping out artifacts in deployment github-gateway-depl from other deployments..."
+          "status": "Swapping out artifacts in deployment robokit-depl from other deployments..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
-          "status": "Submitting manifest deployment github-gateway-depl to kubernetes master..."
+          "status": "Submitting manifest deployment robokit-depl to kubernetes master..."
         },
         {
           "phase": "DEPLOY_KUBERNETES_MANIFEST",
@@ -458,9 +458,9 @@
       ],
       "Id": "3"
     },
-    "Bake Helm github-gateway": {
+    "Bake Helm robokit": {
       "Status": "SUCCEEDED",
-      "Details": "${#stage('Bake Helm github-gateway')['context']['kato.tasks']['0']['history']}",
+      "Details": "${#stage('Bake Helm robokit')['context']['kato.tasks']['0']['history']}",
       "Tasks": [
         {
           "stageStart": true,

@@ -5,7 +5,7 @@ const Cache = require('./app/cache')
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
  */
-module.exports = app => {
+const robokit = app => {
   const cache = new Cache(app)
 
   app.log('Starting the TxBot service.')
@@ -61,6 +61,16 @@ module.exports = app => {
     const events = smee.start()
   }
 }
+module.exports = robokit
+
+
+
+
+
+
+
+
+
 // For more information on building apps:
 // https://probot.github.io/docs/
 

@@ -3,7 +3,7 @@ const Repository = require('./repository')
 
 class WebhooksRouter {
   constructor () {
-    new Repository('github-gateway').connect('webhooks').then(r => {
+    new Repository(process.env.MONGO_DB_COLLECTION).connect('webhooks').then(r => {
       this.repo = r
       this.loadRoutes().then(routes => {
         console.log('routes loaded: ' + JSON.stringify(routes))

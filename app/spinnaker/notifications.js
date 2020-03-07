@@ -8,7 +8,7 @@ const util = require('../utils')
 class Notifications {
   constructor (githubService) {
     this.githubService = githubService
-    this.repository = new Repository('github-gateway')
+    this.repository = new Repository(process.env.MONGO_DB_COLLECTION)
     this.repository.connect('executions')
     this.job = new CronJob('*/30 * * * * *', async () => {
       this._poll()
