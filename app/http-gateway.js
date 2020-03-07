@@ -329,7 +329,10 @@ class ApiGateway {
         this.installPipeline(owner,repoName)
       })
     } else if(context.payload.repositories && context.payload.action=='deleted') {
-      this.uninstallPipeline(owner,repoName)
+      context.payload.repositories.forEach(repo => {
+        let repoName = repo.name
+        this.uninstallPipeline(owner,repoName)
+      })
     }
   }
 
