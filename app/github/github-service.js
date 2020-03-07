@@ -133,7 +133,7 @@ class GithubService {
         console.log('<<< ###  router response: \n' + resp)
       }
     }, (err) => {
-      console.error(err)
+      console.error(`Failed to route to: ${onwer}/${repo} : data : ${ JSON.stringify(context) } reason: ${err.code +"-"+ err.message}`)
     })
   }
 }
