@@ -350,7 +350,7 @@ class ApiGateway {
     this.route(owner, repo, {
       action_type: "install", owner: owner, repo: repo
     }).then(resp => {
-      console.log('<<<<< APPLICATION INSTALLED Response' + resp.status)
+      console.log('<<<<< APPLICATION INSTALLED Response' + JSON.stringify( resp))
     })
   }
 

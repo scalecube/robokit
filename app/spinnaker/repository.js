@@ -23,14 +23,13 @@ class Repository {
       this.client.connect(async err => {
         this.dbo = this.client.db(this.dbName)
         const collections = await this.dbo.collections();
-        if (!collections.map(c => c.s.name).includes(collectionName)) {
+        if (!collections.map(c =>c.s.namespace.collection).includes(collectionName)) {
           console.log('creating ' + collectionName + ' collection')
           this.dbo.createCollection(collectionName, (err, res) => {
             if (err) reject(err)
             this.collection = this.dbo.collection(collectionName)
             this.collection.createIndex({ sha: 1 }, { unique: false })
             console.log(collectionName + ' was Collection created!')
-            resolve(this)
           })
         }
         this.collection = this.dbo.collection(collectionName)
