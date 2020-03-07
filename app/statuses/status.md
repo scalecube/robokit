@@ -15,6 +15,7 @@ duration ${duration}
 ```
 
 Pipeline stages:
+
 ```diff
 > (Trigger) robo-kit pipeline queued.
 > (Trigger) robo-kit deployment pipeline was triggered successfully  
