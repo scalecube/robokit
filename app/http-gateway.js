@@ -230,7 +230,7 @@ class ApiGateway {
           deploy.status = "in_progress";
           deploy.conclusion = null;
           console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
-          this.route(deploy.owner, deploy.repo, this.trigger(deploy)).then(resp => {
+          this.route(deploy.owner, deploy.repo, this.toTrigger(deploy)).then(resp => {
             console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp))
             if (resp.length > 0) {
               let event = resp[0];
@@ -251,7 +251,7 @@ class ApiGateway {
     return 'OK'
   }
 
-  trigger(deploy) {
+  toTrigger(deploy) {
     return {
       action_type: deploy.action_type,
       owner: deploy.owner,
@@ -328,7 +328,7 @@ class ApiGateway {
           this.installCache(owner,repoName, context)
           this.installAppLabels(owner,repoName)
           this.installPipeline(owner,repoName)
-        } else if(context.payload.action=='delected') {
+        } else if(context.payload.action=='deleted') {
           this.uninstallPipeline(owner,repoName)
         }
       })

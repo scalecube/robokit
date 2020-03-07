@@ -12,6 +12,7 @@ Namespace: ${namespace}
 branch: ${branch_name}
 sha: ${sha}
 duration ${duration}
+```
 
 Pipeline stages:
 ```diff
