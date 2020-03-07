@@ -16,6 +16,7 @@ env:
   SPINNAKER: ""
   SPINNAKER_ACCESS_TOKEN: ""
   GRAPHANA_URL: ""
+  MONGO_DB_COLLECTION: "robokit"
   VAR: ""
 
 podTemplate:
