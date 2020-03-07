@@ -9,7 +9,7 @@
 ---
 
 ```
-Namespace: ${namespace}
+namespace: ${namespace}
 branch: ${branch_name}
 sha: ${sha}
 duration ${duration}
