@@ -321,17 +321,16 @@ class ApiGateway {
 
   onAppInstall (context) {
     const owner = context.payload.installation.account.login
-    if (context.payload.repositories && context.payload.action=='created' ) {
+    if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
         let repoName = repo.name
-        this.installCache(owner,repoName, context)
-        this.installAppLabels(owner,repoName)
-        this.installPipeline(owner,repoName)
-      })
-    } else if(context.payload.repositories && context.payload.action=='deleted') {
-      context.payload.repositories.forEach(repo => {
-        let repoName = repo.name
-        this.uninstallPipeline(owner,repoName)
+        if(context.payload.action=='created') {
+          this.installCache(owner,repoName, context)
+          this.installAppLabels(owner,repoName)
+          this.installPipeline(owner,repoName)
+        } else if(context.payload.action=='delected') {
+          this.uninstallPipeline(owner,repoName)
+        }
       })
     }
   }
