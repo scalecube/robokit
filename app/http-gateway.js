@@ -1,13 +1,15 @@
 const GithubService = require('./github/github-service')
 const cors = require('cors')
 const path = require('path')
-const fs = require('fs');
+const fs = require('fs')
 const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
-const passport = require('passport');
 const spinnakerAPI = require('./spinnaker/spinnaker-client')
+const githubAuth = require('./github/github-passport')
+const cookieParser = require('cookie-parser');
+
 
 class ApiGateway {
 
@@ -19,39 +21,51 @@ class ApiGateway {
     this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
     this.router.use(cors())
     this.router.use(express.json())
+    this.router.use(githubAuth.passport.initialize())
+    this.router.use(githubAuth.passport.session())
+    this.router.use(cookieParser());
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
     this.notifications = new Notifications(this.githubService)
     this.start()
     this.notifications.start()
-    //const GithubPassport = require('./lib/github-passport')
-    //new GithubPassport(passport);
   }
 
   start () {
 
     this.router.get('/namespaces/', async (request, response) => {
-      this.thenResponse(k8s.namespaces(), response);
+      this.thenResponse(k8s.namespaces(), response)
+    })
+    this.router.get('/login',(request, response) => {
+      this.sendResponse(response, { time: Date.now() })
     })
 
-    this.router.get('/server/ping/', async (request, response) => {
-      this.sendResponse(response,{time: Date.now()})
+    this.router.get('/auth/github', githubAuth.authenticate('github'))
+
+    this.router.get('/auth/github/callback', (req, res) => {
+      // Successful authentication, redirect home.
+      githubAuth.approve(req.cookies['session'])
+      res.redirect('/ui/index.html')
     })
 
-    this.router.get('/items/*', (req, res) => {
-      let file = req.originalUrl.replace("/items/","")
+    this.router.get('/server/ping/', (request, response) => {
+        this.sendResponse(response, { time: Date.now() })
+    })
+
+    this.router.get('/items/*',githubAuth.isAuthenticated, (req, res) => {
+      let file = req.originalUrl.replace('/items/', '')
       let fullPath = path.join(__dirname, file)
       fs.readFile(fullPath, (err, json) => {
-        try{
-          let obj = JSON.parse(json);
-          res.json(obj);
+        try {
+          let obj = JSON.parse(json)
+          res.json(obj)
         } catch (e) {
           console.log(e)
         }
-      });
+      })
 
-    });
+    })
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log('### checks status request: ' + JSON.stringify(request.body))
@@ -92,20 +106,20 @@ class ApiGateway {
       }
     })
 
-    this.router.get('/templates/:template?', (request, response) => {
+    this.router.get('/templates/:template?',githubAuth.isAuthenticated, (request, response) => {
       this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
     })
 
     this.router.get('/commits/:owner/:repo/', (request, response) => {
       this.performanceService.listCommits(
         request.params.owner,
-        request.params.repo).then(commits=>{
-          response.send(Array.from(commits.entries()))
-        })
+        request.params.repo).then(commits => {
+        response.send(Array.from(commits.entries()))
+      })
 
     })
 
-    this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
+    this.router.get('/traces/:owner/:repo/:sha/:filter?',githubAuth.isAuthenticated, (request, response) => {
       let filter
       if (request.params.filter) filter = JSON.parse(request.params.filter)
       this.performanceService.findReport(request.params.owner,
@@ -120,7 +134,7 @@ class ApiGateway {
       })
     })
 
-    this.router.post('/traces/:owner/:repo/:sha/', (request, response) => {
+    this.router.post('/traces/:owner/:repo/:sha/',githubAuth.isAuthenticated, (request, response) => {
       request.body.owner = request.params.owner
       request.body.repo = request.params.repo
       request.body.sha = request.params.sha
@@ -130,10 +144,10 @@ class ApiGateway {
         request.body.repo,
         request.body.sha,
         request.body.traces),
-      response)
+        response)
     })
 
-    this.router.post('/webhooks/:owner?/:repo?', (request, response) => {
+    this.router.post('/webhooks/:owner?/:repo?',githubAuth.isAuthenticated, (request, response) => {
       if (request.params.owner) {
         request.body.owner = request.params.owner
       }
@@ -143,7 +157,7 @@ class ApiGateway {
       this.thenResponse(this.githubService.saveWebhook(request.body), response)
     })
 
-    this.router.get('/webhooks/:owner?/:repo?', (request, response) => {
+    this.router.get('/webhooks/:owner?/:repo?',githubAuth.isAuthenticated, (request, response) => {
       const msg = {}
       if (request.params.owner) {
         msg.owner = request.params.owner
@@ -154,7 +168,7 @@ class ApiGateway {
       this.thenResponse(this.githubService.findWebhook(msg), response)
     })
 
-    this.router.get('/webhooks/:owner/:repo/:sha/', (request, response) => {
+    this.router.get('/webhooks/:owner/:repo/:sha/',githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.findReport(
         request.params.owner,
         request.params.repo,
@@ -168,7 +182,7 @@ class ApiGateway {
         })
     })
 
-    this.router.get('/commits/:owner?/:repo?/', (request, response) => {
+    this.router.get('/commits/:owner?/:repo?/',githubAuth.isAuthenticated, (request, response) => {
 
       this.performanceService.listCommits(request.params.owner,
         request.params.repo).then((r) => {
@@ -212,28 +226,28 @@ class ApiGateway {
       const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
 
-    if(context.user_action=="cancel_deploy_now") {
-      if(context.payload.check_run.external_id){
+    if (context.user_action == 'cancel_deploy_now') {
+      if (context.payload.check_run.external_id) {
         let application = `${deploy.owner}-${deploy.repo}`
         spinnakerAPI.pipelineCancel(application, context.payload.check_run.external_id)
-          .then(res=>{
-          this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-        }).catch(err=> {
-            console.error(err)
+          .then(res => {
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+          }).catch(err => {
+          console.error(err)
         })
       }
-    } else if (context.user_action=="deploy_now" || util.is_check_run_in_status(deploy, 'trigger_on')) {
+    } else if (context.user_action == 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           deploy.check_run_name = cfg.deploy.check.name
           deploy.action_type = 'deploy'
-          deploy.status = "in_progress";
-          deploy.conclusion = null;
+          deploy.status = 'in_progress'
+          deploy.conclusion = null
           console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
           this.route(deploy.owner, deploy.repo, this.toTrigger(deploy)).then(resp => {
             console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp))
             if (resp.length > 0) {
-              let event = resp[0];
+              let event = resp[0]
               event.application = `${deploy.owner}-${deploy.repo}`
               event.status = 'in_progress'
               event.deploy = deploy
@@ -251,7 +265,7 @@ class ApiGateway {
     return 'OK'
   }
 
-  toTrigger(deploy) {
+  toTrigger (deploy) {
     return {
       action_type: deploy.action_type,
       owner: deploy.owner,
@@ -324,40 +338,40 @@ class ApiGateway {
     if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
         let repoName = repo.name
-        if(context.payload.action=='created') {
-          this.installCache(owner,repoName, context)
-          this.installAppLabels(owner,repoName)
-          this.installPipeline(owner,repoName)
-        } else if(context.payload.action=='deleted') {
-          this.uninstallPipeline(owner,repoName)
+        if (context.payload.action == 'created') {
+          this.installCache(owner, repoName, context)
+          this.installAppLabels(owner, repoName)
+          this.installPipeline(owner, repoName)
+        } else if (context.payload.action == 'deleted') {
+          this.uninstallPipeline(owner, repoName)
         }
       })
     }
   }
 
-  installCache (owner,repo, context) {
-   this.cache.set(owner, repo, context.github)
+  installCache (owner, repo, context) {
+    this.cache.set(owner, repo, context.github)
   }
 
-  installAppLabels (owner,repo, context) {
+  installAppLabels (owner, repo, context) {
     cfg.labels.forEach(label => {
       this.githubService.createLabel(owner, repo, label)
     })
   }
 
-  installPipeline (owner,repo) {
+  installPipeline (owner, repo) {
     console.log(`>>>>>> APPLICATION INSTALLED ON: ${owner}/${repo}`)
     this.route(owner, repo, {
-      action_type: "install", owner: owner, repo: repo
+      action_type: 'install', owner: owner, repo: repo
     }).then(resp => {
-      console.log('<<<<< APPLICATION INSTALLED Response' + JSON.stringify( resp))
+      console.log('<<<<< APPLICATION INSTALLED Response' + JSON.stringify(resp))
     })
   }
 
   uninstallPipeline (owner, repoName) {
     console.log(`>>>>>> APPLICATION UNINSTALLED FROM: ${owner}/${repo}`)
     this.route(owner, repo, {
-      action_type: "uninstall", owner: owner, repo: repo
+      action_type: 'uninstall', owner: owner, repo: repo
     }).then(resp => {
       console.log('<<<<< APPLICATION UNINSTALL Response' + resp.status)
     })
@@ -396,4 +410,5 @@ class ApiGateway {
     }
   };
 }
+
 module.exports = ApiGateway

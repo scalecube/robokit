@@ -25,8 +25,12 @@ let draw = (containerId, template, sha) => {
   }
   template.map(async (chart) => {
     array.push(new Promise(async (resolve,reject)=>{
-      let data = await axios.get(chart.traces.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data)
-      let layout = await axios.get(chart.template.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data)
+      let data = await axios.get(chart.traces.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data).catch(err=> {
+        login(err)
+      })
+      let layout = await axios.get(chart.template.replace(":sha",sha).replace("{host}", SERVER_URL)).then((response) => response.data).catch(err=> {
+        login(err)
+      })
       let mergedLayout = _.merge({}, darkLayout, layout);
       delete layout.traces
       resolve({
@@ -40,17 +44,23 @@ let draw = (containerId, template, sha) => {
     createReactChart(containerId, {charts:[...values]});
   });
 }
-
+function login(err) {
+  if(err.message.includes("403"))
+    document.location.href = SERVER_URL+ "/auth/github/";
+}
 async function init () {
   let template = param('template')
   let sha = param('sha')
   if(template && sha) {
     template = await axios.get(`${SERVER_URL}/templates/${template}`).then(resp=>resp.data)
+      .catch(err=> {
+        login(err)
+      })
     draw('main-view', template[0],sha)
   }
   window.eventBus.on('draw-charts', async (e) => {
     if(e.url){
-      let input = await axios.get(e.url).then(resp=>resp.data)
+      let input = await axios.get(e.url).then(resp=>resp.data).catch(login)
       draw('main-view', input,e.sha)
     } else {
       draw('main-view', e.template ,e.sha)

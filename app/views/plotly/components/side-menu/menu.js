@@ -27,18 +27,21 @@ class Catrgory extends React.Component {
     const style = {
       fontSize:'12px',
       borderTop: '1px solid #99bbc7',
-      padding: '2px'
+      padding: '2px',
+      color: 'white'
     }
     const ul= {
       padding: 1,
-      margin: 1
+      margin: 1,
+      color: 'white'
     }
     const ul2= {
       padding: 3,
-      margin: 3
+      margin: 3,
+      color: 'white'
     }
     return (
-      <li style={ul}>
+      <div style={ul}>
         <strong style={ul}>{name}</strong>
         <ul style={ul2}>
           <strong style={ul}>{this.state.template.title}</strong>
@@ -47,7 +50,7 @@ class Catrgory extends React.Component {
             items.map((item,i) => {
               return (<div key={i} style={style} onClick={() => this.itemSelected(item)}>
                 <CopyToClipboard text={item.sha} onCopy={() => this.setState({copied: true})}>
-                  <img src={'../components/side-menu/clipboard.png'} style={{width:"13px", height:"13px"}}></img>
+                  <img src={'./plotly/components/side-menu/clipboard.png'} style={{width:"13px", height:"13px"}}></img>
                 </CopyToClipboard>
                 <label>{"..."+item.sha.slice(item.sha.length - 20)}</label>
                 <br/>
@@ -57,11 +60,15 @@ class Catrgory extends React.Component {
           }
           </ul>
         </ul>
-      </li>
+      </div>
     );
   }
 }
+function login(err) {
+  if(err.message.includes("403"))
+    document.location.href = SERVER_URL+ "/auth/github/";
 
+}
 axios.get(SERVER_URL + "/templates/").then(result => {
   let commitsMap = new Map();
   result.data.forEach(async (template) => {
@@ -74,4 +81,6 @@ axios.get(SERVER_URL + "/templates/").then(result => {
     }</div>
     ReactDOM.render(menu, document.getElementById('side-menu-container'));
   })
+}).catch(err=> {
+  login(err)
 })
