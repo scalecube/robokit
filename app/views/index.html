@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Robokit-CD</title>
+    <link rel="icon" href="https://tinyurl.com/rootojr">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="./pure-drawer/dist/css/pure-drawer.css"/>
+
+    <link href="//cdn.muicss.com/mui-latest/css/mui.min.css" rel="stylesheet" type="text/css" />
+    <script src="./lib/js-event-bus.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+    <!-- Browser JSX compiler (for development only) -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-plotly.js@2.2.0/dist/create-plotly-component.js"></script>
+
+    <script src="https://unpkg.com/react-copy-to-clipboard/build/react-copy-to-clipboard.js"></script>
+    <script type="text/babel" src="https://cdn.jsdelivr.net/npm/mui-datatables@2.14.0/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/commonjs-require@1.4.6/commonjs-require.js"></script>
+    <script src="//cdn.muicss.com/mui-latest/js/mui.min.js"></script>
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <link href="./plotly/components/side-menu/static/style.css" rel="stylesheet" type="text/css" />
+    <link href="./index.css" rel="stylesheet" type="text/css" />
+    <script type="text/babel" src="./plotly/components/side-menu/menu.js"></script>
+    <script type="text/babel" src="./plotly/components/chart/Charts.js"></script>
+    <script type="text/babel" src="./plotly/components/chart/app.js"></script>
+
+    <script src="./plotly/components/chart/dark-layout.js"></script>
+    <script src="./plotly/components/side-menu/static/script.js"></script>
+    <script module type="text/babel" src="./plotly/components/settings/app.js"></script>
+
+</head>
+<body>
+<div class="pure-container" data-effect="pure-effect-slide">
+    <input type="checkbox" id="pure-toggle-left" class="pure-toggle" data-toggle="left"/>
+    <input type="checkbox" id="pure-toggle-right" class="pure-toggle" data-toggle="right"/>
+
+    <label class="pure-toggle-label" for="pure-toggle-left" data-toggle-label="left"><span class="pure-toggle-icon"></span></label>
+    <label class="pure-toggle-label" for="pure-toggle-right" data-toggle-label="right"><span class="pure-toggle-icon"></span></label>
+
+    <nav class="pure-drawer" data-position="left">
+        <p style="padding: 100px 20px; margin: 0;">
+            <div id="main-menu">
+                <h2 class="menu-item" >Performance</h2>
+                <h2 class="menu-item" onclick="window.eventBus.emit('draw-settings')">Settings</h2>
+            </div>
+        </p>
+    </nav>
+
+    <nav class="pure-drawer" data-position="right">
+        <div id="side-menu-container"/>
+    </nav>
+
+    <div class="pure-pusher-container">
+        <div class="pure-pusher">
+            <div id="main-view"/>
+        </div>
+    </div>
+
+    <label class="pure-overlay" for="pure-toggle-left" data-overlay="left"></label>
+    <label class="pure-overlay" for="pure-toggle-right" data-overlay="right"></label>
+    <script src="./bundle.js"></script>
+</div>
+<script>
+  const SERVER_URL = window.location.origin
+  window.eventBus = new EventBus()
+</script>
+</body>
+</html>
