@@ -124,15 +124,17 @@ class Notifications {
     let duration  = endDate.getSeconds() - startDate.getSeconds()
 
     let md = templates.get(template.template)
-    md = md.replace("${progress}",util.toPrgress(pipeline.status))
-    md = md.replace("${namespace}", pipeline.trigger.payload.namespace)
-    md = md.replace("${branch_name}", pipeline.trigger.payload.branch_name)
-    md = md.replace("${sha}", pipeline.trigger.payload.sha)
-    md = md.replace("${duration}", duration + "s")
-    md = md.replace("${details}", util.toDetails(pipeline))
+
+    md = md.split('${progress}').join(util.toPrgress(pipeline.status))
+    md = md.split('${namespace}').join(pipeline.trigger.payload.namespace)
+    md = md.split('${branch_name}').join(pipeline.trigger.payload.branch_name)
+    md = md.split('${sha}').join(pipeline.trigger.payload.sha)
+    md = md.split('${duration}').join(duration + "s")
+    md = md.split('${details}').join(util.toDetails(pipeline))
+
     return {
       title: pipeline.status,
-      summary: template.summary.replace("${conclusion}",util.getStatus(pipeline.status).conclusion),
+      summary: template.summary.replace('${conclusion}',util.getStatus(pipeline.status).conclusion),
       text: md
     }
   }
