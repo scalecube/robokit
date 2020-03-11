@@ -247,6 +247,7 @@ class ApiGateway {
             if (resp.length > 0) {
               let event = resp[0]
               event.application = `${deploy.owner}-${deploy.repo}`
+              event.namespace = deploy.namespace
               event.status = 'in_progress'
               event.deploy = deploy
               this.notifications.store(event)
