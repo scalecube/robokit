@@ -17,6 +17,9 @@ env:
   SPINNAKER: ""
   SPINNAKER_ACCESS_TOKEN: ""
   GRAPHANA_URL: ""
+  GITHUB_CLIENT_ID: ""
+  GITHUB_CLIENT_SECRET: ""
+
   VAR: ""
 
 podTemplate:

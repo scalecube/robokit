@@ -54,14 +54,23 @@ class Repository {
     return new Promise((resolve, reject) => {
       const id = ObjectID(data._id)
       delete data._id
-      this.collection.updateOne({ _id: id }, data, {}, (err, result) => {
+      this.collection.updateOne({ _id: id }, { $set: {...data} }, { upsert: true, overwrite: true, new: true }, (err, result) => {
         if (err) reject(err)
         data._id = result.insertedId
         resolve(data)
       })
     })
   }
-
+  delete(id){
+    return new Promise((resolve, reject) => {
+      try {
+        this.collection.deleteOne( { "_id" : ObjectID(id) } );
+        resolve()
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
   save (data) {
     if (data._id) {
       return this.update(data)

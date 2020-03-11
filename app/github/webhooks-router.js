@@ -1,5 +1,6 @@
 const httpClient = require('../http-client')
 const Repository = require('./repository')
+ObjectID = require('mongodb').ObjectID
 
 class WebhooksRouter {
   constructor () {
@@ -46,6 +47,18 @@ class WebhooksRouter {
       })
     })
   };
+
+  deleteWebhook(id){
+    return new Promise((resolve, reject) => {
+      this.repo.delete(id).then((docs) => {
+        console.log(docs)
+        this.loadRoutes()
+        resolve(docs)
+      }).catch((err) => {
+        reject(new Error('update webhook failed!. did you provide wrong _id?'))
+      })
+    })
+  }
 
   saveWebhook (hook) {
     return new Promise((resolve, reject) => {
