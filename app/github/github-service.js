@@ -115,6 +115,10 @@ class GithubService {
     })
   }
 
+  deleteWebhook(id){
+    return this.router.deleteWebhook(id)
+  }
+
   saveWebhook (msg) {
     return this.router.saveWebhook(msg)
   }

@@ -147,14 +147,12 @@ class ApiGateway {
         response)
     })
 
-    this.router.post('/webhooks/:owner?/:repo?',githubAuth.isAuthenticated, (request, response) => {
-      if (request.params.owner) {
-        request.body.owner = request.params.owner
-      }
-      if (request.params.repo) {
-        request.body.repo = request.params.repo
-      }
-      this.thenResponse(this.githubService.saveWebhook(request.body), response)
+    this.router.post('/webhooks/',githubAuth.isAuthenticated, (request, response) => {
+      this.thenResponse(this.thenResponse(this.githubService.saveWebhook(request.body), response))
+    })
+
+    this.router.delete('/webhooks/:id',githubAuth.isAuthenticated, (request, response) => {
+      this.thenResponse(this.thenResponse(this.githubService.deleteWebhook(request.params.id), response))
     })
 
     this.router.get('/webhooks/:owner?/:repo?',githubAuth.isAuthenticated, (request, response) => {
@@ -168,7 +166,7 @@ class ApiGateway {
       this.thenResponse(this.githubService.findWebhook(msg), response)
     })
 
-    this.router.get('/webhooks/:owner/:repo/:sha/',githubAuth.isAuthenticated, (request, response) => {
+    this.router.get('/webhooks/',githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.findReport(
         request.params.owner,
         request.params.repo,
