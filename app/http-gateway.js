@@ -241,12 +241,14 @@ class ApiGateway {
           deploy.action_type = 'deploy'
           deploy.status = 'in_progress'
           deploy.conclusion = null
+
           console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
           this.route(deploy.owner, deploy.repo, this.toTrigger(deploy)).then(resp => {
             console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp))
             if (resp.length > 0) {
               let event = resp[0]
               event.application = `${deploy.owner}-${deploy.repo}`
+              event.namespace = deploy.namespace
               event.status = 'in_progress'
               event.deploy = deploy
               this.notifications.store(event)
