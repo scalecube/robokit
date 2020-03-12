@@ -66,7 +66,6 @@ class ApiGateway {
           console.log(e)
         }
       })
-
     })
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
