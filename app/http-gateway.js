@@ -110,7 +110,7 @@ class ApiGateway {
       this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
     })
 
-    this.router.get('/commits/:owner/:repo/', (request, response) => {
+    this.router.get('/commits/:owner/:repo/',githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.listCommits(
         request.params.owner,
         request.params.repo).then(commits => {

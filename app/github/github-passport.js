@@ -34,6 +34,9 @@ class GithubPassport {
 
   isAuthenticated (req, res, next) {
     let session = req.cookies['session']
+    if(session==null) {
+      return res.status(403).send('Forbidden');
+    }
     const authorized = accessTokens.includes(session);
     if(!authorized) {
       return res.status(403).send('Forbidden');
@@ -43,7 +46,9 @@ class GithubPassport {
   };
 
   approve (session) {
-    accessTokens.push(session)
+    if(session!=null) {
+      accessTokens.push(session)
+    }
   }
 }
 
