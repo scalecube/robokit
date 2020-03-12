@@ -45,8 +45,10 @@ class ApiGateway {
 
     this.router.get('/auth/github/callback', (req, res) => {
       // Successful authentication, redirect home.
-      githubAuth.approve(req.cookies['session'])
-      res.redirect('/ui/index.html')
+      let rk_token = new Buffer(req.query.code+req.id).toString('base64');
+      res.cookie('rk_token' ,rk_token);
+      githubAuth.approve(rk_token)
+      res.redirect(302, '/ui/index.html')
     })
 
     this.router.get('/server/ping/', (request, response) => {

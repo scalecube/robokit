@@ -33,7 +33,7 @@ class GithubPassport {
   }
 
   isAuthenticated (req, res, next) {
-    let session = req.cookies['session']
+    let session = req.cookies['rk_token']
     if(session==null) {
       return res.status(403).send('Forbidden');
     }
