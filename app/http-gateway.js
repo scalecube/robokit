@@ -120,7 +120,7 @@ class ApiGateway {
 
     })
 
-    this.router.get('/traces/:owner/:repo/:sha/:filter?',githubAuth.isAuthenticated, (request, response) => {
+    this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
       let filter
       if (request.params.filter) filter = JSON.parse(request.params.filter)
       this.performanceService.findReport(request.params.owner,
@@ -135,7 +135,7 @@ class ApiGateway {
       })
     })
 
-    this.router.post('/traces/:owner/:repo/:sha/',githubAuth.isAuthenticated, (request, response) => {
+    this.router.post('/traces/:owner/:repo/:sha/', (request, response) => {
       request.body.owner = request.params.owner
       request.body.repo = request.params.repo
       request.body.sha = request.params.sha
