@@ -1,0 +1,79 @@
+@import
+url(https://fonts.googleapis.com/css?family=Open+Sans);
+.App{
+  text-align: center;
+  grid-template-rows: 70px auto;
+  grid-template-columns: minmax(50px,1fr) 1fr minmax(50px,1fr);
+  grid-row-gap: 2em;
+}
+#header{
+  grid-column: 1/5;
+  grid-row: 1/2;
+  background-color: #00688B;
+}
+#header h1{
+  text-align: left;
+  margin-top: 20px;
+  margin-left: 10px;
+  color: #FFF;
+}
+div.wrapper{
+  grid-column: 2/3;
+  grid-row: 2/3;
+}
+#search-bar{
+  width: 100%;
+  position: relative
+}
+#search-bar input{
+  margin-top: 20px;
+  width: 258px;
+  border: 3px solid #00B4CC;
+  padding: 5px;
+  height: 20px;
+  border-radius: 5px;
+  outline: none;
+  color: #9DBFAF;
+}
+#search-bar input:focus{
+  color: #00B4CC;
+}
+.searchButton{
+  margin-left: -9px;
+  margin-top: 20px;
+  position: absolute;  
+  /* right: -50px; */
+  width: 40px;
+  height: 36px;
+  border: 1px solid #00B4CC;
+  background: #00B4CC;
+  text-align: center;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 10px;
+}
+.searchButton i{
+  font-size: 20px;
+}
+
+
+@media only screen and (max-width: 650px) {
+  .App {
+    overflow: hidden;
+    text-align: center;
+    grid-template-rows: 70px auto;
+    grid-template-columns: 2px 1fr 2px;
+    grid-row-gap: 2em;
+  }
+  div.wrapper {
+    margin-right: 10%;
+}
+  #header h1{
+    width: auto;
+    grid-column: 1/4;
+  }
+  div#search-bar {
+   /* width: 80%; */
+  }
+}
