@@ -6,7 +6,7 @@ const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
 const Notifications = require('./spinnaker/notifications')
-const spinnakerAPI = require('./spinnaker/spinnaker-client')
+const pipeline = require('./pipelines/pipeline')
 const githubAuth = require('./github/github-passport')
 const cookieParser = require('cookie-parser');
 
@@ -28,6 +28,7 @@ class ApiGateway {
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
     this.notifications = new Notifications(this.githubService)
+    this.pipeline = pipeline;
     this.start()
     this.notifications.start()
   }
@@ -228,7 +229,7 @@ class ApiGateway {
     if (context.user_action == 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
         let application = `${deploy.owner}-${deploy.repo}`
-        spinnakerAPI.pipelineCancel(application, context.payload.check_run.external_id)
+        this.pipeline.cancel(context.payload.check_run.external_id)
           .then(res => {
             this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
           }).catch(err => {
@@ -240,21 +241,15 @@ class ApiGateway {
         .then(res => {
           deploy.check_run_name = cfg.deploy.check.name
           deploy.action_type = 'deploy'
-          deploy.status = 'in_progress'
-          deploy.conclusion = null
+
           console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
-          this.route(deploy.owner, deploy.repo, this.toTrigger(deploy)).then(resp => {
-            console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp))
-            if (resp.length > 0) {
-              let event = resp[0]
-              event.application = `${deploy.owner}-${deploy.repo}`
-              event.namespace = deploy.namespace
-              event.status = 'in_progress'
-              event.deploy = deploy
-              this.notifications.store(event)
+          this.pipeline.execute(this.toTrigger(deploy)).then(resp => {
+            console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp.data))
+            if (resp.data) {
+              deploy.external_id = resp.data.pipeline_id
+              this.notifications.store(deploy)
               this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
             } else {
-              deploy.conclusion = 'cancelled'
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
             }
           })
@@ -315,8 +310,11 @@ class ApiGateway {
       head_sha: deploy.sha,
       status: status
     }
-
+    if(deploy.external_id){
+      result.external_id = deploy.external_id;
+    }
     if (status == 'completed') {
+      result.status = 'completed'
       result.conclusion = 'success'
       result.completed_at = new Date().toISOString()
       result.actions = cfg.user_actions.done
@@ -361,18 +359,14 @@ class ApiGateway {
 
   installPipeline (owner, repo) {
     console.log(`>>>>>> APPLICATION INSTALLED ON: ${owner}/${repo}`)
-    this.route(owner, repo, {
-      action_type: 'install', owner: owner, repo: repo
-    }).then(resp => {
+    this.pipeline.install(owner, repo).then(resp => {
       console.log('<<<<< APPLICATION INSTALLED Response' + JSON.stringify(resp))
     })
   }
 
   uninstallPipeline (owner, repoName) {
     console.log(`>>>>>> APPLICATION UNINSTALLED FROM: ${owner}/${repo}`)
-    this.route(owner, repo, {
-      action_type: 'uninstall', owner: owner, repo: repo
-    }).then(resp => {
+    this.pipeline.uninstall(owner, repo).then(resp => {
       console.log('<<<<< APPLICATION UNINSTALL Response' + resp.status)
     })
   }
