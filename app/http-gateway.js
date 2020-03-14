@@ -5,11 +5,9 @@ const fs = require('fs')
 const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
-const Notifications = require('./spinnaker/notifications')
-const pipeline = require('./pipelines/pipeline')
-const githubAuth = require('./github/github-passport')
-const cookieParser = require('cookie-parser');
 
+const Pipeline = require('./pipelines/pipeline')
+const githubAuth = require('./github/github-passport')
 
 class ApiGateway {
 
@@ -23,14 +21,13 @@ class ApiGateway {
     this.router.use(express.json())
     this.router.use(githubAuth.passport.initialize())
     this.router.use(githubAuth.passport.session())
-    this.router.use(cookieParser());
+    this.router.use(require('cookie-parser')());
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
-    this.notifications = new Notifications(this.githubService)
-    this.pipeline = pipeline;
+
+    this.pipeline = new Pipeline(this.githubService);
     this.start()
-    this.notifications.start()
   }
 
   start () {
@@ -149,39 +146,6 @@ class ApiGateway {
         response)
     })
 
-    this.router.post('/webhooks/',githubAuth.isAuthenticated, (request, response) => {
-      this.thenResponse(this.thenResponse(this.githubService.saveWebhook(request.body), response))
-    })
-
-    this.router.delete('/webhooks/:id',githubAuth.isAuthenticated, (request, response) => {
-      this.thenResponse(this.thenResponse(this.githubService.deleteWebhook(request.params.id), response))
-    })
-
-    this.router.get('/webhooks/:owner?/:repo?',githubAuth.isAuthenticated, (request, response) => {
-      const msg = {}
-      if (request.params.owner) {
-        msg.owner = request.params.owner
-      }
-      if (request.params.repo) {
-        msg.repo = request.params.repo
-      }
-      this.thenResponse(this.githubService.findWebhook(msg), response)
-    })
-
-    this.router.get('/webhooks/',githubAuth.isAuthenticated, (request, response) => {
-      this.performanceService.findReport(
-        request.params.owner,
-        request.params.repo,
-        request.params.sha)
-        .then(r => {
-          const result = []
-          r.forEach(e => {
-            result.push(e.data)
-          })
-          this.writeResponse(result, response)
-        })
-    })
-
     this.router.get('/commits/:owner?/:repo?/',githubAuth.isAuthenticated, (request, response) => {
 
       this.performanceService.listCommits(request.params.owner,
@@ -239,15 +203,11 @@ class ApiGateway {
     } else if (context.user_action == 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
-          deploy.check_run_name = cfg.deploy.check.name
-          deploy.action_type = 'deploy'
-
-          console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE:\n ' + JSON.stringify(deploy))
-          this.pipeline.execute(this.toTrigger(deploy)).then(resp => {
-            console.log('<<<<< CONTINUES DELIVERY PIPELINE EVENT:\n ' + JSON.stringify(resp.data))
+          console.log('>>>>> TRIGGER DEPLOY:\n ' + JSON.stringify(deploy))
+          this.pipeline.execute(this.toTrigger(deploy,'deploy')).then(resp => {
+            console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
               deploy.external_id = resp.data.pipeline_id
-              this.notifications.store(deploy)
               this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -260,9 +220,9 @@ class ApiGateway {
     return 'OK'
   }
 
-  toTrigger (deploy) {
+  toTrigger (deploy, action_type) {
     return {
-      action_type: deploy.action_type,
+      action_type: action_type,
       owner: deploy.owner,
       repo: deploy.repo,
       branch_name: deploy.branch_name,
@@ -358,16 +318,16 @@ class ApiGateway {
   }
 
   installPipeline (owner, repo) {
-    console.log(`>>>>>> APPLICATION INSTALLED ON: ${owner}/${repo}`)
+    console.log(`>> INSTALL APPLICATION: ${owner}/${repo}`)
     this.pipeline.install(owner, repo).then(resp => {
-      console.log('<<<<< APPLICATION INSTALLED Response' + JSON.stringify(resp))
+      console.log('<< INSTALL APPLICATION RESPONSE' + JSON.stringify(resp))
     })
   }
 
   uninstallPipeline (owner, repoName) {
-    console.log(`>>>>>> APPLICATION UNINSTALLED FROM: ${owner}/${repo}`)
+    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repo}`)
     this.pipeline.uninstall(owner, repo).then(resp => {
-      console.log('<<<<< APPLICATION UNINSTALL Response' + resp.status)
+      console.log('<< UNINSTALL APPLICATION RESPONSE' + resp.status)
     })
   }
 
@@ -376,12 +336,10 @@ class ApiGateway {
     if (context.payload.action == 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
       return
     }
-
     const deploy = await this.deployContext(context)
-    deploy.action_type = 'delete'
-    console.log('>>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> ' + JSON.stringify(deploy))
-    this.route(deploy.owner, deploy.repo, deploy).then(resp => {
-      console.log('>>>>> CONTINUES DELIVERY PIPELINE EVENT >>> ' + JSON.stringify(resp))
+    console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
+    this.pipeline.execute(this.toTrigger(deploy,'delete')).then(resp => {
+      console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
     })
   }
 
@@ -403,6 +361,8 @@ class ApiGateway {
       response.send(result)
     }
   };
+
+
 }
 
 module.exports = ApiGateway

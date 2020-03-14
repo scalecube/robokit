@@ -13,7 +13,7 @@ class SpinnakerAPI {
     return req ({
         // make a POST request
         method: 'GET',
-        jar: cookieJar, // tough.CookieJar or boolean
+        jar: cookieJar, // tough.CookieJar or ,.m/boolean
         // to the Github authentication API, with the client ID, client secret
         // and request token
         url: `https://${process.env.SPINNAKER}/login`,

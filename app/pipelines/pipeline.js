@@ -1,7 +1,12 @@
 const axios = require('axios')
+const Notifications = require('./notifications')
+
 class PipelineAPI {
 
-  constructor () {}
+  constructor (githubService) {
+    this.notifications = new Notifications(this, githubService)
+    this.notifications.start()
+  }
 
   install (owner, repo) {
     return this.execute({
@@ -27,7 +32,10 @@ class PipelineAPI {
   }
 
   execute (data) {
-    return this.post(`${process.env.SPINLESS_URL}/pipelines`, data)
+    return this.post(`${process.env.SPINLESS_URL}/pipelines`, data).then(res => {
+      if(data.action_type='deploy')
+        this.notifications.store(data)
+    })
   }
 
   status (pipelineId) {
@@ -43,4 +51,4 @@ class PipelineAPI {
   }
 }
 
-module.exports = new PipelineAPI()
+module.exports = PipelineAPI

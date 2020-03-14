@@ -1,10 +1,8 @@
-const WebhooksRouter = require('./webhooks-router')
 const util = require('../utils')
 const templates = require('../statuses/templates')
 
 class GithubService {
   constructor (app, cache) {
-    this.router = new WebhooksRouter()
     this.app = app
     this.cache = cache
   }
@@ -112,32 +110,6 @@ class GithubService {
         msg.body = this._formatComment(msg)
         resolve(action(msg))
       }
-    })
-  }
-
-  deleteWebhook(id){
-    return this.router.deleteWebhook(id)
-  }
-
-  saveWebhook (msg) {
-    return this.router.saveWebhook(msg)
-  }
-
-  findWebhook (msg) {
-    return this.router.findWebhooks(msg)
-  }
-
-  route (owner, repo, context) {
-    return this.router.route(owner, repo, context, (resp) => {
-      if ((resp) && resp instanceof String) {
-        console.log('<<< ###  router response: \n' + resp)
-      } else if (resp !== undefined) {
-        console.log('<<< ###  router response: \n' + JSON.stringify(resp))
-      } else {
-        console.log('<<< ###  router response: \n' + resp)
-      }
-    }, (err) => {
-      console.error(`Failed to route to: ${onwer}/${repo} : data : ${ JSON.stringify(context) } reason: ${err.error.code +"-"+ err.message}`)
     })
   }
 }
