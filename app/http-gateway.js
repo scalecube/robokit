@@ -203,8 +203,9 @@ class ApiGateway {
     } else if (context.user_action == 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
       const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
-          console.log('>>>>> TRIGGER DEPLOY:\n ' + JSON.stringify(deploy))
-          this.pipeline.execute(this.toTrigger(deploy,'deploy')).then(resp => {
+          let trigger = this.toTrigger(deploy,'deploy')
+          console.log('>>>>> TRIGGER DEPLOY:\n ' + JSON.stringify(trigger))
+          this.pipeline.execute(trigger).then(resp => {
             console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
               deploy.external_id = resp.data.pipeline_id

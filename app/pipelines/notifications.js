@@ -11,9 +11,12 @@ class Notifications {
     this.repository.connect('executions')
     this.pipeline = pipeline
 
-    this.job = new CronJob('*/15 * * * * *', async () => {
-      this._poll()
-    }, null, true, 'America/Los_Angeles')
+    setTimeout(() => {
+      console.log("START POLL")
+      this.job = new CronJob('*/15 * * * * *', async () => {
+        this._poll()
+      }, null, true, 'America/Los_Angeles')
+    }, 15000)
   }
 
   async start () {
