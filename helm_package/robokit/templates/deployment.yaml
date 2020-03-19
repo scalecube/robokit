@@ -32,7 +32,7 @@ spec:
         - name: {{ $pkey }}
           value: {{ $pval | quote }}
 {{- end }}
-        image: {{ .Values.image.repository.user }}/{{ .Values.image.repository.name }}:{{ .Values.image.tag }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ .Chart.Name }}
         ports:
