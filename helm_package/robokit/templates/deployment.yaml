@@ -21,6 +21,12 @@ spec:
         app: scalecube-robokit
         release: {{ .Release.Name | quote }}
     spec:
+      serviceAccount: scalecube-robokit
+      serviceAccountName: scalecube-robokit
+      nodeSelector:
+{{- range $key, $value := .Values.nodeSelector }}
+  {{ indent 6 $key }}: {{ $value }}
+{{- end }}
       containers:
       - env:
 {{- range $pkey, $pval := .Values.env }}
