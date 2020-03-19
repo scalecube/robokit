@@ -5,9 +5,8 @@ metadata:
     app: scalecube-robokit
     release: {{ .Release.Name | quote }}
     chart: robokit
-    namespace: {{ .Values.namespace }}
   name: robokit-depl
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   revisionHistoryLimit: 5
