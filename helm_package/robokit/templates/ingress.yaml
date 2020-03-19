@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
   labels:
     app: scalecube-robokit
-  name: github-gw-ingress7777
+  name: scalecube-robokit-ingress
   namespace: {{ .Values.namespace }}
 spec:
   rules:
