@@ -7,19 +7,6 @@ image:
 
 env:
   timestamp: 1111111
-  APP_ID: ""
-  PRIVATE_KEY: ""
-  WEBHOOK_SECRET: ""
-  PORT: "7777"
-  MONGO_DB_CONNECTION_STRING: ""
-  MONGO_DB_COLLECTION: "robokit"
-  LOG_LEVEL: ""
-  SPINNAKER: ""
-  SPINNAKER_ACCESS_TOKEN: ""
-  GRAPHANA_URL: ""
-  GITHUB_CLIENT_ID: ""
-  GITHUB_CLIENT_SECRET: ""
-
   VAR: ""
 
 podTemplate:
