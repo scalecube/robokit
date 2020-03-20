@@ -1,4 +1,4 @@
-FROM openjdk:8-jre@sha256:3b92ddf1617d90f81b0bfe5e41aa27b621c1cb856e67ae06605be2601404b10d
+FROM timbru31/java-node:11-jre
 
 LABEL maintainer="http://scalecube.io"
 
