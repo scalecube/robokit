@@ -2,10 +2,6 @@ FROM openjdk:8-jre@sha256:3b92ddf1617d90f81b0bfe5e41aa27b621c1cb856e67ae06605be2
 
 LABEL maintainer="http://scalecube.io"
 
-ENV VAULT_ADDR=${VAULT_ADDR}
-ENV VAULT_ROLE=${VAULT_ROLE}
-ENV VAULT_SECRETS_PATH=${VAULT_SECRETS_PATH}
-
 WORKDIR /usr/
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -26,4 +22,4 @@ COPY env /usr/.env
 RUN npm install
 RUN wget -O ./scalecube-vaultenv.jar https://oss.sonatype.org/service/local/repositories/releases/content/io/scalecube/scalecube-vaultenv/0.1.0/scalecube-vaultenv-0.1.0-shaded.jar
 EXPOSE 7777
-CMD ["java","-jar", "scalecube-vaultenv.jar", "npm start"]
+CMD ["java","-jar", "./scalecube-vaultenv.jar", "npm start"]
