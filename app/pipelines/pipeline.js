@@ -1,11 +1,11 @@
 const axios = require('axios')
-const Notifications = require('./notifications')
+
 
 class PipelineAPI {
 
   constructor (githubService) {
+    const Notifications = require('./notifications')
     this.notifications = new Notifications(this, githubService)
-    this.notifications.start()
   }
 
   install (owner, repo) {
@@ -48,6 +48,10 @@ class PipelineAPI {
 
   post (url, data) {
     return axios.post(url,data)
+  }
+
+  start () {
+    this.notifications.start()
   }
 }
 

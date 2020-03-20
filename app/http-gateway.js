@@ -6,7 +6,6 @@ const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
 
-const Pipeline = require('./pipelines/pipeline')
 const githubAuth = require('./github/github-passport')
 
 class ApiGateway {
@@ -26,8 +25,8 @@ class ApiGateway {
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
 
+    const Pipeline = require('./pipelines/pipeline')
     this.pipeline = new Pipeline(this.githubService);
-    this.start()
   }
 
   start () {
@@ -155,7 +154,7 @@ class ApiGateway {
         console.log(err)
       })
     })
-
+    this.pipeline.start()
   }
 
   async deployContext (context) {
@@ -300,9 +299,9 @@ class ApiGateway {
         if (context.payload.action == 'created') {
           this.installCache(owner, repoName, context)
           this.installAppLabels(owner, repoName)
-          this.installPipeline(owner, repoName)
+          //this.installPipeline(owner, repoName)
         } else if (context.payload.action == 'deleted') {
-          this.uninstallPipeline(owner, repoName)
+          //this.uninstallPipeline(owner, repoName)
         }
       })
     }
@@ -321,7 +320,7 @@ class ApiGateway {
   installPipeline (owner, repo) {
     console.log(`>> INSTALL APPLICATION: ${owner}/${repo}`)
     this.pipeline.install(owner, repo).then(resp => {
-      console.log('<< INSTALL APPLICATION RESPONSE' + JSON.stringify(resp))
+      console.log('<< INSTALL APPLICATION RESPONSE ' + JSON.stringify(resp))
     })
   }
 

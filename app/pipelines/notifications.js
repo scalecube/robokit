@@ -11,12 +11,10 @@ class Notifications {
     this.repository.connect('executions')
     this.pipeline = pipeline
 
-    setTimeout(() => {
-      console.log("START POLL")
-      this.job = new CronJob('*/15 * * * * *', async () => {
-        this._poll()
-      }, null, true, 'America/Los_Angeles')
-    }, 15000)
+    this.job = new CronJob('*/15 * * * * *', async () => {
+      this._poll()
+    }, null, true, 'America/Los_Angeles')
+
   }
 
   async start () {
@@ -36,6 +34,10 @@ class Notifications {
         .then(async items => {
           items.forEach(async (deploy) => {
             try {
+              if(!deploy.external_id){
+                this.cancel(deploy)
+                return ;
+              }
               let res = await this.pipeline.status(deploy.external_id)
               let pipeline = res.data.status
               if (pipeline) {
@@ -52,11 +54,13 @@ class Notifications {
                 }
               } else {
                 this.cancel(deploy)
-                this.repository.delete(deploy._id)
+                  .then(res=>this.repository.delete(deploy._id))
+                  .catch(err=>this.repository.delete(deploy._id))
+
+
               }
             } catch (err) {
               this.cancel(deploy)
-              this.repository.delete(deploy._id)
             }
           })
         }).catch(err => {
@@ -152,13 +156,12 @@ class Notifications {
   }
 
   async cancel (deploy) {
-    if (item.deploy) {
-      await this.delay(5)
+    if (deploy) {
       const github = this.githubService.cache.get(deploy.owner, deploy.repo)
       const check_run = this.checkStatus(deploy, cfg.deploy.check.name, 'cancelled')
-      this.githubService.createCheckRun(github, [check_run], deploy).then(res => {
-
-      })
+      return this.githubService.createCheckRun(github, [check_run], deploy)
+        .then(res=>this.repository.delete(deploy._id.toString()))
+        .catch(err=>this.repository.delete(deploy._id.toString()))
     }
   }
 }
