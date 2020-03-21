@@ -16,6 +16,7 @@
   "scripts": {
     "dev": "./node_modules/.bin/nodemon",
     "robokit": "node ./robokit.js",
+    "robokit-start": "node ./robokit-launcher.js",
     "start": "./node_modules/.bin/probot run ./index.js",
     "lint": "./node_modules/.bin/standard --fix",
     "build": "browserify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ @babel/preset-env @babel/preset-react ]  ]",

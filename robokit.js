@@ -3,14 +3,22 @@ async function start () {
   require('./app/vault/vault-api')
     .load(process.env.VAULT_PATH)
     .then(values => {
-      require('child_process').spawn('npm start', ['-pe', 'process.env.PATH'], {
-        cwd: process.cwd() + '/backend',
-        env: {
-          NODE_CONFIG_DIR: process.cwd() + '/config'
-        },
-        stdio: 'inherit',
-        shell: true // doesn't matter if shell: true is here or not.
-      })
+      for (var key in values) {
+        process.env[key] = values[key]
+      }
+      const options = {
+        id: values.APP_ID,
+        port: values.PORT || 3000,
+        secret: values.WEBHOOK_SECRET,
+        cert: values.PRIVATE_KEY,
+        webhookProxy: process.env.WEBHOOK_PROXY_URL
+      }
+
+      const p = require('probot')
+      const probot = p.createProbot(options)
+      const robokit = require('./index.js')
+      probot.setup([robokit])
+      probot.start()
     })
 }
 start()

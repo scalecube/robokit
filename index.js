@@ -2,7 +2,7 @@
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
  */
-const robokit = async app => {
+const robokit = app => {
   const ApiGateway = require('./app/http-gateway')
   const Cache = require('./app/cache')
   const cache = new Cache(app)
@@ -48,17 +48,20 @@ const robokit = async app => {
 
   console.log('Server Started.')
 
-  if (process.env.WEBHOOK_PROXY_URL) {
+  api.start()
+  //smee()
+}
+function smee () {
+  if (global.env.WEBHOOK_PROXY_URL) {
     const SmeeClient = require('smee-client')
     const smee = new SmeeClient({
-      source: process.env.WEBHOOK_PROXY_URL,
-      target: `http://localhost:${process.env.PORT}`,
+      source: global.env.WEBHOOK_PROXY_URL,
+      target: `http://localhost:${global.env.PORT}`,
       logger: console
     })
+
     smee.start()
   }
-
-  api.start()
 }
 module.exports = robokit
 

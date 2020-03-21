@@ -12,6 +12,6 @@ COPY index.js /usr/
 COPY env /usr/.env
 
 RUN npm install
-RUN wget -O ./scalecube-vaultenv.jar https://oss.sonatype.org/service/local/repositories/releases/content/io/scalecube/scalecube-vaultenv/0.1.0/scalecube-vaultenv-0.1.0-shaded.jar
+RUN wget -O ./scalecube-vaultenv.jar https://oss.sonatype.org/service/local/repositories/releases/content/io/scalecube/scalecube-vaultenv/0.1.1/scalecube-vaultenv-0.1.1-shaded.jar
 EXPOSE 7777
-CMD ["java","-jar", "./scalecube-vaultenv.jar", "npm start"]
+CMD ["java","-jar", "./scalecube-vaultenv.jar", "npm run-script robokit-start", "--input"]

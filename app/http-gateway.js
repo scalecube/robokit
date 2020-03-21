@@ -20,21 +20,22 @@ class ApiGateway {
     this.router.use(express.json())
     this.router.use(githubAuth.passport.initialize())
     this.router.use(githubAuth.passport.session())
-    this.router.use(require('cookie-parser')());
+    this.router.use(require('cookie-parser')())
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
 
     const Pipeline = require('./pipelines/pipeline')
-    this.pipeline = new Pipeline(this.githubService);
+    this.pipeline = new Pipeline(this.githubService)
   }
 
   start () {
 
     this.router.get('/namespaces/', async (request, response) => {
+      // eslint-disable-next-line no-undef
       this.thenResponse(k8s.namespaces(), response)
     })
-    this.router.get('/login',(request, response) => {
+    this.router.get('/login', (request, response) => {
       this.sendResponse(response, { time: Date.now() })
     })
 
@@ -42,19 +43,21 @@ class ApiGateway {
 
     this.router.get('/auth/github/callback', (req, res) => {
       // Successful authentication, redirect home.
-      let rk_token = new Buffer(req.query.code+req.id).toString('base64');
-      res.cookie('rk_token' ,rk_token);
+      // eslint-disable-next-line camelcase,node/no-deprecated-api
+      const rk_token = new Buffer(req.query.code + req.id).toString('base64')
+      res.cookie('rk_token', rk_token)
       githubAuth.approve(rk_token)
       res.redirect(302, '/ui/index.html')
     })
 
     this.router.get('/server/ping/', (request, response) => {
-        this.sendResponse(response, { time: Date.now() })
+      this.sendResponse(response, { time: Date.now() })
     })
 
-    this.router.get('/items/*',githubAuth.isAuthenticated, (req, res) => {
-      let file = req.originalUrl.replace('/items/', '')
-      let fullPath = path.join(__dirname, file)
+    this.router.get('/items/*', githubAuth.isAuthenticated, (req, res) => {
+      const file = req.originalUrl.replace('/items/', '')
+      const fullPath = path.join(__dirname, file)
+      // eslint-disable-next-line handle-callback-err
       fs.readFile(fullPath, (err, json) => {
         try {
           let obj = JSON.parse(json)

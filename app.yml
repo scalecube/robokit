@@ -126,10 +126,10 @@ default_permissions:
 
 
 # The name of the GitHub App. Defaults to the name specified in package.json
-# name: My Probot App
+name: Robokit
 
 # The homepage of your GitHub App.
-# url: https://example.com/
+url: https://github.com/apps/robo-kit
 
 # A description of the GitHub App.
 # description: A description of my awesome app
