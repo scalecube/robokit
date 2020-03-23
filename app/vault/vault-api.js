@@ -6,6 +6,9 @@ class Vault {
 
   constructor (options) {
     this.vaultAddress = options.VAULT_ADDR || process.env.VAULT_ADDR
+    if (this.vaultAddress.endsWith('/')) {
+      this.vaultAddress = this.vaultAddress.slice(0, -1)
+    }
   }
 
   read (token, path) {
