@@ -1,30 +1,38 @@
-const VaultClient = require('node-vault-client');
+const VaultClient = require('node-vault-client')
+const fs = require('fs')
+const axios = require('axios')
 
 class Vault {
-  constructor () {
-    this.vaultClient = VaultClient.boot('main', {
-      api: { url: process.env.VAULT_ADDR },
-      auth: {
-        type: 'token', // or 'token', 'iam'
-        config: {
-          token: process.env.VAULT_TOKEN
-        }
-      }
-})
+
+  constructor (options) {
+    this.vaultAddress = options.VAULT_ADDR || process.env.VAULT_ADDR
   }
 
-  load (path) {
+  read (token, path) {
     return new Promise((resolve, reject) => {
-      this.vaultClient.read(path).then(values => {
-        const secrets = values.__data
-        for (var key in secrets) {
-          process.env[key] = secrets[key]
-        }
-        resolve(secrets)
-      }).catch(err => {
-        reject(err)
+      const url = this.vaultAddress + '/v1/' + path
+      axios.get(url, { headers: { 'X-Vault-Token': token } }).then(response => {
+        resolve(response.data.data)
+      }).catch((error) => {
+        reject(error)
       })
     })
   }
+
+  k8sLogin (role, jwtPath) {
+    if (!jwtPath) jwtPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+    return new Promise((resolve, reject) => {
+      const token = fs.readFileSync(jwtPath)
+      const params = {
+        role: role,
+        jwt: token.toString('utf8')
+      }
+      const url = this.vaultAddress + '/v1/auth/kubernetes/login'
+      axios.post(url, params).then(resp => {
+        resolve(resp.data.auth)
+      }).catch(err => reject(err))
+    })
+  }
 }
-module.exports = new Vault()
+
+module.exports = Vault
