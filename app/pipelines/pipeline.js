@@ -32,9 +32,10 @@ class PipelineAPI {
   }
 
   execute (data) {
-    return this.post(`${process.env.SPINLESS_URL}/pipelines`, data).then(res => {
-      if(data.action_type='deploy')
+    return this.post(`${process.env.SPINLESS_URL}`, data).then(res => {
+      if (data.action_type === 'deploy') {
         this.notifications.store(data)
+      }
     })
   }
 
