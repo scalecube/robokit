@@ -9,7 +9,6 @@ const util = require('./utils')
 const githubAuth = require('./github/github-passport')
 
 class ApiGateway {
-
   constructor (app, cache) {
     this.app = app
     this.cache = cache
@@ -30,7 +29,6 @@ class ApiGateway {
   }
 
   start () {
-
     this.router.get('/namespaces/', async (request, response) => {
       // eslint-disable-next-line no-undef
       this.thenResponse(k8s.namespaces(), response)
@@ -60,7 +58,7 @@ class ApiGateway {
       // eslint-disable-next-line handle-callback-err
       fs.readFile(fullPath, (err, json) => {
         try {
-          let obj = JSON.parse(json)
+          const obj = JSON.parse(json)
           res.json(obj)
         } catch (e) {
           console.log(e)
@@ -107,17 +105,16 @@ class ApiGateway {
       }
     })
 
-    this.router.get('/templates/:template?',githubAuth.isAuthenticated, (request, response) => {
+    this.router.get('/templates/:template?', githubAuth.isAuthenticated, (request, response) => {
       this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
     })
 
-    this.router.get('/commits/:owner/:repo/',githubAuth.isAuthenticated, (request, response) => {
+    this.router.get('/commits/:owner/:repo/', githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.listCommits(
         request.params.owner,
         request.params.repo).then(commits => {
         response.send(Array.from(commits.entries()))
       })
-
     })
 
     this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
@@ -145,14 +142,13 @@ class ApiGateway {
         request.body.repo,
         request.body.sha,
         request.body.traces),
-        response)
+      response)
     })
 
-    this.router.get('/commits/:owner?/:repo?/',githubAuth.isAuthenticated, (request, response) => {
-
+    this.router.get('/commits/:owner?/:repo?/', githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.listCommits(request.params.owner,
         request.params.repo).then((r) => {
-        writeResponse(r, response)
+        this.writeResponse(r, response)
       }).catch((err) => {
         console.log(err)
       })
@@ -171,7 +167,7 @@ class ApiGateway {
 
     if (deploy.is_pull_request && deploy.issue_number) {
       try {
-        let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
+        const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
         deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
         deploy.labels = labels.map(i => i.name)
       } catch (e) {
@@ -194,19 +190,19 @@ class ApiGateway {
 
     if (context.user_action == 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
-        let application = `${deploy.owner}-${deploy.repo}`
+        const application = `${deploy.owner}-${deploy.repo}`
         this.pipeline.cancel(context.payload.check_run.external_id)
           .then(res => {
             this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
           }).catch(err => {
-          console.error(err)
-        })
+            console.error(err)
+          })
       }
-    } else if (context.user_action == 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
-      const res = this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+    } else if (context.user_action === 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
+      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
-          let trigger = this.toTrigger(deploy,'deploy')
-          console.log('>>>>> TRIGGER DEPLOY:\n ' + JSON.stringify(trigger))
+          const trigger = this.toTrigger(deploy, 'deploy')
+          console.log('>>>>> TRIGGER DEPLOY:\n POST ' + process.env.SPINLESS_URL + '\n' + JSON.stringify(trigger))
           this.pipeline.execute(trigger).then(resp => {
             console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
@@ -273,8 +269,8 @@ class ApiGateway {
       head_sha: deploy.sha,
       status: status
     }
-    if(deploy.external_id){
-      result.external_id = deploy.external_id;
+    if (deploy.external_id) {
+      result.external_id = deploy.external_id
     }
     if (status == 'completed') {
       result.status = 'completed'
@@ -298,13 +294,13 @@ class ApiGateway {
     const owner = context.payload.installation.account.login
     if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
-        let repoName = repo.name
+        const repoName = repo.name
         if (context.payload.action == 'created') {
           this.installCache(owner, repoName, context)
           this.installAppLabels(owner, repoName)
-          //this.installPipeline(owner, repoName)
+          // this.installPipeline(owner, repoName)
         } else if (context.payload.action == 'deleted') {
-          //this.uninstallPipeline(owner, repoName)
+          // this.uninstallPipeline(owner, repoName)
         }
       })
     }
@@ -328,8 +324,8 @@ class ApiGateway {
   }
 
   uninstallPipeline (owner, repoName) {
-    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repo}`)
-    this.pipeline.uninstall(owner, repo).then(resp => {
+    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repoName}`)
+    this.pipeline.uninstall(owner, repoName).then(resp => {
       console.log('<< UNINSTALL APPLICATION RESPONSE' + resp.status)
     })
   }
@@ -341,7 +337,7 @@ class ApiGateway {
     }
     const deploy = await this.deployContext(context)
     console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
-    this.pipeline.execute(this.toTrigger(deploy,'delete')).then(resp => {
+    this.pipeline.execute(this.toTrigger(deploy, 'delete')).then(resp => {
       console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
     })
   }
@@ -364,8 +360,6 @@ class ApiGateway {
       response.send(result)
     }
   };
-
-
 }
 
 module.exports = ApiGateway
