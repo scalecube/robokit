@@ -1,20 +1,16 @@
-const VaultClient = require('node-vault-client')
 const fs = require('fs')
 const axios = require('axios')
+const utils = require('../utils')
 
 class Vault {
-
   constructor (options) {
     this.vaultAddress = options.VAULT_ADDR || process.env.VAULT_ADDR
-    if (this.vaultAddress.endsWith('/')) {
-      this.vaultAddress = this.vaultAddress.slice(0, -1)
-    }
   }
 
   read (token, path) {
     return new Promise((resolve, reject) => {
-      const url = this.vaultAddress + '/v1/' + path
-      axios.get(url, { headers: { 'X-Vault-Token': token } }).then(response => {
+      const uri = utils.urlConcat([this.vaultAddress, '/v1/', path])
+      axios.get(uri, { headers: { 'X-Vault-Token': token } }).then(response => {
         resolve(response.data.data)
       }).catch((error) => {
         reject(error)
@@ -30,7 +26,7 @@ class Vault {
         role: role,
         jwt: token.toString('utf8')
       }
-      const url = this.vaultAddress + '/v1/auth/kubernetes/login'
+      const url = utils.urlConcat([this.vaultAddress, '/v1/auth/kubernetes/login'])
       axios.post(url, params).then(resp => {
         resolve(resp.data.auth)
       }).catch(err => reject(err))

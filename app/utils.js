@@ -1,5 +1,15 @@
 const cfg = require('./config')
+const url = require('url')
+
 class Utils {
+  urlConcat (array) {
+    let uri = array[0]
+    for (let i = 0; i < array.length - 1; i++) {
+      uri = url.resolve(uri, array[i + 1])
+    }
+    return uri
+  }
+
   isLabeled (labels, names) {
     let result = false
     if (labels && Array.isArray(labels)) {
