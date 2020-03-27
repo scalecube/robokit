@@ -1,5 +1,6 @@
 const util = require('../utils')
 const templates = require('../statuses/templates')
+const yaml = require('js-yaml')
 
 class GithubService {
   constructor (app, cache) {
@@ -69,8 +70,13 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  deployYaml (owner, repo) {
-    return this.content(owner, repo, 'robokit.yml', true)
+  async deployYaml (owner, repo) {
+    const yml = await this.content(owner, repo, 'robokit.yml', false)
+    if (yml) {
+      return yaml.safeLoad(yml)
+    } else {
+      return {}
+    }
   }
 
   content (owner, repo, path, base64) {

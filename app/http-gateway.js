@@ -175,6 +175,11 @@ class ApiGateway {
     } else {
       deploy.labeled = false
     }
+    try {
+      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo)
+    } catch (e) {
+      console.log('no robokit.yml')
+    }
 
     return deploy
   }
@@ -232,7 +237,8 @@ class ApiGateway {
       issue_number: deploy.issue_number,
       namespace: deploy.namespace,
       labeled: deploy.labeled,
-      labels: deploy.labels
+      labels: deploy.labels,
+      robokit: deploy.robokit
     }
   }
 
