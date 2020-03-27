@@ -7,7 +7,6 @@ default:
       account: scalecube-k8s-account
       namespace: ${namespace}
 
-
 services:
   - seed:
       instances: 1
