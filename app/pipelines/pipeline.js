@@ -37,10 +37,10 @@ class PipelineAPI {
   }
 
   status (owner, repo, id, callback) {
-    const log = []
-    const uri = `${process.env.SPINLESS_URL}/kubernetes/status/${owner}/${repo}/${id}`
-    Stream.from(uri).on((event) => {
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      const log = []
+      const uri = `${process.env.SPINLESS_URL}/kubernetes/status/${owner}/${repo}/${id}`
+      Stream.from(uri).on((event) => {
         const events = event.split('\n')
         events.forEach(event => {
           try {
