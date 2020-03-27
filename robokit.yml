@@ -1,7 +1,7 @@
 default:
   registry:
     helm: scalecube-nexus
-    docker: scalecube-nexus
+    docker: docker-hub
 
   kubernetes:
       account: scalecube-k8s-account
