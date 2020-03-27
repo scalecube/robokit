@@ -189,12 +189,11 @@ class ApiGateway {
     const deploy = await this.deployContext(context)
 
     if (util.is_check_run_in_status(deploy, 'create_on')) {
-      const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
+      await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
 
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
-        const application = `${deploy.owner}-${deploy.repo}`
         this.pipeline.cancel(context.payload.check_run.external_id)
           .then(res => {
             this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -280,19 +279,19 @@ class ApiGateway {
     if (deploy.external_id) {
       result.external_id = deploy.external_id
     }
-    if (status == 'completed') {
+    if (status === 'completed') {
       result.status = 'completed'
       result.conclusion = 'success'
       result.completed_at = new Date().toISOString()
       result.actions = cfg.user_actions.done
-    } else if (status == 'cancelled') {
+    } else if (status === 'cancelled') {
       result.status = 'completed'
       result.conclusion = 'cancelled'
       result.actions = cfg.user_actions.done
-    } else if (status == 'in_progress') {
+    } else if (status === 'in_progress') {
       result.status = 'in_progress'
       result.started_at = new Date().toISOString()
-    } else if (status == 'queued') {
+    } else if (status === 'queued') {
       result.status = 'queued'
     }
     return result
@@ -303,11 +302,11 @@ class ApiGateway {
     if (context.payload.repositories) {
       context.payload.repositories.forEach(repo => {
         const repoName = repo.name
-        if (context.payload.action == 'created') {
+        if (context.payload.action === 'created') {
           this.installCache(owner, repoName, context)
           this.installAppLabels(owner, repoName)
           // this.installPipeline(owner, repoName)
-        } else if (context.payload.action == 'deleted') {
+        } else if (context.payload.action === 'deleted') {
           // this.uninstallPipeline(owner, repoName)
         }
       })
