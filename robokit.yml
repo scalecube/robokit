@@ -1,0 +1,21 @@
+default:
+  registry:
+    helm: scalecube-nexus
+    docker: scalecube-nexus
+
+  kubernetes:
+      account: scalecube-k8s-account
+      namespace: ${namespace}
+
+services:
+  - seed:
+      instances: 1
+
+      registry:
+        helm: om2-nexus
+        docker: om2-nexus
+        image: scalecube/scalecube-seed:0.2.0-RC1
+
+      kubernetes:
+        account: my-k8s-account-name
+        namespace: ${namespace}

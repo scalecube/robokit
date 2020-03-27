@@ -69,6 +69,10 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
+  deployYaml (owner, repo) {
+    return this.content(owner, repo, 'robokit.yml', true)
+  }
+
   content (owner, repo, path, base64) {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)

@@ -5,7 +5,6 @@ const fs = require('fs')
 const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
-
 const githubAuth = require('./github/github-passport')
 
 class ApiGateway {
@@ -188,7 +187,7 @@ class ApiGateway {
       const res = await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
     }
 
-    if (context.user_action == 'cancel_deploy_now') {
+    if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
         const application = `${deploy.owner}-${deploy.repo}`
         this.pipeline.cancel(context.payload.check_run.external_id)
@@ -202,12 +201,15 @@ class ApiGateway {
       this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           const trigger = this.toTrigger(deploy, 'deploy')
-          console.log('>>>>> TRIGGER DEPLOY:\n POST ' + process.env.SPINLESS_URL + '\n' + JSON.stringify(trigger))
           this.pipeline.execute(trigger).then(resp => {
             console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
-              deploy.external_id = resp.data.pipeline_id
-              this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
+              deploy.external_id = resp.data.id
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, log => {
+                this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
+              }).then(log => {
+                this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
+              })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
             }
