@@ -156,9 +156,49 @@ class ApiGateway {
     this.pipeline.start()
   }
 
-  async deployContext (context) {
-    let deploy
+  async onCheckRun (context) {
+    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
+    const deploy = await this.deployContext(context)
 
+    if (util.is_check_run_in_status(deploy, 'create_on')) {
+      await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
+    }
+
+    if (context.user_action === 'cancel_deploy_now') {
+      if (context.payload.check_run.external_id) {
+        this.pipeline.cancel(context.payload.check_run.external_id)
+          .then(res => {
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+          }).catch(err => {
+            console.error(err)
+          })
+      }
+    } else if (context.user_action === 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
+      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+        .then(res => {
+          const trigger = ApiGateway.toTrigger(deploy, 'deploy')
+          this.pipeline.execute(trigger).then(resp => {
+            console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
+            if (resp.data) {
+              deploy.external_id = resp.data.id
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
+                const status = log[log.length - 1].status
+                deploy.details = log
+                this.checkRunStatus(context, deploy, log, status)
+              })
+            } else {
+              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+            }
+          })
+        }).catch(err => {
+          console.log(err)
+        })
+    }
+    return 'OK'
+  }
+
+  async deployContext (context) {
+    let deploy = {}
     if (context.payload.check_run) {
       deploy = util.toCheckRunDeployContext(context)
     } else {
@@ -182,51 +222,15 @@ class ApiGateway {
       console.log('no robokit.yml')
     }
 
+    deploy.id = context.id
+    deploy.user = context.payload.sender.login
+    deploy.avatar = context.payload.sender.avatar_url
+    deploy.node_id = context.payload.installation.node_id
+
     return deploy
   }
 
-  async onCheckRun (context) {
-    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
-    const deploy = await this.deployContext(context)
-
-    if (util.is_check_run_in_status(deploy, 'create_on')) {
-      await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
-    }
-
-    if (context.user_action === 'cancel_deploy_now') {
-      if (context.payload.check_run.external_id) {
-        this.pipeline.cancel(context.payload.check_run.external_id)
-          .then(res => {
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-          }).catch(err => {
-            console.error(err)
-          })
-      }
-    } else if (context.user_action === 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
-      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
-        .then(res => {
-          const trigger = this.toTrigger(deploy, 'deploy')
-          this.pipeline.execute(trigger).then(resp => {
-            console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
-            if (resp.data) {
-              deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
-                const status = log[log.length - 1].status
-                deploy.details = log
-                this.checkRunStatus(context, deploy, log, status)
-              })
-            } else {
-              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-            }
-          })
-        }).catch(err => {
-          console.log(err)
-        })
-    }
-    return 'OK'
-  }
-
-  toTrigger (deploy, action_type) {
+  static toTrigger (deploy, action_type) {
     return {
       action_type: action_type,
       owner: deploy.owner,
@@ -238,21 +242,25 @@ class ApiGateway {
       namespace: deploy.namespace,
       labeled: deploy.labeled,
       labels: deploy.labels,
+      user: deploy.user,
+      avatar: deploy.avatar,
+      id: deploy.id,
+      node_id: deploy.node_id,
       robokit: deploy.robokit
     }
   }
 
-  tail (log) {
+  static tail (log) {
     return log[log.length - 1]
   }
 
-  head (log) {
+  static head (log) {
     return log[0]
   }
 
   toChecks (deploy, log, status) {
-    const startDate = new Date(this.head(log).timestamp)
-    const endDate = new Date(this.tail(log).timestamp)
+    const startDate = new Date(ApiGateway.head(log).timestamp)
+    const endDate = new Date(ApiGateway.tail(log).timestamp)
     const check = {
       name: cfg.deploy.check.name,
       owner: deploy.owner,
@@ -277,18 +285,23 @@ class ApiGateway {
   }
 
   toOutput (template, log, deploy) {
-    const startDate = new Date(this.head(log).timestamp)
-    const endDate = new Date(this.tail(log).timestamp)
+    const startDate = new Date(ApiGateway.head(log).timestamp)
+    const endDate = new Date(ApiGateway.tail(log).timestamp)
     const duration = endDate.getSeconds() - startDate.getSeconds()
-    const status = this.tail(log).status
+    const status = ApiGateway.tail(log).status
     let md = templates.get(template.template)
 
-    md = md.split('${progress}').join(util.toPrgress(status))
-    md = md.split('${namespace}').join(deploy.namespace)
-    md = md.split('${branch_name}').join(deploy.branch_name)
-    md = md.split('${sha}').join(deploy.sha)
+    Object.entries(deploy).forEach((e) => {
+      md = md.split('${' + e[0] + '}').join(e[1])
+    })
+
+    md = md.split('${progress}').join(status)
     md = md.split('${duration}').join(duration + 's')
-    md = md.split('${details}').join(util.toDetails(log))
+    md = md.split('${log_details}').join(util.toDetails(log))
+
+    if(md.includes("object")){
+      console.log(md)
+    }
 
     return {
       title: status,
@@ -298,9 +311,9 @@ class ApiGateway {
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const check_run = this.checkStatus(deploy, cfg.deploy.check.name, status)
-    check_run.output = output
-    return this.githubService.createCheckRun(context.github, [check_run], deploy)
+    const checkrun = this.checkStatus(deploy, cfg.deploy.check.name, status)
+    checkrun.output = output
+    return this.githubService.createCheckRun(context.github, [checkrun], deploy)
   }
 
   checkRunStatus (context, deploy, log, status) {
@@ -405,7 +418,7 @@ class ApiGateway {
     }
     const deploy = await this.deployContext(context)
     console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
-    this.pipeline.execute(this.toTrigger(deploy, 'delete')).then(resp => {
+    this.pipeline.execute(ApiGateway.toTrigger(deploy, 'delete')).then(resp => {
       console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
     })
   }
