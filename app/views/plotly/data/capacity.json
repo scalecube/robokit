@@ -1,0 +1,15 @@
+{
+  "title": {
+    "text": "capacity-latency"
+  },
+  "xaxis": {
+    "title": {
+      "text": "data samples over time"
+    }
+  },
+  "yaxis": {
+    "title": {
+      "text": "capacity"
+    }
+  }
+}
