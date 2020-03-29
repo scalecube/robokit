@@ -6,6 +6,7 @@ const express = require('express')
 const cfg = require('./config')
 const util = require('./utils')
 const githubAuth = require('./github/github-passport')
+const templates = require('./statuses/templates')
 
 class ApiGateway {
   constructor (app, cache) {
@@ -209,10 +210,10 @@ class ApiGateway {
             console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
               deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, log => {
-                this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
-              }).then(log => {
-                this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.running)
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
+                const status = log[log.length - 1].status
+                deploy.details = log
+                this.checkRunStatus(context, deploy, log, status)
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -241,10 +242,70 @@ class ApiGateway {
     }
   }
 
+  tail (log) {
+    return log[log.length - 1]
+  }
+
+  head (log) {
+    return log[0]
+  }
+
+  toChecks (deploy, log, status) {
+    const startDate = new Date(this.head(log).timestamp)
+    const endDate = new Date(this.tail(log).timestamp)
+    const check = {
+      name: cfg.deploy.check.name,
+      owner: deploy.owner,
+      repo: deploy.repo,
+      head_sha: deploy.sha,
+      status: util.getStatus(status).status,
+      output: this.toOutput(cfg.deploy.check.update, log, deploy),
+      external_id: log[0].id
+    }
+
+    if (util.getStatus(status).conclusion) {
+      try {
+        check.completed_at = endDate.toISOString()
+        check.started_at = startDate.toISOString()
+      } catch (e) {}
+      check.conclusion = util.getStatus(status).conclusion
+      check.actions = cfg.user_actions.done
+    } else {
+      check.actions = cfg.user_actions.in_progress
+    }
+    return [check]
+  }
+
+  toOutput (template, log, deploy) {
+    const startDate = new Date(this.head(log).timestamp)
+    const endDate = new Date(this.tail(log).timestamp)
+    const duration = endDate.getSeconds() - startDate.getSeconds()
+    const status = this.tail(log).status
+    let md = templates.get(template.template)
+
+    md = md.split('${progress}').join(util.toPrgress(status))
+    md = md.split('${namespace}').join(deploy.namespace)
+    md = md.split('${branch_name}').join(deploy.branch_name)
+    md = md.split('${sha}').join(deploy.sha)
+    md = md.split('${duration}').join(duration + 's')
+    md = md.split('${details}').join(util.toDetails(log))
+
+    return {
+      title: status,
+      summary: template.summary.replace('${conclusion}', util.getStatus(status).conclusion),
+      text: md
+    }
+  }
+
   updateCheckRunStatus (context, deploy, status, output) {
     const check_run = this.checkStatus(deploy, cfg.deploy.check.name, status)
     check_run.output = output
     return this.githubService.createCheckRun(context.github, [check_run], deploy)
+  }
+
+  checkRunStatus (context, deploy, log, status) {
+    const checks = this.toChecks(deploy, log, status)
+    return this.githubService.createCheckRun(context.github, checks, deploy)
   }
 
   createPullRequest (ctx) {

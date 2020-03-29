@@ -12,7 +12,7 @@ class Notifications {
     this.pipeline = pipeline
 
     this.job = new CronJob('*/15 * * * * *', async () => {
-      this._poll()
+      //this._poll()
     }, null, true, 'America/Los_Angeles')
 
   }

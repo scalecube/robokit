@@ -10,7 +10,7 @@ class Stream {
           responseType: 'stream'
         }).then((response) => {
           response.data.on('data', (chunk) => {
-            callback(chunk.toString().trim('\n').trim('"').trim("'"))
+            callback(chunk.toString())
           })
           response.data.on('end', (chunk) => {
             callback('EOF')

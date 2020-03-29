@@ -126,19 +126,19 @@ class Utils {
   is_check_run_in_status (deploy, propName) {
     if (deploy.is_pull_request) {
       for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.labeled) && (deploy.check_run_name == cfg.deploy.on.pull_request.actions[i].name)) {
-          if (deploy.status == cfg.deploy.on.pull_request.actions[i][propName]) {
+        if ((deploy.labeled) && (deploy.check_run_name === cfg.deploy.on.pull_request.actions[i].name)) {
+          if (deploy.status === cfg.deploy.on.pull_request.actions[i][propName]) {
             return true
           }
         }
       }
     } else {
       for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i].name) &&
-          (deploy.status == cfg.deploy.on.push.actions[i][propName])) {
+        if ((deploy.check_run_name === cfg.deploy.on.push.actions[i].name) &&
+          (deploy.status === cfg.deploy.on.push.actions[i][propName])) {
           for (let j = 0; j < cfg.deploy.on.push.branches.length; j++) {
-            if (cfg.deploy.on.push.branches[j] == deploy.branch_name) {
-              if (deploy.status == cfg.deploy.on.push.actions[j][propName]) {
+            if (cfg.deploy.on.push.branches[j] === deploy.branch_name) {
+              if (deploy.status === cfg.deploy.on.push.actions[j][propName]) {
                 return true
               }
             }
@@ -156,74 +156,63 @@ class Utils {
     return field
   }
 
-  toDetails (context) {
-    let stages = context.stages
-    let details = ""
-    Object.entries(stages).sort(function(stageA, stageB) {
-      return  Number(stageA[1].Id) -  Number(stageB[1].Id)
-    }).forEach(stage => {
-      let startDate = new Date (stage[1].startTime)
-      let endDate = new Date (stage[1].endTime)
-      let duration  = this.duration(endDate,startDate)
-      details += `${this.getMarker( stage[1].status )} STAGE[${ stage[0]}, ${duration}s, ${this.time(stage[1].endTime)}] ${ stage[1].name} : ${ stage[1].status } \n`
-      for (let j = 0 ; j < stage[1].tasks.length ; j++ ) {
-        let startDate = new Date (stage[1].tasks[j].startTime)
-        let endDate = new Date (stage[1].tasks[j].endTime)
-        let duration  = endDate.getSeconds() - startDate.getSeconds()
-        details += `${ this.getMarker( stage[1].tasks[j].status ) } ${endDate.toISOString()} ${duration}s ${ stage[1].tasks[j].name } : ${ stage[1].tasks[j].status } \n`
+  toDetails (logs) {
+    let details = ''
+    for (let i = 0; i < logs.length; i++) {
+      const log = logs[i]
+      const startDate = new Date(log.timestamp).toISOString()
+      const message = log.message
+      let status = log.status
+      if (i < logs.length - 1) {
+        status = 'SUCCESS'
       }
-    }) 
+      details += `${this.getMarker(status)} [${startDate}, ${log.status}] ${message} \n`
+    }
     return details
   }
-  duration(endDate, startDate) {
-    let t= endDate.getSeconds() - startDate.getSeconds()
-    if(t.toString() == "NaN") {
-      return "--"
-    } else {
-      return t
-    }
+
+  time (t) {
+    if (t) {
+      return new Date(t).toISOString()
+    } else return '....-..-..T..:..:.....z'
   }
-  time(t){
-    if(t){
-      return new Date (t).toISOString()
-    } else return "....-..-..T..:..:.....z"
-  }
-  getPrgress(status, conclusion) {
-    if(conclusion=="success" ) {
-      return `:heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  `
-    }else if(conclusion== "cancelled") {
-        return `:no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  `
-    } else if(status=="completed" && conclusion && conclusion!=null) {
-      return `:x: &nbsp;&nbsp;&nbsp; FAILED!  `
+
+  getPrgress (status, conclusion) {
+    if (conclusion == 'success') {
+      return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
+    } else if (conclusion == 'cancelled') {
+      return ':no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  '
+    } else if (status == 'completed' && conclusion && conclusion != null) {
+      return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
     } else {
-      console.log("Deploying "+ status + " " + conclusion)
-      return `<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...`
+      console.log('Deploying ' + status + ' ' + conclusion)
+      return '<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...'
     }
   }
 
-  toPrgress(status) {
-    if(status=="SUCCEEDED" ) {
-      return `:heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  `
-    } else if(status == "TERMINAL" || status =="FAILED_CONTINUE") {
-      return `:x: &nbsp;&nbsp;&nbsp; FAILED!  `
-    } else if (status == "NOT_STARTED"|| status =="RUNNING"){
-      console.log("Deploying "+ status)
-      return `<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...`
-    } else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") {
+  toPrgress (status) {
+    if (status == 'SUCCEEDED') {
+      return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
+    } else if (status == 'TERMINAL' || status == 'FAILED_CONTINUE') {
+      return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
+    } else if (status == 'NOT_STARTED' || status == 'RUNNING') {
+      console.log('Deploying ' + status)
+      return '<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...'
+    } else if (status == 'CANCELED' || status == 'PAUSED' || status == 'SUSPENDED') {
       return `:no_entry_sign: &nbsp;&nbsp;&nbsp; ${status}!`
     }
   }
 
-  getMarker(status){
-    if (status=="SUCCEEDED") {
-      return ">"
-    }else if (status == "TERMINAL" || status == "FAILED_CONTINUE") {
-      return "<"
-    }else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") {
-      return "#"
-    }else if(status=="RUNNING"){
-      return "*"
-    }else return " "
+  getMarker (status) {
+    if (status === 'SUCCEEDED' || status === 'SUCCESS') {
+      return '>'
+    } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE' || status === 'ERROR') {
+      return '<'
+    } else if (status === 'CANCELED' || status === 'PAUSED' || status === 'SUSPENDED') {
+      return '#'
+    } else if (status === 'RUNNING') {
+      return '*'
+    } else return ' '
   }
 
   /*
@@ -233,18 +222,26 @@ class Utils {
    Note: Providing conclusion will automatically set the status parameter to completed. Only GitHub can change a check run conclusion to stale.
    */
   getStatus (status) {
-    if (status==="SUCCEEDED") { return {
-      status: "completed",
-      conclusion: "success"
-    }} else if (status == "TERMINAL" || status =="FAILED_CONTINUE") { return {
-      status: "completed",
-      conclusion: "failure"
-    }} else if (status == "NOT_STARTED"|| status =="RUNNING") { return {
-      status: "in_progress"
-    }} else if(status=="CANCELED" || status=="PAUSED" || status =="SUSPENDED") { return {
-      status: "completed",
-      conclusion: "cancelled"
-    }}
+    if (status === 'SUCCEEDED' || status === 'SUCCESS') {
+      return {
+        status: 'completed',
+        conclusion: 'success'
+      }
+    } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE' || status === 'ERROR') {
+      return {
+        status: 'completed',
+        conclusion: 'failure'
+      }
+    } else if (status === 'NOT_STARTED' || status === 'RUNNING') {
+      return {
+        status: 'in_progress'
+      }
+    } else if (status === 'CANCELED' || status === 'PAUSED' || status === 'SUSPENDED') {
+      return {
+        status: 'completed',
+        conclusion: 'cancelled'
+      }
+    }
   }
 }
 

@@ -71,7 +71,7 @@ class GithubService {
   }
 
   async deployYaml (owner, repo) {
-    const yml = await this.content(owner, repo, 'robokit.yml', false)
+    const yml = await this.content(owner, repo, '.github/robokit.yml', false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {
