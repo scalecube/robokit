@@ -11,12 +11,14 @@ class Templates {
     this.statusContent.set('status', this.env(fs.readFileSync(path.resolve(__dirname, './status.md'), 'utf8')))
   }
 
-  get(key) {
-    return this.statusContent.get(key);
+  get (key) {
+    return this.statusContent.get(key)
   }
 
-  env(data) {
+  env (data) {
     data = data.replace('${GRAPHANA_URL}', process.env.GRAPHANA_URL)
+    data = data.replace('${ROBOKIT_URL}', process.env.ROBOKIT_URL)
+    data = data.replace('${VAULT_URL}', process.env.VAULT_URL)
     return data
   }
 }
