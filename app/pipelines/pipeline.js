@@ -24,10 +24,8 @@ class PipelineAPI {
   }
 
   cancel (pipelineId) {
-    return this.execute({
-      action_type: 'cancel',
-      id: pipelineId
-    })
+    const url = `${process.env.SPINLESS_URL}/kubernetes/job/cancel/${pipelineId}`
+    return this.get(url)
   }
 
   execute (trigger) {
