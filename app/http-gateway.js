@@ -230,9 +230,8 @@ class ApiGateway {
     return deploy
   }
 
-  static toTrigger (deploy, action_type) {
-    return {
-      action_type: action_type,
+  static toTrigger (deploy) {
+    const trigger = {
       owner: deploy.owner,
       repo: deploy.repo,
       branch_name: deploy.branch_name,
@@ -245,9 +244,29 @@ class ApiGateway {
       user: deploy.user,
       avatar: deploy.avatar,
       id: deploy.id,
-      node_id: deploy.node_id,
-      robokit: deploy.robokit
+      node_id: deploy.node_id
     }
+    if (deploy.robokit) {
+      if (deploy.robokit.registry) {
+        trigger.registry = {
+          helm: deploy.robokit.registry.helm,
+          docker: deploy.robokit.registry.docker
+        }
+      }
+
+      if (deploy.robokit.kubernetes) {
+        if (deploy.robokit.kubernetes.account) {
+          trigger.kubernetes = {
+            account: deploy.robokit.kubernetes.account
+          }
+        }
+
+        if (deploy.robokit.kubernetes.namespace) {
+          trigger.namespace = deploy.robokit.kubernetes.namespace
+        }
+      }
+    }
+    return trigger
   }
 
   static tail (log) {
@@ -413,7 +432,7 @@ class ApiGateway {
 
   async onPullRequest (context) {
     // Verify that the label removed is DEPLOY
-    if (context.payload.action == 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
+    if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
       return
     }
     const deploy = await this.deployContext(context)
