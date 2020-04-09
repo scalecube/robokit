@@ -219,7 +219,6 @@ class ApiGateway {
     try {
       deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo)
     } catch (e) {
-      console.log('no robokit.yml')
     }
 
     deploy.id = context.id
@@ -248,9 +247,13 @@ class ApiGateway {
     }
     if (deploy.robokit) {
       if (deploy.robokit.registry) {
-        trigger.registry = {
-          helm: deploy.robokit.registry.helm,
-          docker: deploy.robokit.registry.docker
+        trigger.registry = {}
+        if (deploy.robokit.registry.helm) {
+          trigger.registry.helm = deploy.robokit.registry.helm
+        }
+
+        if (deploy.robokit.registry.docker) {
+          trigger.registry.docker = deploy.robokit.registry.docker
         }
       }
 
@@ -318,7 +321,7 @@ class ApiGateway {
     md = md.split('${duration}').join(duration + 's')
     md = md.split('${log_details}').join(util.toDetails(log))
 
-    if(md.includes("object")){
+    if (md.includes('object')) {
       console.log(md)
     }
 

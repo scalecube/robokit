@@ -20,6 +20,7 @@ default_events:
 - label
 - pull_request
 - push
+- release
 # - commit_comment
 # - create
 # - delete
@@ -39,7 +40,6 @@ default_events:
 # - public
 # - pull_request_review
 # - pull_request_review_comment
-# - release
 # - repository
 # - repository_import
 # - status

@@ -24,19 +24,19 @@ class PipelineAPI {
   }
 
   cancel (pipelineId) {
-    const url = `${process.env.SPINLESS_URL}/kubernetes/job/cancel/${pipelineId}`
+    const url = `${process.env.SPINLESS_URL}/helm/deploy/cancel/${pipelineId}`
     return this.get(url)
   }
 
   execute (trigger) {
-    const url = `${process.env.SPINLESS_URL}/kubernetes/deploy`
+    const url = `${process.env.SPINLESS_URL}/helm/deploy`
     console.log('>>>>> TRIGGER DEPLOY:\n POST ' + url + '\n' + JSON.stringify(trigger))
     return this.post(url, trigger)
   }
 
   status (owner, repo, id, callback) {
     const log = []
-    const uri = `${process.env.SPINLESS_URL}/kubernetes/status/${owner}/${repo}/${id}`
+    const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
     Stream.from(uri).on((event) => {
       console.log(event)
       const events = event.split('\n')
@@ -44,7 +44,7 @@ class PipelineAPI {
         try {
           if (event !== 'EOF') {
             log.push(JSON.parse(event))
-            callback (log)
+            callback(log)
           }
         } catch (e) {
         }
