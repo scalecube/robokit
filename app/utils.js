@@ -15,7 +15,7 @@ class Utils {
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
         names.forEach(name => {
-          if (label.name == name) {
+          if (label.name === name) {
             result = true
             return true
           }
@@ -47,6 +47,14 @@ class Utils {
     }
   }
 
+  baseBranchName (context) {
+    if (context.payload.check_run) {
+      if (context.payload.check_run.check_suite.pull_requests.length > 0) {
+        return context.payload.check_run.check_suite.pull_requests[0].base.ref
+      }
+    }
+  }
+
   branchName (context) {
     if (context.payload.check_suite) {
       return context.payload.check_suite.head_branch
@@ -63,25 +71,12 @@ class Utils {
     }
   }
 
-  toPullRequestDeployContext (context) {
-    const ctx = {
-      owner: context.payload.repository.owner.login,
-      repo: context.payload.repository.name,
-      branch_name: context.payload.pull_request.head.ref,
-      sha: context.payload.pull_request.head.sha,
-      is_pull_request: true,
-      action: context.payload.action,
-      issue_number: context.payload.number
-    }
-    ctx.namespace = this.targetNamespace(ctx)
-    return ctx
-  }
-
   toCheckRunDeployContext (context) {
     const ctx = {
       owner: context.payload.repository.owner.login,
       repo: context.payload.repository.name,
       branch_name: this.branchName(context),
+      base_branch_name: this.baseBranchName(context),
       sha: context.payload.check_run.head_sha,
       is_pull_request: this.isPullRequest(context),
       check_run_name: context.payload.check_run.name,
@@ -94,14 +89,6 @@ class Utils {
 
     ctx.namespace = this.targetNamespace(ctx)
     return ctx
-  }
-
-  deployCheckRunName (is_pull_request) {
-    if (is_pull_request) {
-      return +' (pull_request)'
-    } else {
-      return cfg.deploy.check.name + ' (push)'
-    }
   }
 
   mapToChecks (req) {
@@ -123,30 +110,19 @@ class Utils {
     return all
   }
 
-  is_check_run_in_status (deploy, propName) {
-    if (deploy.is_pull_request) {
-      for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.labeled) && (deploy.check_run_name === cfg.deploy.on.pull_request.actions[i].name)) {
-          if (deploy.status === cfg.deploy.on.pull_request.actions[i][propName]) {
-            return true
-          }
-        }
-      }
-    } else {
-      for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.check_run_name === cfg.deploy.on.push.actions[i].name) &&
-          (deploy.status === cfg.deploy.on.push.actions[i][propName])) {
-          for (let j = 0; j < cfg.deploy.on.push.branches.length; j++) {
-            if (cfg.deploy.on.push.branches[j] === deploy.branch_name) {
-              if (deploy.status === cfg.deploy.on.push.actions[j][propName]) {
-                return true
-              }
-            }
-          }
-        }
+  on (deploy, checkRunName, state) {
+    if (deploy.check_run_name === checkRunName && cfg.queued === state) {
+      if (this.isFeatureBranch(deploy)) {
+        return true
+      } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {
+        return true
       }
     }
     return false
+  }
+
+  isFeatureBranch (deploy) {
+    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' && this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
   format (field, values) {
@@ -178,11 +154,11 @@ class Utils {
   }
 
   getPrgress (status, conclusion) {
-    if (conclusion == 'success') {
+    if (conclusion === 'success') {
       return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
-    } else if (conclusion == 'cancelled') {
+    } else if (conclusion === 'cancelled') {
       return ':no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  '
-    } else if (status == 'completed' && conclusion && conclusion != null) {
+    } else if (status === 'completed' && conclusion && conclusion != null) {
       return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
     } else {
       console.log('Deploying ' + status + ' ' + conclusion)
@@ -191,14 +167,14 @@ class Utils {
   }
 
   toPrgress (status) {
-    if (status == 'SUCCEEDED') {
+    if (status === 'SUCCEEDED') {
       return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
-    } else if (status == 'TERMINAL' || status == 'FAILED_CONTINUE') {
+    } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE') {
       return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
-    } else if (status == 'NOT_STARTED' || status == 'RUNNING') {
+    } else if (status === 'NOT_STARTED' || status === 'RUNNING') {
       console.log('Deploying ' + status)
       return '<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...'
-    } else if (status == 'CANCELED' || status == 'PAUSED' || status == 'SUSPENDED') {
+    } else if (status === 'CANCELED' || status === 'PAUSED' || status === 'SUSPENDED') {
       return `:no_entry_sign: &nbsp;&nbsp;&nbsp; ${status}!`
     }
   }

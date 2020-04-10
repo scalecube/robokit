@@ -160,10 +160,6 @@ class ApiGateway {
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     const deploy = await this.deployContext(context)
 
-    if (util.is_check_run_in_status(deploy, 'create_on')) {
-      await this.updateCheckRunStatus(context, deploy, 'queued', cfg.deploy.check.queued)
-    }
-
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
         this.pipeline.cancel(context.payload.check_run.external_id)
@@ -173,18 +169,17 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (context.user_action === 'deploy_now' || util.is_check_run_in_status(deploy, 'trigger_on')) {
+    } else if (context.user_action === 'deploy_now' || util.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
       this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
-          const trigger = ApiGateway.toTrigger(deploy, 'deploy')
+          const trigger = ApiGateway.toTrigger(deploy)
           this.pipeline.execute(trigger).then(resp => {
             console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
             if (resp.data) {
               deploy.external_id = resp.data.id
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
-                const status = log[log.length - 1].status
                 deploy.details = log
-                this.checkRunStatus(context, deploy, log, status)
+                this.checkRunStatus(context, deploy, log, ApiGateway.tail(log).status)
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -201,10 +196,7 @@ class ApiGateway {
     let deploy = {}
     if (context.payload.check_run) {
       deploy = util.toCheckRunDeployContext(context)
-    } else {
-      deploy = util.toPullRequestDeployContext(context)
     }
-
     if (deploy.is_pull_request && deploy.issue_number) {
       try {
         const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
