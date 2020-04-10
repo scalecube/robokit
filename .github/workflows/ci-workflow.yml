@@ -50,10 +50,8 @@ jobs:
         for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
 
   robokit-deploy:
-
     needs:
-      - docker-build-push
-      - helm-package-post
+      - build
 
     runs-on: ubuntu-latest
 
