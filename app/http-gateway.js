@@ -258,9 +258,9 @@ class ApiGateway {
       }
 
       if (deploy.robokit.kubernetes) {
-        if (deploy.robokit.kubernetes.account) {
+        if (deploy.robokit.kubernetes.context) {
           trigger.kubernetes = {
-            account: deploy.robokit.kubernetes.account
+            context: deploy.robokit.kubernetes.context
           }
         }
 
