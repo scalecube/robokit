@@ -2,7 +2,7 @@ const cfg = require('./config')
 const url = require('url')
 
 class Utils {
-  urlConcat (array) {
+  static urlConcat (array) {
     let uri = array[0]
     for (let i = 0; i < array.length - 1; i++) {
       uri = url.resolve(uri, array[i + 1])
@@ -10,7 +10,7 @@ class Utils {
     return uri
   }
 
-  isLabeled (labels, names) {
+  static isLabeled (labels, names) {
     let result = false
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
@@ -25,7 +25,7 @@ class Utils {
     return result
   }
 
-  isPullRequest (context) {
+  static isPullRequest (context) {
     if (context.payload.check_suite) {
       return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests > 0)
     } else {
@@ -33,7 +33,7 @@ class Utils {
     }
   }
 
-  issueNumber (context) {
+  static issueNumber (context) {
     if (context.payload.check_run) {
       if (context.payload.check_run.check_suite) {
         if (context.payload.check_run.check_suite.pull_requests.length > 0) {
@@ -47,7 +47,7 @@ class Utils {
     }
   }
 
-  baseBranchName (context) {
+  static baseBranchName (context) {
     if (context.payload.check_run) {
       if (context.payload.check_run.check_suite.pull_requests.length > 0) {
         return context.payload.check_run.check_suite.pull_requests[0].base.ref
@@ -55,7 +55,7 @@ class Utils {
     }
   }
 
-  branchName (context) {
+  static branchName (context) {
     if (context.payload.check_suite) {
       return context.payload.check_suite.head_branch
     } else if (context.payload.check_run) {
@@ -63,7 +63,7 @@ class Utils {
     }
   }
 
-  targetNamespace (ctx) {
+  static targetNamespace (ctx) {
     if (ctx.is_pull_request) {
       return 'pr-' + ctx.issue_number
     } else {
@@ -71,27 +71,27 @@ class Utils {
     }
   }
 
-  toCheckRunDeployContext (context) {
+  static toCheckRunDeployContext (context) {
     const ctx = {
       owner: context.payload.repository.owner.login,
       repo: context.payload.repository.name,
-      branch_name: this.branchName(context),
-      base_branch_name: this.baseBranchName(context),
+      branch_name: Utils.branchName(context),
+      base_branch_name: Utils.baseBranchName(context),
       sha: context.payload.check_run.head_sha,
-      is_pull_request: this.isPullRequest(context),
+      is_pull_request: Utils.isPullRequest(context),
       check_run_name: context.payload.check_run.name,
 
       conclusion: context.payload.check_run.conclusion,
       status: context.payload.check_run.status,
       action: context.payload.action
     }
-    if (ctx.is_pull_request) { ctx.issue_number = this.issueNumber(context) }
+    if (ctx.is_pull_request) { ctx.issue_number = Utils.issueNumber(context) }
 
-    ctx.namespace = this.targetNamespace(ctx)
+    ctx.namespace = Utils.targetNamespace(ctx)
     return ctx
   }
 
-  mapToChecks (req) {
+  static mapToChecks (req) {
     const all = []
     for (let i = 0; i < req.checks.length; i++) {
       const check = {
@@ -142,18 +142,18 @@ class Utils {
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      details += `${this.getMarker(status)} [${startDate}, ${log.status}] ${message} \n`
+      details += `${Utils.getMarker(status)} [${startDate}, ${log.status}] ${message} \n`
     }
     return details
   }
 
-  time (t) {
+  static time (t) {
     if (t) {
       return new Date(t).toISOString()
     } else return '....-..-..T..:..:.....z'
   }
 
-  getPrgress (status, conclusion) {
+  static getPrgress (status, conclusion) {
     if (conclusion === 'success') {
       return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
     } else if (conclusion === 'cancelled') {
@@ -166,7 +166,7 @@ class Utils {
     }
   }
 
-  toPrgress (status) {
+  static toPrgress (status) {
     if (status === 'SUCCEEDED') {
       return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
     } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE') {
@@ -179,7 +179,7 @@ class Utils {
     }
   }
 
-  getMarker (status) {
+  static getMarker (status) {
     if (status === 'SUCCEEDED' || status === 'SUCCESS') {
       return '>'
     } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE' || status === 'ERROR') {
@@ -197,7 +197,7 @@ class Utils {
    When the conclusion is action_required, additional details should be provided on the site specified by details_url.
    Note: Providing conclusion will automatically set the status parameter to completed. Only GitHub can change a check run conclusion to stale.
    */
-  getStatus (status) {
+  static getStatus (status) {
     if (status === 'SUCCEEDED' || status === 'SUCCESS') {
       return {
         status: 'completed',
@@ -219,6 +219,13 @@ class Utils {
       }
     }
   }
-}
 
-module.exports = new Utils()
+  static tail (log) {
+    return log[log.length - 1]
+  }
+
+  static head (log) {
+    return log[0]
+  }
+}
+module.exports = Utils

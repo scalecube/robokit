@@ -23,7 +23,7 @@ class GithubService {
     if (output && context) {
       output.title = util.format(output.title, context)
       output.summary = util.format(output.summary, context)
-      context.progress = util.getPrgress(context.status,context.conclusion)
+      context.progress = Utils.getPrgress(context.status,context.conclusion)
       if(output.template){
         if(context.stages){
           context.details = util.toDetails(context)

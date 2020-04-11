@@ -85,17 +85,17 @@ class Notifications {
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
-      status: util.getStatus(pipeline.status).status,
+      status: Utils.getStatus(pipeline.status).status,
       output: this.toOutput(cfg.deploy.check.update, pipeline, deploy),
       external_id: pipeline.id
     }
 
-    if (util.getStatus(pipeline.status).conclusion) {
+    if (Utils.getStatus(pipeline.status).conclusion) {
       try {
         check.completed_at = endDate.toISOString()
         check.started_at = startDate.toISOString()
       } catch (e) {}
-      check.conclusion = util.getStatus(pipeline.status).conclusion
+      check.conclusion = Utils.getStatus(pipeline.status).conclusion
       check.actions = cfg.user_actions.done
     } else {
       check.actions = cfg.user_actions.in_progress
@@ -111,7 +111,7 @@ class Notifications {
 
     let md = templates.get(template.template)
 
-    md = md.split('${progress}').join(util.toPrgress(pipeline.status))
+    md = md.split('${progress}').join(Utils.toPrgress(pipeline.status))
     md = md.split('${namespace}').join(deploy.namespace)
     md = md.split('${branch_name}').join(deploy.branch_name)
     md = md.split('${sha}').join(deploy.sha)
@@ -120,13 +120,13 @@ class Notifications {
 
     return {
       title: pipeline.status,
-      summary: template.summary.replace('${conclusion}', util.getStatus(pipeline.status).conclusion),
+      summary: template.summary.replace('${conclusion}', Utils.getStatus(pipeline.status).conclusion),
       text: md
     }
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const check_run = this.githubService.checkStatus(deploy, cfg.deploy.check.name, status)
+    const check_run = ApiGateway.checkStatus(deploy, cfg.deploy.check.name, status)
     check_run.output = output
     return this.githubService.createCheckRun(context.github, [check_run], deploy)
   }

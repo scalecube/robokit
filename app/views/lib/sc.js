@@ -1806,7 +1806,7 @@ var sc = (function (exports) {
       var spliceCount = 0;
 
       while (spliceCount < eventsCount) {
-        if (now - _events[spliceCount].time < _windowTime) {
+        if (now - Utils.time < _windowTime) {
           break;
         }
 

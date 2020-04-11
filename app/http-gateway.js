@@ -4,7 +4,7 @@ const path = require('path')
 const fs = require('fs')
 const express = require('express')
 const cfg = require('./config')
-const util = require('./utils')
+const U = require('./utils')
 const githubAuth = require('./github/github-passport')
 const templates = require('./statuses/templates')
 
@@ -34,7 +34,7 @@ class ApiGateway {
       this.thenResponse(k8s.namespaces(), response)
     })
     this.router.get('/login', (request, response) => {
-      this.sendResponse(response, { time: Date.now() })
+      ApiGateway.sendResponse(response, { time: Date.now() })
     })
 
     this.router.get('/auth/github', githubAuth.authenticate('github'))
@@ -49,7 +49,7 @@ class ApiGateway {
     })
 
     this.router.get('/server/ping/', (request, response) => {
-      this.sendResponse(response, { time: Date.now() })
+      ApiGateway.sendResponse(response, { time: Date.now() })
     })
 
     this.router.get('/items/*', githubAuth.isAuthenticated, (req, res) => {
@@ -74,11 +74,11 @@ class ApiGateway {
         request.body.repo = request.params.repo
         request.body.sha = request.params.sha
 
-        this.githubService.createCheckRun(ctx, util.mapToChecks(request.body), response).then(res => {
+        this.githubService.createCheckRun(ctx, U.mapToChecks(request.body), response).then(res => {
           response.send(res)
         })
       } else {
-        this.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
     })
 
@@ -89,7 +89,7 @@ class ApiGateway {
         request.body.repo = request.params.repo
         this.thenResponse(this.githubService.updateComment(ctx, request.body), response)
       } else {
-        this.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
     })
 
@@ -101,7 +101,7 @@ class ApiGateway {
         request.body.issue_number = request.params.issue_number
         this.thenResponse(this.githubService.createComment(ctx, request.body), response)
       } else {
-        this.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
     })
 
@@ -169,7 +169,7 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (context.user_action === 'deploy_now' || util.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
+    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
       this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           const trigger = ApiGateway.toTrigger(deploy)
@@ -179,7 +179,7 @@ class ApiGateway {
               deploy.external_id = resp.data.id
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
                 deploy.details = log
-                this.checkRunStatus(context, deploy, log, ApiGateway.tail(log).status)
+                this.checkRunStatus(context, deploy, log, U.tail(log).status)
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -195,12 +195,12 @@ class ApiGateway {
   async deployContext (context) {
     let deploy = {}
     if (context.payload.check_run) {
-      deploy = util.toCheckRunDeployContext(context)
+      deploy = U.toCheckRunDeployContext(context)
     }
     if (deploy.is_pull_request && deploy.issue_number) {
       try {
         const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
-        deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
+        deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
         deploy.labels = labels.map(i => i.name)
       } catch (e) {
         console.error(e)
@@ -264,33 +264,25 @@ class ApiGateway {
     return trigger
   }
 
-  static tail (log) {
-    return log[log.length - 1]
-  }
-
-  static head (log) {
-    return log[0]
-  }
-
   toChecks (deploy, log, status) {
-    const startDate = new Date(ApiGateway.head(log).timestamp)
-    const endDate = new Date(ApiGateway.tail(log).timestamp)
+    const startDate = new Date(U.head(log).timestamp)
+    const endDate = new Date(U.tail(log).timestamp)
     const check = {
       name: cfg.deploy.check.name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
-      status: util.getStatus(status).status,
+      status: U.getStatus(status).status,
       output: this.toOutput(cfg.deploy.check.update, log, deploy),
       external_id: log[0].id
     }
 
-    if (util.getStatus(status).conclusion) {
+    if (U.getStatus(status).conclusion) {
       try {
         check.completed_at = endDate.toISOString()
         check.started_at = startDate.toISOString()
       } catch (e) {}
-      check.conclusion = util.getStatus(status).conclusion
+      check.conclusion = U.getStatus(status).conclusion
       check.actions = cfg.user_actions.done
     } else {
       check.actions = cfg.user_actions.in_progress
@@ -299,10 +291,10 @@ class ApiGateway {
   }
 
   toOutput (template, log, deploy) {
-    const startDate = new Date(ApiGateway.head(log).timestamp)
-    const endDate = new Date(ApiGateway.tail(log).timestamp)
+    const startDate = new Date(U.head(log).timestamp)
+    const endDate = new Date(U.tail(log).timestamp)
     const duration = endDate.getSeconds() - startDate.getSeconds()
-    const status = ApiGateway.tail(log).status
+    const status = U.tail(log).status
     let md = templates.get(template.template)
 
     Object.entries(deploy).forEach((e) => {
@@ -311,7 +303,7 @@ class ApiGateway {
 
     md = md.split('${progress}').join(status)
     md = md.split('${duration}').join(duration + 's')
-    md = md.split('${log_details}').join(util.toDetails(log))
+    md = md.split('${log_details}').join(U.toDetails(log))
 
     if (md.includes('object')) {
       console.log(md)
@@ -319,13 +311,13 @@ class ApiGateway {
 
     return {
       title: status,
-      summary: template.summary.replace('${conclusion}', util.getStatus(status).conclusion),
+      summary: template.summary.replace('${conclusion}', U.getStatus(status).conclusion),
       text: md
     }
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const checkrun = this.checkStatus(deploy, cfg.deploy.check.name, status)
+    const checkrun = ApiGateway.checkStatus(deploy, cfg.deploy.check.name, status)
     checkrun.output = output
     return this.githubService.createCheckRun(context.github, [checkrun], deploy)
   }
@@ -356,7 +348,7 @@ class ApiGateway {
    * @param status
    * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
    */
-  checkStatus (deploy, name, status) {
+  static checkStatus (deploy, name, status) {
     const result = {
       name: name,
       owner: deploy.owner,
@@ -447,7 +439,7 @@ class ApiGateway {
     })
   };
 
-  sendResponse (response, result) {
+  static sendResponse (response, result) {
     if (result === 'ok') {
       response.send(result)
     } else {
