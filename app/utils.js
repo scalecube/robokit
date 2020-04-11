@@ -110,7 +110,7 @@ class Utils {
     return all
   }
 
-  on (deploy, checkRunName, state) {
+  static on (deploy, checkRunName, state) {
     if (deploy.check_run_name === checkRunName && cfg.queued === state) {
       if (this.isFeatureBranch(deploy)) {
         return true
@@ -121,18 +121,18 @@ class Utils {
     return false
   }
 
-  isFeatureBranch (deploy) {
+  static isFeatureBranch (deploy) {
     return (deploy.is_pull_request && deploy.base_branch_name === 'develop' && this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
-  format (field, values) {
+  static format (field, values) {
     Object.entries(values).forEach((e) => {
       field = field.replace('${' + e[0] + '}', e[1])
     })
     return field
   }
 
-  toDetails (logs) {
+  static toDetails (logs) {
     let details = ''
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
