@@ -4,4 +4,3 @@ registry:
 
 kubernetes:
   cluster_name: scalecube.io
-
