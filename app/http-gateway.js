@@ -259,7 +259,7 @@ class ApiGateway {
       }
 
       if (deploy.robokit.kubernetes) {
-        if (deploy.robokit.kubernetes.context) {
+        if (deploy.robokit.kubernetes.cluster_name) {
           trigger.kubernetes = {
             cluster_name: deploy.robokit.kubernetes.cluster_name
           }
