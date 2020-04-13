@@ -71,6 +71,15 @@ class Utils {
     }
   }
 
+  static toReleaseDeployContext (context) {
+    let ctx = {
+      owner: context.payload.repository.owner.login,
+      repo: context.payload.repository.name
+    }
+    ctx = Object.assign(ctx, context.payload.release)
+    return ctx
+  }
+
   static toCheckRunDeployContext (context) {
     const ctx = {
       owner: context.payload.repository.owner.login,

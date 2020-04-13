@@ -156,6 +156,14 @@ class ApiGateway {
     this.pipeline.start()
   }
 
+  async onRelease (context) {
+    const release = await this.deployContext(context)
+    this.pipeline.release(release).then(resp => {
+
+      // Create Deployment with log_url
+    })
+  }
+
   async onCheckRun (context) {
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     const deploy = await this.deployContext(context)
@@ -173,8 +181,7 @@ class ApiGateway {
       this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
         .then(res => {
           const trigger = ApiGateway.toTrigger(deploy)
-          this.pipeline.execute(trigger).then(resp => {
-            console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
+          this.pipeline.deploy(trigger).then(resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
@@ -196,6 +203,8 @@ class ApiGateway {
     let deploy = {}
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
+    } else if (context.payload.release) {
+      deploy = U.toReleaseDeployContext(context)
     }
     if (deploy.is_pull_request && deploy.issue_number) {
       try {
@@ -252,7 +261,7 @@ class ApiGateway {
       if (deploy.robokit.kubernetes) {
         if (deploy.robokit.kubernetes.context) {
           trigger.kubernetes = {
-            context: deploy.robokit.kubernetes.context
+            cluster_name: deploy.robokit.kubernetes.cluster_name
           }
         }
 

@@ -28,10 +28,22 @@ class PipelineAPI {
     return this.get(url)
   }
 
-  execute (trigger) {
+  deploy (trigger) {
     const url = `${process.env.SPINLESS_URL}/helm/deploy`
     console.log('>>>>> TRIGGER DEPLOY:\n POST ' + url + '\n' + JSON.stringify(trigger))
-    return this.post(url, trigger)
+    return this.post(url, trigger).then((resp) => {
+      console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
+      return resp
+    })
+  }
+
+  release (release) {
+    const url = `${process.env.SPINLESS_URL}/helm/release`
+    console.log('>>>>> TRIGGER RELEASE:\n POST ' + url + '\n' + JSON.stringify(release))
+    return this.post(url, release).then((resp) => {
+      console.log('<<<<< TRIGGER RELEASE RESPONSE:\n ' + JSON.stringify(resp.data))
+      return resp
+    })
   }
 
   status (owner, repo, id, callback) {

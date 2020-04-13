@@ -3,5 +3,4 @@ registry:
   docker: docker-hub
 
 kubernetes:
-  context: scalecube.io
-  namespace: scalecube-robokit
+  cluster_name: scalecube.io

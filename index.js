@@ -21,11 +21,7 @@ const robokit = app => {
   })
 
   app.on('release', context => {
-    if (context.payload.requested_action) {
-      const action = context.payload.requested_action.identifier
-      context.user_action = action
-    }
-    api.onCheckRun(context)
+    api.onRelease(context)
   })
 
   app.on('check_run', context => {
