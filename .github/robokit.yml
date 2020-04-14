@@ -1,5 +1,5 @@
 registry:
-  helm: helm
+  helm: nexus
   docker: default
 
 kubernetes:
