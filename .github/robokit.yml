@@ -1,6 +1,6 @@
 registry:
   helm: nexus
-  docker: default
+  docker: nexus
 
 kubernetes:
   cluster_name: minikube
