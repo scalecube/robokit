@@ -1,6 +1,6 @@
 registry:
-  helm: nexus
-  docker: docker-hub
+  helm: default
+  docker: default
 
 kubernetes:
-  cluster_name: scalecube.io
+  cluster_name: minikube
