@@ -46,10 +46,15 @@ class PipelineAPI {
     })
   }
 
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
   status (owner, repo, id, callback) {
     const log = []
     const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
-    Stream.from(uri).on((event) => {
+    Stream.from(uri).on(async (event) => {
+      await this.sleep(1000)
       console.log(event)
       const events = event.split('\n')
       events.forEach(event => {
