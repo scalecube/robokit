@@ -53,21 +53,19 @@ class PipelineAPI {
   status (owner, repo, id, callback) {
     const log = []
     const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
-    Stream.from(uri).on(async (event) => {
-      await this.sleep(1000)
+    Stream.from(uri).on((event) => {
       console.log(event)
       const events = event.split('\n')
-      events.forEach(event => {
+      events.forEach(async event => {
         try {
           if (event !== 'EOF' && event !== '') {
             const record = JSON.parse(event)
             record.message = record.message.slice(0, 300)
             log.push(record)
-            callback(log)
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       })
+      callback(log)
     })
   }
 
