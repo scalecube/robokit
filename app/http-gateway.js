@@ -246,6 +246,7 @@ class ApiGateway {
       id: deploy.id,
       node_id: deploy.node_id
     }
+
     if (deploy.robokit) {
       if (deploy.robokit.registry) {
         trigger.registry = {}
@@ -267,6 +268,17 @@ class ApiGateway {
 
         if (deploy.robokit.kubernetes.namespace) {
           trigger.namespace = deploy.robokit.kubernetes.namespace
+        }
+
+        if (deploy.robokit.kubernetes.on) {
+          if (deploy.is_pull_request && deploy.robokit.kubernetes.on.pull_request) {
+            const item = deploy.robokit.kubernetes.on.pull_request.find(e => e[deploy.base_branch_name])
+            if (item && item[deploy.base_branch_name]) {
+              trigger.kubernetes.cluster_name = item[deploy.base_branch_name].cluster_name
+            }
+          } else if (deploy.robokit.kubernetes.on[deploy.branch_name]) {
+            trigger.kubernetes.cluster_name = deploy.robokit.kubernetes.on[deploy.branch_name].cluster_name
+          }
         }
       }
     }

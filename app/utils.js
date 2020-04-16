@@ -15,7 +15,7 @@ class Utils {
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
         names.forEach(name => {
-          if (label.name === name) {
+          if (label === name) {
             result = true
             return true
           }

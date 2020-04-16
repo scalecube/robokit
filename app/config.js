@@ -1,4 +1,4 @@
-const deploy_label = ':rocket:DEPLOY (robo-kit)'
+const deploy_label = ':rocket: DEPLOY (robo-kit)'
 
 module.exports = {
   ROBOKIT_DEPLOY: 'robokit-deploy',
