@@ -226,6 +226,10 @@ class Utils {
         status: 'completed',
         conclusion: 'cancelled'
       }
+    } else {
+      return {
+        status: 'in_progress'
+      }
     }
   }
 
