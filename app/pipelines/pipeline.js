@@ -61,7 +61,8 @@ class PipelineAPI {
         try {
           if (event !== 'EOF' && event !== '') {
             const record = JSON.parse(event)
-            log.push(record.message.slice(0, 300))
+            record.message = record.message.slice(0, 300)
+            log.push(record)
             callback(log)
           }
         } catch (e) {
