@@ -15,8 +15,9 @@ class Repository {
     return new Promise((resolve, reject) => {
       this.client.connect(async err => {
         this.dbo = this.client.db(this.dbName)
-        const collections = await this.dbo.collections();
-        if (!collections.map(c =>c.s.namespace.collection).includes(collectionName)) {
+        const collections = await this.dbo.collections()
+        if (!collections.map(c =>
+          c.s.namespace.collection).includes(collectionName)) {
           console.log('creating ' + collectionName + ' collection')
           this.dbo.createCollection(collectionName, (err, res) => {
             if (err) reject(err)
@@ -54,23 +55,25 @@ class Repository {
     return new Promise((resolve, reject) => {
       const id = ObjectID(data._id)
       delete data._id
-      this.collection.updateOne({ _id: id }, { $set: {...data} }, { upsert: true, overwrite: true, new: true }, (err, result) => {
+      this.collection.updateOne({ _id: id }, { $set: { ...data } }, { upsert: true, overwrite: true, new: true }, (err, result) => {
         if (err) reject(err)
         data._id = result.insertedId
         resolve(data)
       })
     })
   }
-  delete(id){
+
+  delete (id) {
     return new Promise((resolve, reject) => {
       try {
-        this.collection.deleteOne( { "_id" : ObjectID(id) } );
+        this.collection.deleteOne({ '_id': ObjectID(id) } )
         resolve()
       } catch (e) {
         reject(e)
       }
     })
   }
+
   save (data) {
     if (data._id) {
       return this.update(data)

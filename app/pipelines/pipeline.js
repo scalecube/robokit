@@ -54,8 +54,10 @@ class PipelineAPI {
       const events = event.split('\n')
       events.forEach(event => {
         try {
-          if (event !== 'EOF') {
-            log.push(JSON.parse(event))
+          if (event !== 'EOF' && event !== '') {
+            const record = JSON.parse(event)
+            log.push(record.message.slice(0, 300))
+
             callback(log)
           }
         } catch (e) {
