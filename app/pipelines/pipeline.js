@@ -53,8 +53,14 @@ class PipelineAPI {
   status (owner, repo, id, callback) {
     const log = []
     let timer = setTimeout(() => {
+      log.push({
+        id: id,
+        status: 'ERROR',
+        timestamp: Date.now(),
+        message: 'Timeout reached!'
+      })
       callback(log)
-    }, 5000, log)
+    }, 180 * 1000)
     let end = false
     const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
     console.log('>>>>> TRIGGER STATUS:\n POST ' + uri)
@@ -69,11 +75,11 @@ class PipelineAPI {
             if (record.status !== 'EOF') {
               log.push(record)
             }
-            if (record.status !== 'SUCCESS' || record.status !== 'ERROR') {
+            if ((!end) && (record.status !== 'SUCCESS' || record.status !== 'ERROR')) {
               timer = setTimeout(() => {
                 if (!end) callback(log)
               }, 2000, log)
-            } else {
+            } else if (!end) {
               callback(log)
             }
           }
