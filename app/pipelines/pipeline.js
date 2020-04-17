@@ -74,6 +74,8 @@ class PipelineAPI {
                 if (!end) callback(log)
               }, 2000, log)
             }
+          } else {
+            callback(log)
           }
         } catch (e) {}
       })
