@@ -85,7 +85,7 @@ class PipelineAPI {
               console.log('NOT JSON: ' + event)
               log.push({
                 id: id,
-                status: 'ERROR',
+                status: 'RUNNING',
                 timestamp: Date.now(),
                 message: `Error while reading log: ${e.message}`
               })
