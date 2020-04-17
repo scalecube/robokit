@@ -57,9 +57,9 @@ class PipelineAPI {
       if (!end) {
         log.push({
           id: id,
-          status: 'ERROR',
+          status: 'CANCELLED',
           timestamp: Date.now(),
-          message: 'Timeout reached!'
+          message: 'Timeout reached! deployment was not started for 3 minutes'
         })
         callback(log)
       }
