@@ -167,7 +167,7 @@ class ApiGateway {
   async onCheckRun (context) {
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     const deploy = await this.deployContext(context)
-
+    console.log(deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
         this.pipeline.cancel(context.payload.check_run.external_id)

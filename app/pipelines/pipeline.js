@@ -80,12 +80,21 @@ class PipelineAPI {
             if ((!end) && (record.status !== 'SUCCESS' || record.status !== 'ERROR')) {
               timer = setTimeout(() => {
                 if (!end) callback(log)
-              }, 2000, log)
+              }, 2000)
             } else if (!end) {
               callback(log)
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error(e)
+          log.push({
+            id: id,
+            status: 'ERROR',
+            timestamp: Date.now(),
+            message: `Error accepting log: ${e.message}`
+          })
+          callback(log)
+        }
       })
     }, () => {
       end = true
