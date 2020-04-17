@@ -98,7 +98,7 @@ class PipelineAPI {
       })
     }, () => {
       end = true
-      //clearTimeout(timer)
+      clearTimeout(timer)
       callback(log)
     })
   }
