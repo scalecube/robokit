@@ -3,17 +3,17 @@ const axios = require('axios')
 class Stream {
   static from (url) {
     return {
-      on: (callback) => {
+      on: (data, end) => {
         axios({
           method: 'get',
           url: url,
           responseType: 'stream'
         }).then((response) => {
           response.data.on('data', (chunk) => {
-            callback(chunk.toString())
+            data(chunk.toString())
           })
           response.data.on('end', (chunk) => {
-            callback('EOF')
+            end()
           })
         }).catch((err) => {
           console.error(err)
