@@ -67,7 +67,6 @@ class PipelineAPI {
     const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
     console.log('>>>>> TRIGGER STATUS:\n POST ' + uri)
     Stream.from(uri).on((event) => {
-      clearTimeout(timer)
       console.log(event)
       const events = event.split('\n')
       events.forEach(event => {
@@ -78,26 +77,23 @@ class PipelineAPI {
               if (record.status !== 'EOF') {
                 log.push(record)
               }
-              if ((!end) && (record.status !== 'SUCCESS' || record.status !== 'ERROR')) {
-                timer = setTimeout(() => {
-                  if (!end) callback(log)
-                }, 2000)
-              } else if (!end) {
-                callback(log)
-              }
+              clearTimeout(timer)
+              timer = setTimeout(() => {
+                if (!end) callback(log)
+              }, 2000)
             } catch (e) {
               console.log('NOT JSON: ' + event)
+              log.push({
+                id: id,
+                status: 'ERROR',
+                timestamp: Date.now(),
+                message: `Error while reading log: ${e.message}`
+              })
+              callback(log)
             }
           }
         } catch (e) {
           console.error(e)
-          log.push({
-            id: id,
-            status: 'ERROR',
-            timestamp: Date.now(),
-            message: `Error accepting log: ${e.message}`
-          })
-          callback(log)
         }
       })
     }, () => {
