@@ -80,7 +80,7 @@ class PipelineAPI {
               clearTimeout(timer)
               timer = setTimeout(() => {
                 if (!end) callback(log)
-              }, 2000)
+              }, 4000)
             } catch (e) {
               console.log('NOT JSON: ' + event)
               log.push({
