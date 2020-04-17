@@ -73,16 +73,20 @@ class PipelineAPI {
       events.forEach(event => {
         try {
           if (event !== '') {
-            const record = JSON.parse(event)
-            if (record.status !== 'EOF') {
-              log.push(record)
-            }
-            if ((!end) && (record.status !== 'SUCCESS' || record.status !== 'ERROR')) {
-              timer = setTimeout(() => {
-                if (!end) callback(log)
-              }, 2000)
-            } else if (!end) {
-              callback(log)
+            try {
+              const record = JSON.parse(event)
+              if (record.status !== 'EOF') {
+                log.push(record)
+              }
+              if ((!end) && (record.status !== 'SUCCESS' || record.status !== 'ERROR')) {
+                timer = setTimeout(() => {
+                  if (!end) callback(log)
+                }, 2000)
+              } else if (!end) {
+                callback(log)
+              }
+            } catch (e) {
+              console.log('NOT JSON: ' + event)
             }
           }
         } catch (e) {
