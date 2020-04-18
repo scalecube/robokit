@@ -105,6 +105,7 @@ class PipelineAPI {
 
   redacted (message) {
     return message.replace(/(dockerjsontoken).*(=|:)(.*)?\s*(>*)/g, '$1$2[REDACTED]')
+      .replace(/(dockerconfigjson).*(=|:)(.*)?\s*(>*)/g, '$1$2[REDACTED]')
   }
 
   get (url) {
