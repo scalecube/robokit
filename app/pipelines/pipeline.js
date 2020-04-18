@@ -67,7 +67,6 @@ class PipelineAPI {
     const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
     console.log('>>>>> TRIGGER STATUS:\n POST ' + uri)
     Stream.from(uri).on((event) => {
-      console.log(event)
       const events = event.split('\n')
       events.forEach(event => {
         try {
@@ -75,6 +74,7 @@ class PipelineAPI {
             try {
               const record = JSON.parse(event)
               if (record.status !== 'EOF') {
+                record.message = this.redacted(record.message)
                 log.push(record)
               }
               clearTimeout(timer)
@@ -101,6 +101,10 @@ class PipelineAPI {
       clearTimeout(timer)
       callback(log)
     })
+  }
+
+  redacted (message) {
+    return message.replace(/[dockerjsontoken](=|:)(.*)?\s*(>*)/g, '=[REDACTED]')
   }
 
   get (url) {
