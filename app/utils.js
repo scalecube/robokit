@@ -221,7 +221,7 @@ class Utils {
       return {
         status: 'in_progress'
       }
-    } else if (status === 'CANCELED' || status === 'PAUSED' || status === 'SUSPENDED') {
+    } else if (status === 'CANCELLED' || status === 'PAUSED' || status === 'SUSPENDED') {
       return {
         status: 'completed',
         conclusion: 'cancelled'
