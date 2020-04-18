@@ -3,7 +3,7 @@ var http = require('http')
 var https = require('https')
 
 function provider (url) {
-  if (!url.startsWith('https')) {
+  if (url.toLowerCase().startsWith('https')) {
     return https
   } else {
     return http
