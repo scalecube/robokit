@@ -4,9 +4,9 @@ var https = require('https')
 
 function provider (url) {
   if (!url.startsWith('https')) {
-    return http
-  } else {
     return https
+  } else {
+    return http
   }
 }
 // GET request for remote imag
