@@ -234,7 +234,7 @@ class ApiGateway {
     const trigger = {
       owner: deploy.owner,
       repo: deploy.repo,
-      branch_name: deploy.branch_name,
+      branch: deploy.branch_name,
       sha: deploy.sha,
       is_pull_request: deploy.is_pull_request,
       issue_number: deploy.issue_number,
