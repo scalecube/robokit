@@ -222,6 +222,11 @@ class ApiGateway {
     } catch (e) {
     }
 
+    try {
+      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo)
+    } catch (e) {
+    }
+
     deploy.id = context.id
     deploy.user = context.payload.sender.login
     deploy.avatar = context.payload.sender.avatar_url
