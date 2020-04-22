@@ -252,6 +252,12 @@ class ApiGateway {
       node_id: deploy.node_id
     }
 
+    if (deploy.helm) {
+      trigger.helm = {}
+      trigger.helm.name = deploy.helm.name
+      trigger.helm.version = deploy.helm.version
+    }
+
     if (deploy.robokit) {
       if (deploy.robokit.registry) {
         trigger.registry = {}
