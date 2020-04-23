@@ -240,6 +240,8 @@ class ApiGateway {
       owner: deploy.owner,
       repo: deploy.repo,
       branch: deploy.branch_name,
+      version: deploy.branch_name,
+      environment_tags: deploy.branch_name,
       sha: deploy.sha,
       is_pull_request: deploy.is_pull_request,
       issue_number: deploy.issue_number,
