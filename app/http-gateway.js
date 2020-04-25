@@ -172,6 +172,9 @@ class ApiGateway {
   static toDeployment (deploy) {
     const deployment = {}
     deployment.environment = deploy.branch_name
+    deployment.task = 'deploy'
+    deployment.auto_merge = false
+    deployment.payload = { key: "ronen" }
     deployment.owner = deploy.owner
     deployment.repo = deploy.repo
     deployment.ref = deploy.branch_name
