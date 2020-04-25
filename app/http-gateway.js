@@ -178,6 +178,7 @@ class ApiGateway {
     deployment.owner = deploy.owner
     deployment.repo = deploy.repo
     deployment.ref = deploy.branch_name
+    deployment.required_contexts = []
     deployment.headers = {
       accept: 'application/vnd.github.ant-man-preview+json'
     }
@@ -209,7 +210,7 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
       this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
           deploy.deployment_id = res.data.id
