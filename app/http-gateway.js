@@ -189,9 +189,9 @@ class ApiGateway {
     const deployment = ApiGateway.toDeployment(deploy)
     deployment.state = status
     deployment.deployment_id = deploy.deployment_id
-    deployment.description = 'The app deployed in 90 seconds'
+    deployment.description = 'Deployment status: ' + status
     deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
-    deployment.environment_url = 'https://www.google.com/'
+    deployment.environment_url = 'http://scalecube.io/'
     return context.github.repos.createDeploymentStatus(deployment)
   }
 
