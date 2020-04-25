@@ -92,7 +92,9 @@ class Utils {
 
       conclusion: context.payload.check_run.conclusion,
       status: context.payload.check_run.status,
-      action: context.payload.action
+      action: context.payload.action,
+      ref: context.payload.check_run.ref
+
     }
     if (ctx.is_pull_request) { ctx.issue_number = Utils.issueNumber(context) }
 

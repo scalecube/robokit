@@ -174,7 +174,7 @@ class ApiGateway {
     deployment.environment = deploy.branch_name
     deployment.owner = deploy.owner
     deployment.repo = deploy.repo
-    deployment.ref = deploy.branch_name
+    deployment.ref = deploy.ref
     deployment.headers = {
       accept: 'application/vnd.github.ant-man-preview+json'
     }
