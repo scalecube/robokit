@@ -164,6 +164,34 @@ class ApiGateway {
     })
   }
 
+  createDeployment (context, deploy) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    return context.github.repos.createDeployment(deployment)
+  }
+
+  static toDeployment (deploy) {
+    const deployment = {}
+    deployment.environment = deploy.branch_name
+    deployment.owner = deploy.owner
+    deployment.repo = deploy.repo
+    deployment.ref = deploy.branch_name
+    deployment.headers = {
+      accept: 'application/vnd.github.ant-man-preview+json'
+    }
+    return deployment
+  }
+
+  deploymentStatus (context, deploy, status) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    deployment.state = status
+    deployment.deployment_id = deploy.deployment_id
+    deployment.description = 'The app deployed in 90 seconds'
+    deployment.log_url = 'http://localhost:5000/helm/deploy/scalecube/robokit/00b237b9-8077-11ea-ad21-a86daaca0fd6'
+    deployment.target_url = 'http://localhost:5000/helm/deploy/scalecube/robokit/00b237b9-8077-11ea-ad21-a86daaca0fd6'
+    deployment.environment_url = 'https://www.google.com/'
+    return context.github.repos.createDeploymentStatus(deployment)
+  }
+
   async onCheckRun (context) {
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     const deploy = await this.deployContext(context)
@@ -178,8 +206,9 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
+          deploy.deployment_id = res.data.id
           const trigger = ApiGateway.toTrigger(deploy)
           this.pipeline.deploy(trigger).then(resp => {
             if (resp.data) {
@@ -187,9 +216,11 @@ class ApiGateway {
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
                 deploy.details = log
                 this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                this.deploymentStatus(context, deploy, U.tail(log).status)
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              this.deploymentStatus(context, deploy,'cancelled')
             }
           })
         }).catch(err => {
