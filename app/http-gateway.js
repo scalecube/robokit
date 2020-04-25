@@ -215,16 +215,18 @@ class ApiGateway {
         .then(res => {
           deploy.deployment_id = res.data.id
           const trigger = ApiGateway.toTrigger(deploy)
-          this.pipeline.deploy(trigger).then(resp => {
+          this.pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
                 deploy.details = log
-                this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                const res = this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                deploy.check_run_id = res[0].data.id
                 this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
             } else {
-              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              deploy.check_run_id = res[0].data.id
               this.deploymentStatus(context, deploy, 'inactive')
             }
           })
