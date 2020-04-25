@@ -211,6 +211,7 @@ class ApiGateway {
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
       await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      deploy.check_run_id = context.payload.check_run.id
       this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
           deploy.deployment_id = res.data.id
@@ -225,7 +226,7 @@ class ApiGateway {
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-              this.deploymentStatus(context, deploy,'cancelled')
+              this.deploymentStatus(context, deploy, 'inactive')
             }
           })
         }).catch(err => {
