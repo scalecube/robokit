@@ -166,12 +166,12 @@ class ApiGateway {
 
   createDeployment (context, deploy) {
     const deployment = ApiGateway.toDeployment(deploy)
+    deployment.environment = deploy.branch_name
     return context.github.repos.createDeployment(deployment)
   }
 
   static toDeployment (deploy) {
     const deployment = {}
-    deployment.environment = deploy.branch_name
     deployment.task = 'deploy'
     deployment.auto_merge = false
     deployment.payload = { key: "ronen" }
@@ -221,7 +221,8 @@ class ApiGateway {
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
                 deploy.details = log
                 this.checkRunStatus(context, deploy, log, U.tail(log).status)
-                this.deploymentStatus(context, deploy, U.tail(log).status)
+                const state = U.getStatus(U.tail(log).status).status
+                this.deploymentStatus(context, deploy, state)
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
