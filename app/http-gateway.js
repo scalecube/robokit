@@ -164,6 +164,37 @@ class ApiGateway {
     })
   }
 
+  createDeployment (context, deploy) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    deployment.environment = deploy.namespace
+    return context.github.repos.createDeployment(deployment)
+  }
+
+  static toDeployment (deploy) {
+    const deployment = {}
+    deployment.task = 'deploy'
+    deployment.auto_merge = false
+    deployment.payload = { key: "ronen" }
+    deployment.owner = deploy.owner
+    deployment.repo = deploy.repo
+    deployment.ref = deploy.branch_name
+    deployment.required_contexts = []
+    deployment.headers = {
+      accept: 'application/vnd.github.ant-man-preview+json'
+    }
+    return deployment
+  }
+
+  deploymentStatus (context, deploy, status) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    deployment.state = status
+    deployment.deployment_id = deploy.deployment_id
+    deployment.description = 'Deployment status: ' + status
+    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
+    deployment.environment_url = 'http://scalecube.io/'
+    return context.github.repos.createDeploymentStatus(deployment)
+  }
+
   async onCheckRun (context) {
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     const deploy = await this.deployContext(context)
@@ -178,18 +209,25 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      deploy.check_run_id = res[0].data.id
+      this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
+          deploy.deployment_id = res.data.id
           const trigger = ApiGateway.toTrigger(deploy)
-          this.pipeline.deploy(trigger).then(resp => {
+          this.pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
                 deploy.details = log
-                this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                deploy.check_run_id = res[0].data.id
+                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
             } else {
-              this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              deploy.check_run_id = res[0].data.id
+              this.deploymentStatus(context, deploy, 'inactive')
             }
           })
         }).catch(err => {
@@ -197,6 +235,16 @@ class ApiGateway {
         })
     }
     return 'OK'
+  }
+
+  getState (status) {
+    let state = 'in_progress'
+    if (status === 'ERROR') {
+      state = 'error'
+    } else if (status === 'SUCCESS') {
+      state = 'success'
+    }
+    return state
   }
 
   async deployContext (context) {
