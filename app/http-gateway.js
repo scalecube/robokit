@@ -190,8 +190,7 @@ class ApiGateway {
     deployment.state = status
     deployment.deployment_id = deploy.deployment_id
     deployment.description = 'The app deployed in 90 seconds'
-    deployment.log_url = 'http://localhost:5000/helm/deploy/scalecube/robokit/00b237b9-8077-11ea-ad21-a86daaca0fd6'
-    deployment.target_url = 'http://localhost:5000/helm/deploy/scalecube/robokit/00b237b9-8077-11ea-ad21-a86daaca0fd6'
+    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
     deployment.environment_url = 'https://www.google.com/'
     return context.github.repos.createDeploymentStatus(deployment)
   }
@@ -210,8 +209,8 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
-      deploy.check_run_id = context.payload.check_run.id
+      const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      deploy.check_run_id = res[0].data.id
       this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
           deploy.deployment_id = res.data.id
