@@ -221,8 +221,7 @@ class ApiGateway {
               this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
                 deploy.details = log
                 this.checkRunStatus(context, deploy, log, U.tail(log).status)
-                const state = U.getStatus(U.tail(log).status).status
-                this.deploymentStatus(context, deploy, state)
+                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
             } else {
               this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -234,6 +233,16 @@ class ApiGateway {
         })
     }
     return 'OK'
+  }
+
+  getState (status) {
+    let state = 'in_progress'
+    if (status === 'ERROR') {
+      state = 'error'
+    } else if (status === 'SUCCESS') {
+      state = 'success'
+    }
+    return state
   }
 
   async deployContext (context) {
