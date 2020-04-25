@@ -209,6 +209,7 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
+      this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
       this.createDeployment(context, deploy, 'in_progress')
         .then(res => {
           deploy.deployment_id = res.data.id
