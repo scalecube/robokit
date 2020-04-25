@@ -166,7 +166,7 @@ class ApiGateway {
 
   createDeployment (context, deploy) {
     const deployment = ApiGateway.toDeployment(deploy)
-    deployment.environment = deploy.branch_name
+    deployment.environment = deploy.namespace
     return context.github.repos.createDeployment(deployment)
   }
 
