@@ -218,9 +218,9 @@ class ApiGateway {
           this.pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, (log) => {
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
                 deploy.details = log
-                const res = this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
                 deploy.check_run_id = res[0].data.id
                 this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
