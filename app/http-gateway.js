@@ -174,7 +174,7 @@ class ApiGateway {
     const deployment = {}
     deployment.task = 'deploy'
     deployment.auto_merge = false
-    deployment.payload = { key: "ronen" }
+    deployment.payload = deploy
     deployment.owner = deploy.owner
     deployment.repo = deploy.repo
     deployment.ref = deploy.branch_name
@@ -231,7 +231,16 @@ class ApiGateway {
             }
           })
         }).catch(err => {
-          console.log(err)
+          if (err.code === 403 && err.message === 'Resource not accessible by integration') {
+            const cancel = cfg.deploy.check.canceled
+            const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
+            cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+          } else {
+            const cancel = cfg.deploy.check.canceled
+            cancel.text = cancel.text + '\n error message: ' + err.message
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+          }
         })
     }
     return 'OK'
