@@ -26,7 +26,7 @@ For reverence please see env file located at the root of this project.
 
 the Continues delivery trigger bellow named `robo_kit_deploy` is activated when build docker and creation of helm push is completed:
 
-add robokit.yml to your .github folder.
+add robokit.yml to your .github folder. 
 ```
 registry:
   helm: nexus
