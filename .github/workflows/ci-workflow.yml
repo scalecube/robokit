@@ -38,7 +38,7 @@ jobs:
     - name: Check Helm package
       run: |
         echo 'cd helm_package'
-        cd ./helm_package
+        cd ./charts
         echo "helm lint ./${{ secrets.REPO }}"
         helm lint ./${{ secrets.REPO }}
         helm repo add nexus ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
