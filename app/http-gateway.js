@@ -318,6 +318,18 @@ class ApiGateway {
     }
 
     if (deploy.robokit) {
+      /*
+      dependencies:
+        - repo: scalecube-seed
+          version: 0.0.1
+      */
+      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
+        trigger.helm_charts = []
+        deploy.robokit.dependencies.forEach(dependency => {
+          trigger.helm_charts.push(dependency)
+        })
+      }
+
       if (deploy.robokit.registry) {
         trigger.registry = {}
         if (deploy.robokit.registry.helm) {
@@ -327,6 +339,18 @@ class ApiGateway {
         if (deploy.robokit.registry.docker) {
           trigger.registry.docker = deploy.robokit.registry.docker
         }
+      }
+
+      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
+        trigger.helm_charts = []
+        deploy.robokit.dependencies.forEach(dependency => {
+          trigger.helm_charts.push(dependency)
+        })
+        trigger.helm_charts.push({
+          repo: deploy.repo,
+          version: deploy.helm.version,
+          registry: trigger.registry
+        })
       }
 
       if (deploy.robokit.kubernetes) {
