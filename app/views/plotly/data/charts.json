@@ -1,0 +1,9 @@
+[
+  {
+    "traces": "http://localhost:7777/traces/jivygroup/exchange/:sha/{\"data.group\":\"throughput\"}",
+    "template": "http://localhost:7777/items/views/plotly/data/throughput.json"
+  },{
+    "traces": "http://localhost:7777/traces/jivygroup/exchange/:sha/{\"data.group\":\"latency\"}",
+    "template": "http://localhost:7777/items/views/plotly/data/latency.json"
+  }
+]

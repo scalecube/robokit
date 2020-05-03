@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: scalecube-robokit
+    release: {{ .Release.Name | quote }}
+    chart: robokit
+  name: robokit-depl
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: scalecube-robokit
+      release: {{ .Release.Name | quote }}
+  template:
+    metadata:
+      labels:
+        app: scalecube-robokit
+        release: {{ .Release.Name | quote }}
+    spec:
+      serviceAccount: scalecube-robokit
+      serviceAccountName: scalecube-robokit
+      nodeSelector:
+{{- range $key, $value := .Values.nodeSelector }}
+  {{ indent 6 $key }}: {{ $value }}
+{{- end }}
+      containers:
+      - env:
+{{- range $pkey, $pval := .Values.env }}
+        - name: {{ $pkey }}
+          value: {{ $pval | quote }}
+{{- end }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ .Chart.Name }}
+        ports:
+        - containerPort: {{ .Values.env.PORT }}
+          name: port-{{ .Values.env.PORT  | toString }}
+          protocol: TCP
+      restartPolicy: Always

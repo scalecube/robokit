@@ -1,80 +1,39 @@
-const WebhooksRouter = require('./webhooks-router');
+const util = require('../utils')
+const templates = require('../statuses/templates')
+const yaml = require('js-yaml')
 
 class GithubService {
-
-  constructor (app,cache) {
-    this.router = new WebhooksRouter();
-    this.app = app;
-    this.cache = cache;
+  constructor (app, cache) {
+    this.app = app
+    this.cache = cache
   }
 
-  onPullRequest (context) {
-      try {
-        const owner = ctx.payload.repository.owner.login;
-        const repo = ctx.payload.repository.name;
-        this.router.route(owner,repo,context, (resp) => {
-
-          console.log('<<< ### router response: \n' + JSON.stringify(resp));
-          this.updateStatus(context.github, resp);
-        }, (err) => {
-          console.error(err)
-        })
-      } catch (e) {
-        console.error(e)
-      }
-  }
-
-  onCheckSuite(context) {
-    try {
-        const owner = context.payload.repository.owner.login;
-        const repo = context.payload.repository.name;
-        this.router.route(owner,repo,context, (resp) => {
-          if(resp && Array.isArray(resp.checks)) {
-            console.log('<<< ###  router response: \n' + JSON.stringify(resp));
-            return this.createCheckRun(context.github, resp);
-          } else {
-            console.log('<<< ###  router response: \n' + resp);
-            return Promise.resolve("OK");
-          }
-      }, (err) => {
-        console.error(err)
-      })
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  updateStatus (context, msg) {
-    let all = [];
-    if(msg.statuses) msg.statuses.forEach(async element => {
-      all.push(context.repos.createStatus({
-        owner: msg.owner,
-        repo: msg.repo,
-        head_sha: msg.sha,
-        state: element.status || "pending",
-        context: element.name,
-        target_url: element.target_url,
-        description: element.message
-      }))
-    });
-    return Promise.all(all);
-  };
-
-  async createCheckRun(github, checks) {
-
-    let all = [];
+  async createCheckRun (github, checks) {
+    const all = []
     checks.forEach(async check => {
+      const p = github.checks.create(check)
+      console.log('>>>> UPDATE STATUS  >>>> ' + JSON.stringify(check))
+      all.push(p)
+    })
 
-      console.log(">>>> UPDATE STATUS  >>>> " + JSON.stringify(check));
-      all.push(github.checks.create(check).then(res=>{
-        console.log(res);
-      }).catch(err=>{
-        console.error(err);
-      }));
+    return await Promise.all(all)
+  }
 
-    });
-
-    return await Promise.all(all);
+  formatOutput (output, context) {
+    if (output && context) {
+      output.title = util.format(output.title, context)
+      output.summary = util.format(output.summary, context)
+      context.progress = Utils.getPrgress(context.status,context.conclusion)
+      if(output.template){
+        if(context.stages){
+          context.details = util.toDetails(context)
+        }
+        output.text = util.format(templates.get(output.template), context)
+      } else{
+        output.text = util.format(output.text, context)
+      }
+    }
+    return output
   }
 
   updateComment (context, msg) {
@@ -85,173 +44,93 @@ class GithubService {
     return this.commentAction(msg, context.issues.createComment)
   }
 
-  labels(owner,repo,issue_number) {
+  labels (owner, repo, issue_number) {
     return new Promise((resolve, reject) => {
-      let ctx = this.cache.get(owner,repo);
-      if(ctx) ctx.request('GET /repos/' + owner+ "/" + repo + '/issues/' + issue_number +'/labels')
+      const ctx = this.cache.get(owner, repo)
+      if (ctx) {
+        ctx.request(`GET /repos/${owner}/${repo}/issues/${issue_number}/labels`)
           .then(res => {
-            resolve(res.data);
+            resolve(res.data)
           }).catch((err) => {
-            reject(err);
+            reject(err)
           })
+      }
     })
   }
 
+  //  POST /repos/:owner/:repo/labels
+  //  Example:
+  // {
+  //   "name": "bug",
+  //   "description": "Something isn't working",
+  //   "color": "f29513"
+  // }
+  createLabel (owner, repo, label) {
+    const github = this.cache.get(owner, repo)
+    return github.request(`POST /repos/${owner}/${repo}/labels`, label)
+  }
 
-  content (owner,repo, path, base64) {
+  async helmChart (owner, repo) {
+    const yml = await this.content(owner, repo, `charts/${repo}/Chart.yaml`, false)
+    if (yml) {
+      return yaml.safeLoad(yml)
+    } else {
+      return {}
+    }
+  }
+
+  async deployYaml (owner, repo) {
+    const yml = await this.content(owner, repo, '.github/robokit.yml', false)
+    if (yml) {
+      return yaml.safeLoad(yml)
+    } else {
+      return {}
+    }
+  }
+
+  content (owner, repo, path, base64) {
     return new Promise((resolve, reject) => {
-      let ctx = this.cache.get(owner,repo);
-      if(ctx) ctx.request('GET /repos/' + owner+ "/" + repo + '/contents/' + path)
-        .then(res => {
-          if(!base64)
-            resolve(Buffer.from(res.data.content, 'base64').toString('ascii'));
-          else{
-            resolve(res.data.content);
-          }
-        }).catch((err) => {
-          reject(err);
-        })
+      const ctx = this.cache.get(owner, repo)
+      if (ctx) {
+        ctx.request('GET /repos/' + owner + '/' + repo + '/contents/' + path)
+          .then(res => {
+            if (!base64) { resolve(Buffer.from(res.data.content, 'base64').toString('ascii')) } else {
+              resolve(res.data.content)
+            }
+          }).catch((err) => {
+            reject(err)
+          })
+      }
     })
   }
 
   commentAction (msg, action) {
     return new Promise((resolve, reject) => {
       if (msg.template) { // create comment from a template managed by this github app.
-        if(!msg.template.owner || !msg.template.repo){
-          msg.template.owner = msg.owner;
-          msg.template.repo = msg.repo;
+        if (!msg.template.owner || !msg.template.repo) {
+          msg.template.owner = msg.owner
+          msg.template.repo = msg.repo
         }
-        this.content(msg.template.owner ,msg.template.repo, msg.template.path).then(r => {
-          msg.body = r;
-          msg.body = this._formatComment(msg);
+        this.content(msg.template.owner, msg.template.repo, msg.template.path).then(r => {
+          msg.body = r
+          msg.body = this._formatComment(msg)
           resolve(action(msg))
         }).catch((err) => {
-          console.error(err);
-          reject(err);
+          console.error(err)
+          reject(err)
         })
       } else if (msg.url) { // create comment from external source
         httpClient.get(msg.template_url).then(r => {
-          msg.body = r;
-          msg.body = this._formatComment(msg);
-          resolve(action(msg));
+          msg.body = r
+          msg.body = this._formatComment(msg)
+          resolve(action(msg))
         })
       } else { // create comment from simple text 'body'
-        msg.body = this._formatComment(msg);
-        resolve(action(msg));
+        msg.body = this._formatComment(msg)
+        resolve(action(msg))
       }
     })
   }
-
-  createPullRequest(ctx) {
-
-    this.openPullRequest(ctx,{
-      source:{
-        owner: "jivygroup",
-        repo: "cicd-template",
-        files: "template-index.json"
-      },
-      pr : {
-        body: 'Install ci-cd template files on the repository this will enable CI and packaging',
-        title: 'Install ci-cd template files'
-      },
-      branch: "install-CI-files"
-    });
-  }
-
-  async openPullRequest (context, request) {
-    const branch = request.branch; // your branch's name
-    const reference = await context.github.gitdata.getRef(context.repo({ ref: 'heads/master' })); // get the reference for the master branch
-    const sha =reference.data.object.sha; // reference master sha.
-
-    let ref = await this._getOrCreateRef(context,branch,reference.data.object.sha);
-    let resp = await this.content(request.source.owner, request.source.repo, request.source.files,false);
-    let files = JSON.parse(resp);
-
-    files.forEach(async (file) =>{
-      let content = await this.content(request.source.owner, request.source.repo, file,true);
-      try {
-      const result = await context.github.repos.createOrUpdateFile(context.repo({
-        path: file, // the path to your config file
-        message: `adds ${file}`, // a commit message
-        content,
-        branch,
-        sha: sha
-      })); // create your config file
-      } catch (e) {
-        console.info(e.message);
-      }
-      try{
-        return await context.github.pullRequests.create(context.repo({
-          title: request.pr.title, // the title of the PR
-          head: branch,
-          base: 'master', // where you want to merge your changes
-          body: request.pr.body, // the body of your PR,
-          maintainer_can_modify: true // allows maintainers to edit your app's PR
-        }));
-      } catch (err) {
-        console.error(err)
-      }
-    });
-  };
-  async _getOrCreateRef(context,branch,sha){
-    let repo = context.payload.repository.name;
-    let owner = context.payload.repository.owner.login;
-    let reference;
-
-    let get = await context.github.gitdata.listRefs({
-      owner,
-      repo
-    }).then(result => {
-      result.data.forEach(ref=>{
-        if(ref.ref === `refs/heads/${ branch }`){
-          reference = ref;
-          sha = sha;
-        }
-      });
-      if(!reference) {
-        // create a reference in git for your branch
-        context.github.gitdata.createRef(context.repo({
-          ref: `refs/heads/${branch}`,
-          sha: sha
-        })).then(result => {
-          reference = result;
-        }).catch(err => {
-          console.error(err);
-        }) // create a reference in git for your branch
-      }
-    }); // create a reference in git for your branch
-
-    return reference;
-  }
-  _formatComment (msg) {
-    let body = msg.body;
-    Object.entries(msg).forEach((e) => {
-      body = body.replace('${' + e[0] + '}', e[1])
-    });
-    return body
-  }
-
-  saveWebhook (msg) {
-    return this.router.saveWebhook(msg)
-  }
-
-  findWebhook (msg) {
-    return this.router.findWebhooks(msg)
-  }
-
-  route(owner,repo,context) {
-    return this.router.route(owner,repo,context, (resp) => {
-        if((resp) && resp instanceof String) {
-          console.log('<<< ###  router response: \n' + resp);
-        } else if(resp !== undefined){
-          console.log('<<< ###  router response: \n' + JSON.stringify(resp));
-        } else{
-          console.log('<<< ###  router response: \n' + resp);
-        }
-    }, (err) => {
-      console.error(err)
-    });
-  }
 }
 
-module.exports = GithubService;
+module.exports = GithubService

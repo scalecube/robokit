@@ -1,0 +1,28 @@
+image:
+  repository:
+    user: ""
+    name: ""
+  tag: master
+  pullPolicy: Always
+
+env:
+  timestamp: 1111111
+  PORT: 7777
+  VAR: ""
+
+podTemplate:
+  annotations: {}
+
+  labels: {}
+
+nodeSelector:
+  environment: dev
+
+service:
+  annotations: {}
+  type: NodePort
+
+ingress:
+  hostname: ""
+
+namespace: ""

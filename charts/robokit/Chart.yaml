@@ -1,0 +1,8 @@
+name: robokit
+version: 0.0.1
+description: Helm chart robokit
+maintainers:
+  - name: Serhii Lypnytskyi
+    email: serhii.lypnytskiy@jivygroup.com
+appVersion: 0.1
+apiVersion: v1

@@ -2,19 +2,17 @@ FROM node:12.3.1
 
 LABEL maintainer="http://scalecube.io"
 
-ENV MONGO_DB_CONNECTION_STRING=${MONGO_DB_CONNECTION_STRING}
-ENV APP_ID=${APP_ID}
-ENV PRIVATE_KEY=${PRIVATE_KEY}
-ENV WEBHOOK_SECRET=${WEBHOOK_SECRET}
-
 WORKDIR /usr/
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 COPY app /usr/app/
 COPY package.json /usr/
 COPY index.js /usr/
+COPY robokit.js /usr/
+COPY robokit-k8s.js /usr/
 COPY env /usr/.env
 
 RUN npm install
-
 EXPOSE 7777
-CMD [ "npm", "start" ]
+CMD ["npm", "run-script", "robokit"]

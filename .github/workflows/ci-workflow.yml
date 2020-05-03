@@ -1,11 +1,10 @@
-name: Pipeline github-gateway
+name: Robokit
 
-on: [pull_request,push]
-
+on: [push]
 
 jobs:
 
-  build_push_docker:
+  docker-build-push:
 
     runs-on: ubuntu-latest
 
@@ -13,18 +12,19 @@ jobs:
 
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
+      run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.REPO }}:${GITHUB_REF##*/}
 
     - uses: azure/docker-login@v1
       with:
         login-server: ${{ secrets.DOCKER_REGISTRY }}
         username: ${{ secrets.D_USER}}
         password: ${{ secrets.D_PASS }}
-    - name: push github-gateway container to registry
+    - name: push ${{ secrets.REPO }} container to registry
       run: |
         cat $DOCKER_CONFIG/*
-        docker login -u ${{ secrets.D_USER }} -p ${{ secrets.D_PASS }} docker.io && docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.CONTAINER_NAME }}:${GITHUB_REF##*/}
-  create_helm:
+        docker login -u ${{ secrets.D_USER }} -p ${{ secrets.D_PASS }} docker.io && docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.REPO }}:${GITHUB_REF##*/}
+
+  helm-package-post:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,29 +32,32 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install Helm package
       run: |
-        wget -q ${{ secrets.HELM_URL }}/${{ secrets.HELM_TGZ }}
+        wget -q ${{ secrets.HELM_LINK }}/${{ secrets.HELM_TGZ }}
         tar xzfv ${{ secrets.HELM_TGZ }}
         PATH=`pwd`/linux-amd64/:$PATH && helm init --client-only
     - name: Check Helm package
       run: |
         echo 'cd helm_package'
-        cd ./helm_package
-        echo "helm lint ./github-gateway"
-        helm lint ./github-gateway
-        echo "helm package ./github-gateway"
-        helm package ./github-gateway
+        cd ./charts
+        echo "helm lint ./${{ secrets.REPO }}"
+        helm lint ./${{ secrets.REPO }}
+        helm repo add nexus ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
+        helm dep up ./${{ secrets.REPO }}
+        echo "helm package ./${{ secrets.REPO }}"
+        helm package ./${{ secrets.REPO }}
     - name: POST Helm package
       run: |
         for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
-  trigger_deploy:
+
+  robokit-deploy:
 
     needs:
-      - build_push_docker
-      - create_helm
+      - docker-build-push
 
     runs-on: ubuntu-latest
 
     steps:
-      - name: trigger deploy
+      - name: Deploy
         run: |
-          echo 'run webhook to spinaker'
+          echo 'Run Robo-Kit Deploy'
+

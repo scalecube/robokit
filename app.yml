@@ -20,11 +20,12 @@ default_events:
 - label
 - pull_request
 - push
+- release
+- deployment
+- deployment_status
 # - commit_comment
 # - create
 # - delete
-# - deployment
-# - deployment_status
 # - fork
 # - gollum
 # - milestone
@@ -39,7 +40,6 @@ default_events:
 # - public
 # - pull_request_review
 # - pull_request_review_comment
-# - release
 # - repository
 # - repository_import
 # - status
@@ -66,7 +66,7 @@ default_permissions:
 
   # Deployments and deployment statuses.
   # https://developer.github.com/v3/apps/permissions/#permission-on-deployments
-  # deployments: read
+  deployments: write
 
   # Issues and related comments, assignees, labels, and milestones.
   # https://developer.github.com/v3/apps/permissions/#permission-on-issues
@@ -126,10 +126,10 @@ default_permissions:
 
 
 # The name of the GitHub App. Defaults to the name specified in package.json
-# name: My Probot App
+name: Robokit
 
 # The homepage of your GitHub App.
-# url: https://example.com/
+url: https://github.com/apps/robo-kit
 
 # A description of the GitHub App.
 # description: A description of my awesome app

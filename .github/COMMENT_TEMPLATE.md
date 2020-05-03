@@ -11,10 +11,9 @@ when sending a createComment request and passing parameters in the json request 
   "a-param":"${a-param}",
   
   "path":"src/examples/comment-template.md",
-  "url":"https://raw.githubusercontent.com/scalecube/github-gateway/test1/src/examples/comment-template.md",
+  "url":robokit,
   "data":"comment data example ${a-param}"
 }
 
 ```
 here is example a-param value: ${a-param} 
-

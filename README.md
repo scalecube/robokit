@@ -1,34 +1,15 @@
 ## The problem
 
-Code quality is important. To help with code quality we have various tasks / scripts / apps and bots that we need to run to assert our quality does not drop.
-
-Continuous integration is a great way to make sure our quality does not drop and we have confidence with our software.
-
-GitHub have done a great job allowing us to integrate with the platform and run various checks before code gets merged. 
-You can automate these checks with GitHub using status checks and GitHub actions.
+Continues delivey is important to speed up the development of your team. and its more relevant with complex microservices architecture. the more microservices are added to your echo system the more hassle is invoved for creating a standard how to continuesly deploy these services without making them slow down your ability to deliver them.
 
 
 ## This solution
 
-![image](https://user-images.githubusercontent.com/1706296/70527292-38a8a280-1b54-11ea-9eff-7401614c4c42.png)
-
-`status-checks` is a gateway that accept webhooks request from github and proxy these request to your server / http endpoint you provide.
-your server runs tasks and update regarding the status of these tasks.
-
-when there was a commit on a pull request, `status-checks` will trigger api call to your server.
-your server may respond with the list of tasks and checks it is planning to execute in 'pending' state.
-as the tasks progress they can call back the status of the jobs currently running.
-
-
-## Tools
-
-- [@octokit/rest](https://github.com/octokit/rest.js)
-- [@octokit/webhooks](https://github.com/octokit/webhooks.js)
-
+`robokit` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
 ## Setup
 
-> A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
+> `robokit` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
 
 ```sh
 # Install dependencies
@@ -37,45 +18,37 @@ npm install
 # Run the bot
 npm start
 ```
+## Enviroment variables:
+For reverence please see env file located at the root of this project.
 
 ## Getting started
-1. `status-checks` expects a github token and secret so it can integrate with github api.
-2. you need to configure a webhook in github to call `status-checks` when there is pull-request check.
-3. on pull-request change your server will be called in a request response over http request containing the original data provided from github.
-   in this stage if provided a status check message then 'status-checks' will update github pull request.
-4. when the different jobs are running they should update with the progress of each task until `success` of th`failure`.
+1. `robokit` once github application installed on a repositoy and asking for relevant access rights to listen on activity in github and update `check_run` status events. after the CI is completed it triggers continues delivery pipeline as webhook events that essetially will deploy the repos and artifacts to an enviroment for example kubernetes namespace.
 
-status-checks expects the following environment variables so it can perform its actions:
+the Continues delivery trigger bellow named `robo_kit_deploy` is activated when build docker and creation of helm push is completed:
 
-example .env file:
-
+add robokit.yml to your .github folder. 
 ```
-GITHUB_TOKEN=<YOUR GITHUB TOKEN>
-GITHUB_SECRET=<YOUR GITHUB SECRET>
-YOUR_SERVER_URL=<YOUR SERVER HTTP URL WHERE YOU LIKE TO GET REQUESTS>
-GITHUB_API_PORT=7777 //the github webhock port
-STATUS_API_PORT=7778 // the status update callback API port you replay here.
+registry:
+  helm: nexus
+  docker: docker-hub
 
+kubernetes:
+  cluster_name: scalecube.io
 ```
 
-```javascript
-example = {
-  pull_request_url : "https://api.github.com/repos/<ownder>/<repo>.github.io/pulls/<PR NUM>",
-  sha :"262e1e9097f5ce412d5751b0dd37b434ebab17",
-  statuses: [{    // the list of statuses to be updated 1 to N.
-    name : "integration-testing",
-    status: "pending", // pending, error, failure, success.
-    message  : "initializing integration-testing",
-    target_url : "http://scalecube.io"
-  },{
-    name : "performance-testing",
-    status: "pending",
-    message  : "initializing performance-testing",
-    target_url : "http://scalecube.io"
-  }]
-}
-
 ```
+robokit-deploy:
 
+    needs:
+      - docker-build-push
+      - helm-package-post
 
-![image](https://user-images.githubusercontent.com/1706296/70513398-32a5c800-1b3a-11ea-9813-9c7f876117a0.png)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Robo-Kit Deploy
+        run: |
+          echo 'Run Robo-Kit Deploy'
+```
+# Check Run status update from spinnaker: 
+![image](https://user-images.githubusercontent.com/1706296/73777078-7ceda300-4791-11ea-9095-2bc58cdf7d61.png)

@@ -1,244 +1,453 @@
-const GithubService = require('./github/github-service');
-const cors = require('cors');
-const yaml = require('js-yaml');
-const express = require('express');
-const cfg = require('./config');
-const util = require('./utils');
+const GithubService = require('./github/github-service')
+const cors = require('cors')
+const path = require('path')
+const fs = require('fs')
+const express = require('express')
+const cfg = require('./config')
+const U = require('./utils')
+const githubAuth = require('./github/github-passport')
+const templates = require('./statuses/templates')
 
 class ApiGateway {
-  constructor(app, cache) {
-    this.app = app;
-    this.cache = cache;
-    this.githubService = new GithubService(app, cache);
-    this.performanceService = require('./perfromance/performance-service');
-    this.router = app.route();
-    this.router.use(cors());
-    this.router.use(express.json());
-    this.start(this.router);
+  constructor (app, cache) {
+    this.app = app
+    this.cache = cache
+
+    this.router = app.route()
+    this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
+    this.router.use(cors())
+    this.router.use(express.json())
+    this.router.use(githubAuth.passport.initialize())
+    this.router.use(githubAuth.passport.session())
+    this.router.use(require('cookie-parser')())
+
+    this.githubService = new GithubService(app, cache)
+    this.performanceService = require('./perfromance/performance-service')
+
+    const Pipeline = require('./pipelines/pipeline')
+    this.pipeline = new Pipeline(this.githubService)
   }
 
-  start() {
-    this.router.get('/server/ping/', (request, response) => {
-      console.log('ping request arrived -> reply with pong.');
-      response.send({time: Date.now()})
-    });
+  start () {
+    this.router.get('/namespaces/', async (request, response) => {
+      // eslint-disable-next-line no-undef
+      this.thenResponse(k8s.namespaces(), response)
+    })
+    this.router.get('/login', (request, response) => {
+      ApiGateway.sendResponse(response, { time: Date.now() })
+    })
 
-    this.router.post('/pulls/status/:owner/:repo/:sha', (request, response) => {
-      let ctx = this.cache.get(request.params.owner, request.params.repo);
-      if (ctx) {
-        request.body.owner = request.params.owner;
-        request.body.repo = request.params.repo;
-        request.body.sha = request.params.sha;
-        this.thenResponse(this.githubService.updateStatus(ctx, request.body), response);
-      } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo + " in cache: " + JSON.stringify(this.cache.keys()));
-      }
-    });
+    this.router.get('/auth/github', githubAuth.authenticate('github'))
+
+    this.router.get('/auth/github/callback', (req, res) => {
+      // Successful authentication, redirect home.
+      // eslint-disable-next-line camelcase,node/no-deprecated-api
+      const rk_token = new Buffer(req.query.code + req.id).toString('base64')
+      res.cookie('rk_token', rk_token)
+      githubAuth.approve(rk_token)
+      res.redirect(302, '/ui/index.html')
+    })
+
+    this.router.get('/server/ping/', (request, response) => {
+      ApiGateway.sendResponse(response, { time: Date.now() })
+    })
+
+    this.router.get('/items/*', githubAuth.isAuthenticated, (req, res) => {
+      const file = req.originalUrl.replace('/items/', '')
+      const fullPath = path.join(__dirname, file)
+      // eslint-disable-next-line handle-callback-err
+      fs.readFile(fullPath, (err, json) => {
+        try {
+          const obj = JSON.parse(json)
+          res.json(obj)
+        } catch (e) {
+          console.log(e)
+        }
+      })
+    })
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
-      console.log("### checks status request: " + JSON.stringify(request.body));
-      let ctx = this.cache.get(request.params.owner, request.params.repo);
+      console.log('### checks status request: ' + JSON.stringify(request.body))
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
-        request.body.owner = request.params.owner;
-        request.body.repo = request.params.repo;
-        request.body.sha = request.params.sha;
+        request.body.owner = request.params.owner
+        request.body.repo = request.params.repo
+        request.body.sha = request.params.sha
 
-        this.thenResponse(
-            this.githubService.createCheckRun(
-              ctx,
-              util.mapToChecks(request.body),
-            response));
-
+        this.githubService.createCheckRun(ctx, U.mapToChecks(request.body), response).then(res => {
+          response.send(res)
+        })
       } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
-    });
+    })
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
-      let ctx = this.cache.get(request.params.owner, request.params.repo);
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
-        request.body.owner = request.params.owner;
-        request.body.repo = request.params.repo;
-        this.thenResponse(this.githubService.updateComment(ctx, request.body), response);
+        request.body.owner = request.params.owner
+        request.body.repo = request.params.repo
+        this.thenResponse(this.githubService.updateComment(ctx, request.body), response)
       } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
-    });
+    })
 
     this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
-      let ctx = this.cache.get(request.params.owner, request.params.repo);
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
-        request.body.owner = request.params.owner;
-        request.body.repo = request.params.repo;
-        request.body.issue_number = request.params.issue_number;
-        this.thenResponse(this.githubService.createComment(ctx, request.body), response);
+        request.body.owner = request.params.owner
+        request.body.repo = request.params.repo
+        request.body.issue_number = request.params.issue_number
+        this.thenResponse(this.githubService.createComment(ctx, request.body), response)
       } else {
-        this.sendResponse(response, "no context was found for repo:" + request.body.owner + "/" + request.body.repo);
+        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
       }
-    });
+    })
 
-    this.router.get('/commits/:owner/:repo/', (request, response) => {
-      this.thenResponse(this.performanceService.listCommits(
-          request.params.owner,
-          request.params.repo), response)
-    });
+    this.router.get('/templates/:template?', githubAuth.isAuthenticated, (request, response) => {
+      this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
+    })
+
+    this.router.get('/commits/:owner/:repo/', githubAuth.isAuthenticated, (request, response) => {
+      this.performanceService.listCommits(
+        request.params.owner,
+        request.params.repo).then(commits => {
+        response.send(Array.from(commits.entries()))
+      })
+    })
 
     this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
-      let filter;
+      let filter
       if (request.params.filter) filter = JSON.parse(request.params.filter)
       this.performanceService.findReport(request.params.owner,
-          request.params.repo,
-          request.params.sha,
-          filter).then(r => {
-        const result = [];
+        request.params.repo,
+        request.params.sha,
+        filter).then(r => {
+        const result = []
         r.forEach(e => {
           result.push(e.data)
-        });
-        response.send(result);
-      });
-    });
+        })
+        response.send(result)
+      })
+    })
 
     this.router.post('/traces/:owner/:repo/:sha/', (request, response) => {
-      request.body.owner = request.params.owner;
-      request.body.repo = request.params.repo;
-      request.body.sha = request.params.sha;
+      request.body.owner = request.params.owner
+      request.body.repo = request.params.repo
+      request.body.sha = request.params.sha
 
       this.thenResponse(this.performanceService.addReport(
-          request.body.owner,
-          request.body.repo,
-          request.body.sha,
-          request.body.traces),
-          response);
-    });
+        request.body.owner,
+        request.body.repo,
+        request.body.sha,
+        request.body.traces),
+      response)
+    })
 
-    this.router.post('/webhooks/:owner?/:repo?', (request, response) => {
-      if (request.params.owner) {
-        request.body.owner = request.params.owner
-      }
-      if (request.params.repo) {
-        request.body.repo = request.params.repo
-      }
-      this.thenResponse(this.githubService.saveWebhook(request.body), response);
-    });
-
-    this.router.get('/webhooks/:owner?/:repo?', (request, response) => {
-      let msg = {};
-      if (request.params.owner) {
-        msg.owner = request.params.owner
-      }
-      if (request.params.repo) {
-        msg.repo = request.params.repo
-      }
-      this.thenResponse(this.githubService.findWebhook(msg), response);
-    });
-
-    this.router.get('/webhooks/:owner/:repo/:sha/', (request, response) => {
-      this.performanceService.findReport(
-          request.params.owner,
-          request.params.repo,
-          request.params.sha)
-          .then(r => {
-            const result = [];
-            r.forEach(e => {
-              result.push(e.data);
-            });
-            this.writeResponse(result, response);
-          });
-    });
-
-    this.router.get('/commits/:owner/:repo/', (request, response) => {
+    this.router.get('/commits/:owner?/:repo?/', githubAuth.isAuthenticated, (request, response) => {
       this.performanceService.listCommits(request.params.owner,
-          request.params.repo).then((r) => {
-        writeResponse(r, response)
+        request.params.repo).then((r) => {
+        this.writeResponse(r, response)
       }).catch((err) => {
         console.log(err)
-      });
-    });
+      })
+    })
+    this.pipeline.start()
   }
 
-  async onPullRequest(context) {
-    return this.githubService.onPullRequest(context);
+  async onRelease (context) {
+    const release = await this.deployContext(context)
+    this.pipeline.release(release).then(resp => {
+
+      // Create Deployment with log_url
+    })
   }
 
-  async onCheckSuite(context) {
-    /*
-    if (context.payload.action != 'completed') {
-      check_run = this.checkStatus(owner, repo, sha, cfg.deploy.name, "cancelled");
-      check_run.checks[0].output = {
-        title: "Robo-kit is Deploying branch: " + branchName + " cancelled",
-        summary: "Cancelled a Continues-Deployment pipeline",
-        text: "the deployment is cancelled because CI failed"
-      }
-    }*/
+  createDeployment (context, deploy) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    deployment.environment = deploy.namespace
+    return context.github.repos.createDeployment(deployment)
   }
 
-  async deployContext(context) {
-    let deploy = util.toDeployContext(context);
-
-    if (deploy.is_pull_request && deploy.issue_number) {
-      let labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number);
-      deploy.labeled = util.isLabeled(labels, cfg.deploy.on.pull_request.labeled);
-      deploy.labels = labels.map(i => i.name);
-    } else {
-      deploy.labeled = false;
+  static toDeployment (deploy) {
+    const deployment = {}
+    deployment.task = 'deploy'
+    deployment.auto_merge = false
+    deployment.payload = deploy
+    deployment.owner = deploy.owner
+    deployment.repo = deploy.repo
+    deployment.ref = deploy.branch_name
+    deployment.required_contexts = []
+    deployment.headers = {
+      accept: 'application/vnd.github.ant-man-preview+json'
     }
-    return deploy;
+    return deployment
   }
 
-  is_check_run_in_status(deploy, status) {
+  deploymentStatus (context, deploy, status) {
+    const deployment = ApiGateway.toDeployment(deploy)
+    deployment.state = status
+    deployment.deployment_id = deploy.deployment_id
+    deployment.description = 'Deployment status: ' + status
+    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
+    deployment.environment_url = 'http://scalecube.io/'
+    return context.github.repos.createDeploymentStatus(deployment)
+  }
 
-    if (deploy.is_pull_request) {
-      for (let i = 0; i < cfg.deploy.on.pull_request.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.pull_request.actions[i]) && (deploy.status == status)) {
-          if (deploy.labeled) {
-            return true;
-          } else if (!(deploy.is_pull_request) && (deploy.branch_name == 'develop' || deploy.branch_name === 'master')) {
-            return true;
+  async onCheckRun (context) {
+    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
+    const deploy = await this.deployContext(context)
+    console.log(deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+    if (context.user_action === 'cancel_deploy_now') {
+      if (context.payload.check_run.external_id) {
+        this.pipeline.cancel(context.payload.check_run.external_id)
+          .then(res => {
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+          }).catch(err => {
+            console.error(err)
+          })
+      }
+    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
+      const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+      deploy.check_run_id = res[0].data.id
+      this.createDeployment(context, deploy, 'in_progress')
+        .then(res => {
+          deploy.deployment_id = res.data.id
+          const trigger = ApiGateway.toTrigger(deploy)
+          this.pipeline.deploy(trigger).then(async resp => {
+            if (resp.data) {
+              deploy.external_id = resp.data.id
+              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
+                deploy.details = log
+                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                deploy.check_run_id = res[0].data.id
+                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
+              })
+            } else {
+              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+              deploy.check_run_id = res[0].data.id
+              this.deploymentStatus(context, deploy, 'inactive')
+            }
+          })
+        }).catch(err => {
+          if (err.code === 403 && err.message === 'Resource not accessible by integration') {
+            const cancel = cfg.deploy.check.canceled
+            const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
+            cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+          } else {
+            const cancel = cfg.deploy.check.canceled
+            cancel.text = cancel.text + '\n error message: ' + err.message
+            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+          }
+        })
+    }
+    return 'OK'
+  }
+
+  getState (status) {
+    let state = 'in_progress'
+    if (status === 'ERROR') {
+      state = 'error'
+    } else if (status === 'SUCCESS') {
+      state = 'success'
+    }
+    return state
+  }
+
+  async deployContext (context) {
+    let deploy = {}
+    if (context.payload.check_run) {
+      deploy = U.toCheckRunDeployContext(context)
+    } else if (context.payload.release) {
+      deploy = U.toReleaseDeployContext(context)
+    }
+    if (deploy.is_pull_request && deploy.issue_number) {
+      try {
+        const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
+        deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
+        deploy.labels = labels.map(i => i.name)
+      } catch (e) {
+        console.error(e)
+      }
+    } else {
+      deploy.labeled = false
+    }
+    try {
+      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo)
+    } catch (e) {
+    }
+
+    try {
+      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo)
+    } catch (e) {
+    }
+
+    deploy.id = context.id
+    deploy.user = context.payload.sender.login
+    deploy.avatar = context.payload.sender.avatar_url
+    deploy.node_id = context.payload.installation.node_id
+
+    return deploy
+  }
+
+  static toTrigger (deploy) {
+    const trigger = {
+      owner: deploy.owner,
+      repo: deploy.repo,
+      branch: deploy.branch_name,
+      version: deploy.branch_name,
+      environment_tags: deploy.branch_name,
+      sha: deploy.sha,
+      is_pull_request: deploy.is_pull_request,
+      issue_number: deploy.issue_number,
+      namespace: deploy.namespace,
+      labeled: deploy.labeled,
+      labels: deploy.labels,
+      user: deploy.user,
+      avatar: deploy.avatar,
+      id: deploy.id,
+      node_id: deploy.node_id
+    }
+
+    if (deploy.helm) {
+      trigger.helm = {}
+      trigger.helm.name = deploy.helm.name
+      trigger.helm.version = deploy.helm.version
+    }
+
+    if (deploy.robokit) {
+      /*
+      dependencies:
+        - repo: scalecube-seed
+          version: 0.0.1
+      */
+      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
+        trigger.helm_charts = []
+        deploy.robokit.dependencies.forEach(dependency => {
+          trigger.helm_charts.push(dependency)
+        })
+      }
+
+      if (deploy.robokit.registry) {
+        trigger.registry = {}
+        if (deploy.robokit.registry.helm) {
+          trigger.registry.helm = deploy.robokit.registry.helm
+        }
+
+        if (deploy.robokit.registry.docker) {
+          trigger.registry.docker = deploy.robokit.registry.docker
+        }
+      }
+
+      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
+        trigger.helm_charts = []
+        deploy.robokit.dependencies.forEach(dependency => {
+          trigger.helm_charts.push(dependency)
+        })
+        trigger.helm_charts.push({
+          repo: deploy.repo,
+          version: deploy.helm.version,
+          registry: trigger.registry
+        })
+      }
+
+      if (deploy.robokit.kubernetes) {
+        if (deploy.robokit.kubernetes.cluster_name) {
+          trigger.kubernetes = {
+            cluster_name: deploy.robokit.kubernetes.cluster_name
+          }
+        }
+
+        if (deploy.robokit.kubernetes.namespace) {
+          trigger.namespace = deploy.robokit.kubernetes.namespace
+        }
+
+        if (deploy.robokit.kubernetes.on) {
+          if (deploy.is_pull_request && deploy.robokit.kubernetes.on.pull_request) {
+            const item = deploy.robokit.kubernetes.on.pull_request.find(e => e[deploy.base_branch_name])
+            if (item && item[deploy.base_branch_name]) {
+              trigger.kubernetes.cluster_name = item[deploy.base_branch_name].cluster_name
+            }
+          } else if (deploy.robokit.kubernetes.on[deploy.branch_name]) {
+            trigger.kubernetes.cluster_name = deploy.robokit.kubernetes.on[deploy.branch_name].cluster_name
           }
         }
       }
+    }
+    return trigger
+  }
+
+  toChecks (deploy, log, status) {
+    const startDate = new Date(U.head(log).timestamp)
+    const endDate = new Date(U.tail(log).timestamp)
+    const check = {
+      name: cfg.deploy.check.name,
+      owner: deploy.owner,
+      repo: deploy.repo,
+      head_sha: deploy.sha,
+      status: U.getStatus(status).status,
+      output: this.toOutput(cfg.deploy.check.update, log, deploy),
+      external_id: log[0].id
+    }
+
+    if (U.getStatus(status).conclusion) {
+      try {
+        check.completed_at = endDate.toISOString()
+        check.started_at = startDate.toISOString()
+      } catch (e) {}
+      check.conclusion = U.getStatus(status).conclusion
+      check.actions = cfg.user_actions.done
     } else {
-      for (let i = 0; i < cfg.deploy.on.push.actions.length; i++) {
-        if ((deploy.check_run_name == cfg.deploy.on.push.actions[i]) && (deploy.status == status)) {
-          return true;
-        }
-      }
+      check.actions = cfg.user_actions.in_progress
     }
-    return false;
+    return [check]
   }
 
-  async onCheckRun(context) {
-    console.log(context.payload.check_run.name + " - " + context.payload.check_run.status + " - " + context.payload.check_run.conclusion);
-    let deploy = await this.deployContext(context);
+  toOutput (template, log, deploy) {
+    const startDate = new Date(U.head(log).timestamp)
+    const endDate = new Date(U.tail(log).timestamp)
+    const duration = endDate.getSeconds() - startDate.getSeconds()
+    const status = U.tail(log).status
+    let md = templates.get(template.template)
 
-    if (this.is_check_run_in_status(deploy, 'completed')) {
-      this.updateCheckRunStatus(context, deploy,"queued", cfg.deploy.check.trigger_pipeline)
-          .then(res => {
-            deploy.check_run_name = util.deployCheckRunName(deploy.is_pull_request);
-            console.log(">>>>> TRIGGER CONTINUES DELIVERY PIPELINE >>> " + JSON.stringify(deploy));
-            this.route(deploy.owner, deploy.repo, deploy).then(resp=>{
-              console.log(">>>>> CONTINUES DELIVERY PIPELINE STARTED >>> " + JSON.stringify(deploy));
-              this.updateCheckRunStatus(context, deploy ,"in_progress", cfg.deploy.check.cd_pipeline_started)
-            });
-          }).catch(err => {
-            console.log(err);
-          });
+    Object.entries(deploy).forEach((e) => {
+      md = md.split('${' + e[0] + '}').join(e[1])
+    })
+
+    md = md.split('${progress}').join(status)
+    md = md.split('${duration}').join(duration + 's')
+    md = md.split('${log_details}').join(U.toDetails(log))
+
+    if (md.includes('object')) {
+      console.log(md)
+    }
+
+    return {
+      title: status,
+      summary: template.summary.replace('${conclusion}', U.getStatus(status).conclusion),
+      text: md
     }
   }
 
-  updateCheckRunStatus(context, deploy, status, output) {
-    let check_run = this.checkStatus(deploy, util.deployCheckRunName(deploy.is_pull_request), status);
-    check_run.output = output;
-    return this.githubService.createCheckRun(context.github, [check_run]);
+  updateCheckRunStatus (context, deploy, status, output) {
+    const checkrun = ApiGateway.checkStatus(deploy, cfg.deploy.check.name, status)
+    checkrun.output = output
+    return this.githubService.createCheckRun(context.github, [checkrun], deploy)
   }
 
-  createPullRequest(ctx) {
-    this.githubService.createPullRequest(ctx);
+  checkRunStatus (context, deploy, log, status) {
+    const checks = this.toChecks(deploy, log, status)
+    return this.githubService.createCheckRun(context.github, checks, deploy)
   }
 
+  createPullRequest (ctx) {
+    this.githubService.createPullRequest(ctx)
+  }
 
-  route(owner, repo, context) {
-    return this.githubService.route(owner, repo, context);
+  route (owner, repo, context) {
+    return this.githubService.route(owner, repo, context)
   }
 
   /**
@@ -254,48 +463,105 @@ class ApiGateway {
    * @param status
    * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
    */
-  checkStatus(deploy, name, status) {
-    let result = {
+  static checkStatus (deploy, name, status) {
+    const result = {
       name: name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
       status: status
-    };
-
-    if (status == 'completed') {
-      result.conclusion = "success";
-      result.completed_at = new Date().toISOString();
-    } else if (status == 'cancelled') {
-      result.status = 'completed';
-      result.conclusion = "cancelled";
-    } else if(status == 'in_progress') {
-      result.status = 'in_progress';
-      result.started_at = new Date().toISOString();
-    } else if(status == 'queued') {
-      result.status = 'queued';
     }
-    return result;
+    if (deploy.external_id) {
+      result.external_id = deploy.external_id
+    }
+    if (status === 'completed') {
+      result.status = 'completed'
+      result.conclusion = 'success'
+      result.completed_at = new Date().toISOString()
+      result.actions = cfg.user_actions.done
+    } else if (status === 'cancelled') {
+      result.status = 'completed'
+      result.conclusion = 'cancelled'
+      result.actions = cfg.user_actions.done
+    } else if (status === 'in_progress') {
+      result.status = 'in_progress'
+      result.started_at = new Date().toISOString()
+    } else if (status === 'queued') {
+      result.status = 'queued'
+    }
+    return result
   }
 
-  thenResponse(p, response) {
+  onAppInstall (context) {
+    const owner = context.payload.installation.account.login
+    if (context.payload.repositories) {
+      context.payload.repositories.forEach(repo => {
+        const repoName = repo.name
+        if (context.payload.action === 'created') {
+          this.installCache(owner, repoName, context)
+          this.installAppLabels(owner, repoName)
+          // this.installPipeline(owner, repoName)
+        } else if (context.payload.action === 'deleted') {
+          // this.uninstallPipeline(owner, repoName)
+        }
+      })
+    }
+  }
+
+  installCache (owner, repo, context) {
+    this.cache.set(owner, repo, context.github)
+  }
+
+  installAppLabels (owner, repo, context) {
+    cfg.labels.forEach(label => {
+      this.githubService.createLabel(owner, repo, label)
+    })
+  }
+
+  installPipeline (owner, repo) {
+    console.log(`>> INSTALL APPLICATION: ${owner}/${repo}`)
+    this.pipeline.install(owner, repo).then(resp => {
+      console.log('<< INSTALL APPLICATION RESPONSE ' + JSON.stringify(resp))
+    })
+  }
+
+  uninstallPipeline (owner, repoName) {
+    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repoName}`)
+    this.pipeline.uninstall(owner, repoName).then(resp => {
+      console.log('<< UNINSTALL APPLICATION RESPONSE' + resp.status)
+    })
+  }
+
+  async onPullRequest (context) {
+    // Verify that the label removed is DEPLOY
+    if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
+      return
+    }
+    const deploy = await this.deployContext(context)
+    console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
+    this.pipeline.execute(ApiGateway.toTrigger(deploy, 'delete')).then(resp => {
+      console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
+    })
+  }
+
+  thenResponse (p, response) {
     p.then((r) => {
       response.send(r)
     }).catch((err) => {
-      console.error(err);
-      response.status(500);
+      console.error(err)
+      response.status(500)
       response.send(err.message)
-    });
+    })
   };
 
-  sendResponse(response, result) {
+  static sendResponse (response, result) {
     if (result === 'ok') {
       response.send(result)
     } else {
-      response.status(500);
-      response.send(result);
+      response.status(500)
+      response.send(result)
     }
   };
 }
 
-module.exports = ApiGateway;
+module.exports = ApiGateway

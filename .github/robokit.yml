@@ -1,0 +1,13 @@
+registry:
+  helm: nexus
+  docker: nexus
+
+kubernetes:
+  cluster_name: minikube
+
+dependencies:
+  - repo: scalecube-seed
+    version: 0.0.1
+    registry:
+      helm: nexus
+      docker: nexus
