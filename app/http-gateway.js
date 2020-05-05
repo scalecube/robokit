@@ -159,18 +159,39 @@ class ApiGateway {
   async onRelease (context) {
     const release = await this.deployContext(context)
     this.pipeline.release(release).then(resp => {
-
       // Create Deployment with log_url
     })
   }
 
+  /**
+   ref string Required. The ref to deploy. This can be a branch, tag, or SHA.
+   task string Specifies a task to execute (e.g., deploy or deploy:migrations). Default: deploy
+   auto_merge boolean Attempts to automatically merge the default branch into the requested ref, if it's behind the default branch. Default: true
+   required_contexts array The status contexts to verify against commit status checks. If you omit this parameter, GitHub verifies all unique contexts before creating a deployment. To bypass checking entirely, pass an empty array. Defaults to all unique contexts.
+   payload string JSON payload with extra information about the deployment. Default: ""
+   environment string Name for the target deployment environment (e.g., production, staging, qa). Default: production
+   description string Short description of the deployment. Default: ""
+   transient_environment boolean Specifies if the given environment is specific to the deployment and will no longer exist at some point in the future. Default: false
+   Note: This parameter requires you to use the application/vnd.github.ant-man-preview+json custom media type.
+   production_environment boolean Specifies if the given environment is one that end-users directly interact with. Default: true when environment is production and false otherwise.
+   Note: This parameter requires you to use the application/vnd.github.ant-man-preview+json custom media type.
+   */
   createDeployment (context, deploy) {
     const deployment = ApiGateway.toDeployment(deploy)
     deployment.environment = deploy.namespace
     return context.github.repos.createDeployment(deployment)
   }
 
-  static toDeployment (deploy) {
+  deploymentStatus (context, deploy, state) {
+    const deployment = ApiGateway.toDeployment(deploy, state)
+    deployment.deployment_id = deploy.deployment_id
+    deployment.description = 'Deployment status: ' + state
+    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
+    deployment.environment_url = 'http://scalecube.io/'
+    return context.github.repos.createDeploymentStatus(deployment)
+  }
+
+  static toDeployment (deploy, state) {
     const deployment = {}
     deployment.task = 'deploy'
     deployment.auto_merge = false
@@ -179,25 +200,20 @@ class ApiGateway {
     deployment.repo = deploy.repo
     deployment.ref = deploy.branch_name
     deployment.required_contexts = []
-    deployment.headers = {
-      accept: 'application/vnd.github.ant-man-preview+json'
+    if (state) deployment.state = state
+    if (state === 'inactive') {
+      deployment.headers = {
+        accept: 'application/vnd.github.ant-man-preview+json'
+      }
+    } else if (state === 'in_progress' || state === 'queued') {
+      deployment.headers = {
+        accept: 'application/vnd.github.flash-preview+json'
+      }
     }
     return deployment
   }
 
-  deploymentStatus (context, deploy, status) {
-    const deployment = ApiGateway.toDeployment(deploy)
-    deployment.state = status
-    deployment.deployment_id = deploy.deployment_id
-    deployment.description = 'Deployment status: ' + status
-    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
-    deployment.environment_url = 'http://scalecube.io/'
-    return context.github.repos.createDeploymentStatus(deployment)
-  }
-
-  async onCheckRun (context) {
-    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
-    const deploy = await this.deployContext(context)
+  async deploy (context, deploy) {
     console.log(deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
@@ -222,6 +238,9 @@ class ApiGateway {
                 deploy.details = log
                 const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
                 deploy.check_run_id = res[0].data.id
+                // state string	Required.
+                // The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+                // To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
                 this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
             } else {
