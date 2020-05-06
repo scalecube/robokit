@@ -6,11 +6,17 @@ kubernetes:
   cluster_name: minikube
 
 dependencies:
-  - repo: scalecube-seed
-  - repo: scalecube-seed-1
-  - repo: scalecube-seed-2
-  - repo: scalecube-seed-3
-    version: develop
+  - repo: exchange-seed
+  - repo: exchange-cluster-manager
+  - repo: exchange-event-publisher
+  - repo: exchange-gateway
+    branch: develop
+  - repo: exchange-operation-gateway
+    branch: develop
+  - repo: exchange-market-service
+    branch: develop
+  - repo: exchange-audit-service
+    branch: develop
     registry:
       helm: nexus-1
       docker: nexus-1
