@@ -7,18 +7,26 @@ kubernetes:
 
 dependencies:
   - repo: exchange-seed
+    exclude:
+      - develop
   - repo: exchange-cluster-manager
+    exclude:
+      - develop
   - repo: exchange-event-publisher
+    exclude:
+      - develop
   - repo: exchange-gateway
-    branch: develop
+    exclude:
+      - develop
   - repo: exchange-operation-gateway
-    branch: develop
+    exclude:
+      - develop
   - repo: exchange-market-service
-    branch: develop
+    exclude:
+      - develop
   - repo: exchange-audit-service
-    branch: develop
     registry:
       helm: nexus-1
       docker: nexus-1
     exclude:
-      - pull_request
+      - develop
