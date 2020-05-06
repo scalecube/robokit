@@ -238,9 +238,11 @@ class ApiGateway {
                 deploy.details = log
                 const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
                 deploy.check_run_id = res[0].data.id
-                // state string	Required.
-                // The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
-                // To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+                /**
+                 state string Required.
+                 The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+                 To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+                 */
                 this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
               })
             } else {
@@ -294,12 +296,12 @@ class ApiGateway {
       deploy.labeled = false
     }
     try {
-      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo)
+      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
     } catch (e) {
     }
 
     try {
-      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo)
+      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo, deploy.branch_name)
     } catch (e) {
     }
 
@@ -342,13 +344,6 @@ class ApiGateway {
         - repo: scalecube-seed
           version: 0.0.1
       */
-      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
-        trigger.helm_charts = []
-        deploy.robokit.dependencies.forEach(dependency => {
-          trigger.helm_charts.push(dependency)
-        })
-      }
-
       if (deploy.robokit.registry) {
         trigger.registry = {}
         if (deploy.robokit.registry.helm) {
@@ -361,15 +356,21 @@ class ApiGateway {
       }
 
       if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
-        trigger.helm_charts = []
-        deploy.robokit.dependencies.forEach(dependency => {
-          trigger.helm_charts.push(dependency)
-        })
-        trigger.helm_charts.push({
-          repo: deploy.repo,
-          version: deploy.helm.version,
-          registry: trigger.registry
-        })
+        trigger.dependencies = []
+        for (const i in deploy.robokit.dependencies) {
+          const dependency = deploy.robokit.dependencies[i]
+          let branch = deploy.branch_name
+          if (deploy.is_pull_request) {
+            branch = 'pull_request'
+          }
+          if ((!dependency.exclude) || (dependency.exclude && !dependency.exclude.includes(branch))) {
+            trigger.dependencies.push({
+              repo: dependency.repo,
+              version: dependency.version || deploy.base_branch_name,
+              registry: dependency.registry
+            })
+          }
+        }
       }
 
       if (deploy.robokit.kubernetes) {

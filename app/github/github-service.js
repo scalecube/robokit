@@ -23,13 +23,13 @@ class GithubService {
     if (output && context) {
       output.title = util.format(output.title, context)
       output.summary = util.format(output.summary, context)
-      context.progress = Utils.getPrgress(context.status,context.conclusion)
-      if(output.template){
-        if(context.stages){
+      context.progress = Utils.getPrgress(context.status, context.conclusion)
+      if (output.template){
+        if (context.stages) {
           context.details = util.toDetails(context)
         }
         output.text = util.format(templates.get(output.template), context)
-      } else{
+      } else {
         output.text = util.format(output.text, context)
       }
     }
@@ -70,8 +70,8 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  async helmChart (owner, repo) {
-    const yml = await this.content(owner, repo, `charts/${repo}/Chart.yaml`, false)
+  async helmChart (owner, repo, branch) {
+    const yml = await this.content(owner, repo, branch, `charts/${repo}/Chart.yaml`, false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {
@@ -79,8 +79,8 @@ class GithubService {
     }
   }
 
-  async deployYaml (owner, repo) {
-    const yml = await this.content(owner, repo, '.github/robokit.yml', false)
+  async deployYaml (owner, repo, branch) {
+    const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {
@@ -88,13 +88,15 @@ class GithubService {
     }
   }
 
-  content (owner, repo, path, base64) {
+  content (owner, repo, branch, path, base64) {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)
       if (ctx) {
-        ctx.request('GET /repos/' + owner + '/' + repo + '/contents/' + path)
+        ctx.repos.getContents({ owner: owner, repo: repo, ref: branch, path: path })
           .then(res => {
-            if (!base64) { resolve(Buffer.from(res.data.content, 'base64').toString('ascii')) } else {
+            if (!base64) {
+              resolve(Buffer.from(res.data.content, 'base64').toString('ascii'))
+            } else {
               resolve(res.data.content)
             }
           }).catch((err) => {
@@ -111,7 +113,7 @@ class GithubService {
           msg.template.owner = msg.owner
           msg.template.repo = msg.repo
         }
-        this.content(msg.template.owner, msg.template.repo, msg.template.path).then(r => {
+        this.content(msg.template.owner, msg.template.repo, 'develop', msg.template.path).then(r => {
           msg.body = r
           msg.body = this._formatComment(msg)
           resolve(action(msg))
