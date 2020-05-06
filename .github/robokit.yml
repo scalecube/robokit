@@ -7,13 +7,10 @@ kubernetes:
 
 dependencies:
   - repo: scalecube-seed
+  - repo: scalecube-seed-1
   - repo: scalecube-seed-2
   - repo: scalecube-seed-3
-  - repo: scalecube-seed-4
     version: develop
     registry:
       helm: nexus-1
       docker: nexus-1
-
-  exclude:
-    branch: pull_request
