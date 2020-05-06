@@ -366,7 +366,7 @@ class ApiGateway {
           if ((!dependency.exclude) || (dependency.exclude && !dependency.exclude.includes(branch))) {
             trigger.dependencies.push({
               repo: dependency.repo,
-              version: dependency.version || deploy.base_branch_name,
+              branch: dependency.branch || deploy.base_branch_name,
               registry: dependency.registry
             })
           }
