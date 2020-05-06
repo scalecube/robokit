@@ -5,12 +5,16 @@ registry:
 kubernetes:
   cluster_name: minikube
   namespaces:
-    master: master
-    develop: ${{ .Github.repo }}
+    master: default
+    develop: default
 
 dependencies:
   - repo: scalecube-seed
-    version: 0.0.1
+    branch:
+    - master
+    - pull_request
+    - develop
+    helm_version: 0.0.1
     registry:
       helm: nexus-1
       docker: nexus-1
