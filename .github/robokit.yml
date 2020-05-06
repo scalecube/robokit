@@ -7,8 +7,8 @@ kubernetes:
 
 dependencies:
   exclude:
-      - master
-      - develop
+    - master
+    - develop
   - repo: scalecube-seed
   - repo: scalecube-seed-2
   - repo: scalecube-seed-3
