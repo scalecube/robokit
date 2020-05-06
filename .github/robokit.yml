@@ -6,9 +6,6 @@ kubernetes:
   cluster_name: minikube
 
 dependencies:
-  exclude:
-    - master
-    - develop
   - repo: scalecube-seed
   - repo: scalecube-seed-2
   - repo: scalecube-seed-3
