@@ -225,46 +225,61 @@ class ApiGateway {
           })
       }
     } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
-      deploy.check_run_id = res[0].data.id
-      this.createDeployment(context, deploy, 'in_progress')
-        .then(res => {
-          deploy.deployment_id = res.data.id
-          const trigger = ApiGateway.toTrigger(deploy)
-          this.pipeline.deploy(trigger).then(async resp => {
-            if (resp.data) {
-              deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
-                deploy.details = log
-                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
-                deploy.check_run_id = res[0].data.id
-                /**
-                 state string Required.
-                 The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
-                 To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
-                 */
-                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
-              })
-            } else {
-              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-              deploy.check_run_id = res[0].data.id
-              this.deploymentStatus(context, deploy, 'inactive')
-            }
-          })
-        }).catch(err => {
-          if (err.code === 403 && err.message === 'Resource not accessible by integration') {
-            const cancel = cfg.deploy.check.canceled
-            const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
-            cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
-          } else {
-            const cancel = cfg.deploy.check.canceled
-            cancel.text = cancel.text + '\n error message: ' + err.message
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
-          }
-        })
+      const deployBranch = this.clone(deploy)
+      deployBranch.is_pull_request = false
+      deployBranch.check_run_name = cfg.deploy.check.name
+      deployBranch.namespace = deploy.branch_name
+      delete deployBranch.issue_number
+      this.spinlessDeploy(context, deployBranch)
+
+      if (deploy.is_pull_request) {
+        const deployPullRequest = this.clone(deploy)
+        deployPullRequest.check_run_name = cfg.deploy.check.name + ' (pull_request)'
+        this.spinlessDeploy(context, deployPullRequest)
+      }
     }
     return 'OK'
+  }
+
+  async spinlessDeploy (context, deploy) {
+    const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+    deploy.check_run_id = res[0].data.id
+    this.createDeployment(context, deploy, 'in_progress')
+      .then(res => {
+        deploy.deployment_id = res.data.id
+        const trigger = ApiGateway.toTrigger(deploy)
+        this.pipeline.deploy(trigger).then(async resp => {
+          if (resp.data) {
+            deploy.external_id = resp.data.id
+            this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
+              deploy.details = log
+              const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
+              deploy.check_run_id = res[0].data.id
+              /**
+               state string Required.
+               The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+               To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+               */
+              this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
+            })
+          } else {
+            const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+            deploy.check_run_id = res[0].data.id
+            this.deploymentStatus(context, deploy, 'inactive')
+          }
+        })
+      }).catch(err => {
+        if (err.code === 403 && err.message === 'Resource not accessible by integration') {
+          const cancel = cfg.deploy.check.canceled
+          const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
+          cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
+          this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+        } else {
+          const cancel = cfg.deploy.check.canceled
+          cancel.text = cancel.text + '\n error message: ' + err.message
+          this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+        }
+      })
   }
 
   getState (status) {
@@ -318,7 +333,6 @@ class ApiGateway {
       owner: deploy.owner,
       repo: deploy.repo,
       branch: deploy.branch_name,
-      version: deploy.branch_name,
       environment_tags: deploy.branch_name,
       sha: deploy.sha,
       is_pull_request: deploy.is_pull_request,
@@ -330,12 +344,6 @@ class ApiGateway {
       avatar: deploy.avatar,
       id: deploy.id,
       node_id: deploy.node_id
-    }
-
-    if (deploy.helm) {
-      trigger.helm = {}
-      trigger.helm.name = deploy.helm.name
-      trigger.helm.version = deploy.helm.version
     }
 
     if (deploy.robokit) {
@@ -365,6 +373,7 @@ class ApiGateway {
           }
           if ((!dependency.exclude) || (dependency.exclude && !dependency.exclude.includes(branch))) {
             trigger.dependencies.push({
+              owner: dependency.owner,
               repo: dependency.repo,
               branch: dependency.branch || deploy.base_branch_name,
               registry: dependency.registry
@@ -403,7 +412,7 @@ class ApiGateway {
     const startDate = new Date(U.head(log).timestamp)
     const endDate = new Date(U.tail(log).timestamp)
     const check = {
-      name: cfg.deploy.check.name,
+      name: deploy.check_run_name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
@@ -452,7 +461,7 @@ class ApiGateway {
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const checkrun = ApiGateway.checkStatus(deploy, cfg.deploy.check.name, status)
+    const checkrun = ApiGateway.checkStatus(deploy, status)
     checkrun.output = output
     return this.githubService.createCheckRun(context.github, [checkrun], deploy)
   }
@@ -483,9 +492,9 @@ class ApiGateway {
    * @param status
    * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
    */
-  static checkStatus (deploy, name, status) {
+  static checkStatus (deploy, status) {
     const result = {
-      name: name,
+      name: deploy.check_run_name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
@@ -582,6 +591,10 @@ class ApiGateway {
       response.send(result)
     }
   };
+
+  clone (obj) {
+    return JSON.parse(JSON.stringify(obj))
+  }
 }
 
 module.exports = ApiGateway
