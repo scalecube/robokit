@@ -14,3 +14,6 @@ dependencies:
     registry:
       helm: nexus-1
       docker: nexus-1
+
+  exclude:
+    branch: pull_request
