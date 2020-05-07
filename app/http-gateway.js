@@ -319,7 +319,9 @@ class ApiGateway {
 
     try {
       deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo, deploy.branch_name)
+      deploy.group = false
     } catch (e) {
+      deploy.group = true
     }
 
     deploy.id = context.id
@@ -335,6 +337,7 @@ class ApiGateway {
       owner: deploy.owner,
       repo: deploy.repo,
       branch: deploy.branch_name,
+      group: deploy.group,
       environment_tags: deploy.branch_name,
       sha: deploy.sha,
       is_pull_request: deploy.is_pull_request,
