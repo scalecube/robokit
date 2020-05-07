@@ -1,6 +1,5 @@
-registry:
-  helm: nexus
-  docker: nexus
-
-kubernetes:
-  cluster_name: minikube
+config:
+  owner: exberry-io
+  repo: exchange-robokit
+  branch: master
+  path: "robokit.yml"
