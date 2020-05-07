@@ -65,7 +65,7 @@ class Utils {
 
   static targetNamespace (ctx) {
     if (ctx.is_pull_request) {
-      return '-pr-' + ctx.issue_number
+      return 'pr' + ctx.issue_number
     } else {
       return ctx.branch_name
     }
