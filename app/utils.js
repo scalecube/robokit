@@ -120,7 +120,7 @@ class Utils {
   }
 
   static on (deploy, checkRunName, state) {
-    if (deploy.check_run_name === checkRunName && cfg.queued === state) {
+    if (deploy.check_run_name === checkRunName && deploy.conclusion === state) {
       if (this.isFeatureBranch(deploy)) {
         return true
       } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {

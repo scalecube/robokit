@@ -3,7 +3,7 @@ const deploy_label = ':rocket: DEPLOY (robo-kit)'
 module.exports = {
   ROBOKIT_DEPLOY: 'robokit-deploy',
   ROBOKIT_LABEL: deploy_label,
-  queued: 'queued',
+  state: 'success',
   deploy: {
     check: {
       name: 'Robokit CD',

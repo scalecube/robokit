@@ -224,13 +224,15 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      const deployBranch = this.clone(deploy)
-      deployBranch.is_pull_request = false
-      deployBranch.check_run_name = cfg.deploy.check.name
-      deployBranch.namespace = deploy.branch_name
-      delete deployBranch.issue_number
-      this.spinlessDeploy(context, deployBranch)
+    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.state)) {
+      if (!U.isFeatureBranch(deploy)) {
+        const deployBranch = this.clone(deploy)
+        deployBranch.is_pull_request = false
+        deployBranch.check_run_name = cfg.deploy.check.name
+        deployBranch.namespace = deploy.branch_name
+        delete deployBranch.issue_number
+        this.spinlessDeploy(context, deployBranch)
+      }
 
       if (deploy.is_pull_request) {
         const deployPullRequest = this.clone(deploy)
