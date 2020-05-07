@@ -17,4 +17,3 @@ when sending a createComment request and passing parameters in the json request 
 
 ```
 here is example a-param value: ${a-param}
-
