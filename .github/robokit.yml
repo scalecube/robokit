@@ -1,7 +1,10 @@
-config:
-  source:
-    github:
-      owner: exberry-io
-      repo: exchange-robokit
-      branch: master
-      path: "robokit.yml"
+source:
+  github:
+    owner: exberry-io
+    repo: exchange-robokit
+    branch: master
+    path: "robokit.yml"
+
+include:
+  services:
+    - branch: pull_request
