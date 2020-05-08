@@ -88,6 +88,15 @@ class GithubService {
     }
   }
 
+  async configYaml (owner, repo, branch, path) {
+    const yml = await this.content(owner, repo, branch, path, false)
+    if (yml) {
+      return yaml.safeLoad(yml)
+    } else {
+      return {}
+    }
+  }
+
   content (owner, repo, branch, path, base64) {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)

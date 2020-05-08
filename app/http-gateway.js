@@ -231,6 +231,7 @@ class ApiGateway {
         deployBranch.check_run_name = cfg.deploy.check.name
         deployBranch.namespace = deploy.branch_name
         delete deployBranch.issue_number
+        delete deployBranch.base_branch_name
         this.spinlessDeploy(context, deployBranch)
       }
 
@@ -312,8 +313,14 @@ class ApiGateway {
     } else {
       deploy.labeled = false
     }
+
     try {
-      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
+      const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
+      deploy.config = yml
+      if (yml.source.github) {
+        const cfg = yml.source.github
+        deploy.robokit = await this.githubService.configYaml(cfg.owner, cfg.repo, cfg.branch, cfg.path)
+      }
     } catch (e) {
     }
 
@@ -334,78 +341,50 @@ class ApiGateway {
 
   static toTrigger (deploy) {
     const trigger = {
-      owner: deploy.owner,
-      repo: deploy.repo,
-      branch: deploy.branch_name,
-      group: deploy.group,
-      environment_tags: deploy.branch_name,
+      id: deploy.id,
+      node_id: deploy.node_id,
+      namespace: deploy.namespace,
       sha: deploy.sha,
       is_pull_request: deploy.is_pull_request,
       issue_number: deploy.issue_number,
-      namespace: deploy.namespace,
-      labeled: deploy.labeled,
       labels: deploy.labels,
-      user: deploy.user,
-      avatar: deploy.avatar,
-      id: deploy.id,
-      node_id: deploy.node_id
+      user: {
+        id: deploy.user
+      }
     }
 
     if (deploy.robokit) {
-      /*
-      dependencies:
-        - repo: scalecube-seed
-          version: 0.0.1
-      */
-      if (deploy.robokit.registry) {
-        trigger.registry = {}
-        if (deploy.robokit.registry.helm) {
-          trigger.registry.helm = deploy.robokit.registry.helm
-        }
-
-        if (deploy.robokit.registry.docker) {
-          trigger.registry.docker = deploy.robokit.registry.docker
-        }
-      }
-
-      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
-        trigger.dependencies = []
-        for (const i in deploy.robokit.dependencies) {
-          const dependency = deploy.robokit.dependencies[i]
-          let branch = deploy.branch_name
-          if (deploy.is_pull_request) {
-            branch = 'pull_request'
-          }
-          if ((!dependency.exclude) || (dependency.exclude && !dependency.exclude.includes(branch))) {
-            trigger.dependencies.push({
-              owner: dependency.owner,
-              repo: dependency.repo,
-              branch: dependency.branch || deploy.base_branch_name,
-              registry: dependency.registry
-            })
-          }
-        }
-      }
-
-      if (deploy.robokit.kubernetes) {
-        if (deploy.robokit.kubernetes.cluster_name) {
-          trigger.kubernetes = {
-            cluster_name: deploy.robokit.kubernetes.cluster_name
-          }
-        }
-
-        if (deploy.robokit.kubernetes.namespace) {
-          trigger.namespace = deploy.robokit.kubernetes.namespace
-        }
-
-        if (deploy.robokit.kubernetes.on) {
-          if (deploy.is_pull_request && deploy.robokit.kubernetes.on.pull_request) {
-            const item = deploy.robokit.kubernetes.on.pull_request.find(e => e[deploy.base_branch_name])
-            if (item && item[deploy.base_branch_name]) {
-              trigger.kubernetes.cluster_name = item[deploy.base_branch_name].cluster_name
+      if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
+        trigger.services = []
+        for (const i in deploy.robokit.kuberneteses) {
+          const kubernetes = deploy.robokit.kuberneteses[i]
+          for (const k in kubernetes.services) {
+            const deployment = kubernetes.services[k]
+            const service = {
+              cluster: kubernetes.cluster,
+              repo: deployment.repo,
+              owner: deployment.owner || deploy.owner,
+              branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              registry: deployment.registry || deploy.robokit.registry
             }
-          } else if (deploy.robokit.kubernetes.on[deploy.branch_name]) {
-            trigger.kubernetes.cluster_name = deploy.robokit.kubernetes.on[deploy.branch_name].cluster_name
+            if (deploy.owner === service.owner && deploy.repo === service.repo) {
+              trigger.service = service
+            } else {
+              if (!deploy.config.include) {
+                trigger.services.push(service)
+              } else {
+                for (const inc in deploy.config.include.services) {
+                  const branch = deploy.config.include.services[inc].branch
+                  if (branch === '*') {
+                    trigger.services.push(service)
+                  } else if (deploy.is_pull_request && (branch === 'pull_request')) {
+                    trigger.services.push(service)
+                  } else if (deploy.branch_name === branch) {
+                    trigger.services.push(service)
+                  }
+                }
+              }
+            }
           }
         }
       }
