@@ -70,15 +70,6 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  async helmChart (owner, repo, branch) {
-    const yml = await this.content(owner, repo, branch, `charts/${repo}/Chart.yaml`, false)
-    if (yml) {
-      return yaml.safeLoad(yml)
-    } else {
-      return {}
-    }
-  }
-
   async deployYaml (owner, repo, branch) {
     const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
     if (yml) {

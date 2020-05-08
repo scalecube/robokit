@@ -324,13 +324,6 @@ class ApiGateway {
     } catch (e) {
     }
 
-    try {
-      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo, deploy.branch_name)
-      deploy.group = false
-    } catch (e) {
-      deploy.group = true
-    }
-
     deploy.id = context.id
     deploy.user = context.payload.sender.login
     deploy.avatar = context.payload.sender.avatar_url
@@ -345,8 +338,7 @@ class ApiGateway {
       node_id: deploy.node_id,
       namespace: deploy.namespace,
       sha: deploy.sha,
-      is_pull_request: deploy.is_pull_request,
-      issue_number: deploy.issue_number,
+      pr: 'PR' + deploy.issue_number,
       labels: deploy.labels,
       user: {
         id: deploy.user
