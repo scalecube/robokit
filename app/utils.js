@@ -159,7 +159,8 @@ class Utils {
   }
 
   static isFeatureBranch (deploy) {
-    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' && this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' &&
+      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
   static format (field, values) {
