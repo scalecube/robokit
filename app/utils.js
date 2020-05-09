@@ -11,6 +11,7 @@ class Utils {
   }
 
   static isLabeled (labels, names) {
+
     let result = false
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {

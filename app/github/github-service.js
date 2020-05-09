@@ -70,6 +70,18 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
+  async runChecks (owner, repo, branch) {
+    const github = this.cache.get(owner, repo)
+    // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
+    const runs = await  github.request(`GET /repos/${owner}/${repo}/commits/${branch}/check-runs`)
+
+    // POST /repos/:owner/:repo/actions/runs/:run_id/rerun
+    // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
+    // Accept: application/vnd.github.antiope-preview+json
+
+    return github.request(`POST /repos/${owner}/${repo}/labels`, label)
+  }
+
   async deployYaml (owner, repo, branch) {
     const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
     if (yml) {

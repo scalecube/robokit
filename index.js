@@ -21,7 +21,7 @@ const robokit = app => {
   })
 
   app.on('release', context => {
-    api.onRelease(context)
+    // api.onRelease(context)
   })
 
   app.on('check_run', context => {
@@ -36,14 +36,14 @@ const robokit = app => {
   })
 
   app.on([
-    // 'pull_request.synchronize',
-    // 'pull_request.labeled',
-    // 'pull_request.opened',
-    // 'pull_request.reopened',
+    'pull_request.synchronize',
+    'pull_request.labeled',
+    'pull_request.opened',
+    'pull_request.reopened',
     'pull_request.unlabeled',
     'pull_request.closed'
   ], context => {
-    return api.onPullRequest(context)
+    api.onPullRequest(context)
   })
 
   app.on([

@@ -248,29 +248,35 @@ class ApiGateway {
     const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
     deploy.check_run_id = res[0].data.id
     this.createDeployment(context, deploy, 'in_progress')
-      .then(res => {
+      .then(async res => {
         deploy.deployment_id = res.data.id
         const trigger = ApiGateway.toTrigger(deploy)
-        this.pipeline.deploy(trigger).then(async resp => {
-          if (resp.data) {
-            deploy.external_id = resp.data.id
-            this.pipeline.status(resp.data.id, async (log) => {
-              deploy.details = log
-              const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
+        if (trigger.service || trigger.services.length > 0) {
+          this.pipeline.deploy(trigger).then(async resp => {
+            if (resp.data) {
+              deploy.external_id = resp.data.id
+              this.pipeline.status(resp.data.id, async (log) => {
+                deploy.details = log
+                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
+                deploy.check_run_id = res[0].data.id
+                /**
+                 state string Required.
+                 The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+                 To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+                 */
+                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
+              })
+            } else {
+              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
               deploy.check_run_id = res[0].data.id
-              /**
-               state string Required.
-               The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
-               To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
-               */
-              this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
-            })
-          } else {
-            const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-            deploy.check_run_id = res[0].data.id
-            this.deploymentStatus(context, deploy, 'inactive')
-          }
-        })
+              this.deploymentStatus(context, deploy, 'inactive')
+            }
+          })
+        } else {
+          const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+          deploy.check_run_id = res[0].data.id
+          this.deploymentStatus(context, deploy, 'inactive')
+        }
       }).catch(err => {
         if (err.code === 403 && err.message === 'Resource not accessible by integration') {
           const cancel = cfg.deploy.check.canceled
@@ -338,11 +344,14 @@ class ApiGateway {
       node_id: deploy.node_id,
       namespace: deploy.namespace,
       sha: deploy.sha,
-      pr: 'PR' + deploy.issue_number,
       labels: deploy.labels,
       user: {
         id: deploy.user
       }
+    }
+
+    if (deploy.issue_number) {
+      trigger.pr = deploy.issue_number
     }
 
     if (deploy.robokit) {
@@ -538,15 +547,16 @@ class ApiGateway {
   }
 
   async onPullRequest (context) {
+    const owner = context.payload.repository.owner.login
+    const repo = context.payload.repository.name
+    const branch = context.payload.pull_request.head.ref
+    const labels = context.payload.pull_request.labels.map(e => e.name)
     // Verify that the label removed is DEPLOY
     if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
-      return
+      // delete pull request namespace
+    } else if ((context.payload.action === 'reopened' || context.payload.action === 'opened') && U.isLabeled(labels, [cfg.ROBOKIT_LABEL])) {
+      this.githubService.runChecks(owner, repo, branch)
     }
-    const deploy = await this.deployContext(context)
-    console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
-    this.pipeline.execute(ApiGateway.toTrigger(deploy, 'delete')).then(resp => {
-      console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
-    })
   }
 
   thenResponse (p, response) {
