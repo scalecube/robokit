@@ -43,7 +43,11 @@ const robokit = app => {
     'pull_request.unlabeled',
     'pull_request.closed'
   ], context => {
-    api.onPullRequest(context)
+    if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
+      api.deployContext(context).then(ctx => {
+        api.deploy(context, ctx)
+      })
+    }
   })
 
   app.on([

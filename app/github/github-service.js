@@ -24,7 +24,7 @@ class GithubService {
       output.title = util.format(output.title, context)
       output.summary = util.format(output.summary, context)
       context.progress = Utils.getPrgress(context.status, context.conclusion)
-      if (output.template){
+      if (output.template) {
         if (context.stages) {
           context.details = util.toDetails(context)
         }
@@ -73,13 +73,44 @@ class GithubService {
   async runChecks (owner, repo, branch) {
     const github = this.cache.get(owner, repo)
     // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
-    const runs = await  github.request(`GET /repos/${owner}/${repo}/commits/${branch}/check-runs`)
+    try {
+      // POST /repos/:owner/:repo/actions/runs/:run_id/rerun
+      // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
+      // Accept: application/vnd.github.antiope-preview+json
 
-    // POST /repos/:owner/:repo/actions/runs/:run_id/rerun
-    // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
-    // Accept: application/vnd.github.antiope-preview+json
+      const options = {
+        url: `https://api.github.com/repos/${owner}/${repo}/commits/${branch}/check-runs`,
+        headers: {
+          Accept: 'application/vnd.github.antiope-preview+json'
+        }
+      }
+      const runs = await github.request(options)
+      const robokitRuns = runs.data.check_runs.map(r => {
+        if (r.name === 'robokit-deploy') {
+          return r
+        } else return undefined
+      })
 
-    return github.request(`POST /repos/${owner}/${repo}/labels`, label)
+      robokitRuns.forEach(async run => {
+        if (run) {
+          await this.createCheckRun(github, [{
+            owner: owner,
+            repo: repo,
+            head_sha: run.head_sha,
+            name: 'robokit-deploy',
+            status: 'completed',
+            conclusion: 'success',
+            output: {
+              title: 're-run',
+              summary: '',
+              text: ''
+            }
+          }])
+        }
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async deployYaml (owner, repo, branch) {

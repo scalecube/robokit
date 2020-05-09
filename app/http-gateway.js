@@ -214,7 +214,10 @@ class ApiGateway {
   }
 
   async deploy (context, deploy) {
-    console.log(deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+    console.log(deploy.check_run_name + ' :  ' + deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+    let checkRunName = deploy.check_run_name
+    let conclusion = deploy.conclusion
+    let status = deploy.status
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
         this.pipeline.cancel(context.payload.check_run.external_id)
@@ -224,7 +227,10 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.state)) {
+    } else if (deploy.check_run_name === 'pull_request' ||
+      context.user_action === 'deploy_now' ||
+      ((checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success') &&
+      U.on(deploy))) {
       if (!U.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
@@ -307,8 +313,9 @@ class ApiGateway {
       deploy = U.toCheckRunDeployContext(context)
     } else if (context.payload.release) {
       deploy = U.toReleaseDeployContext(context)
-    }
-    if (deploy.is_pull_request && deploy.issue_number) {
+    } else if (context.payload.pull_request) {
+      deploy = U.toPullRequestDeployContext(context)
+    } else if (deploy.is_pull_request && deploy.issue_number) {
       try {
         const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
         deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
@@ -552,6 +559,7 @@ class ApiGateway {
     const branch = context.payload.pull_request.head.ref
     const labels = context.payload.pull_request.labels.map(e => e.name)
     // Verify that the label removed is DEPLOY
+
     if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
       // delete pull request namespace
     } else if ((context.payload.action === 'reopened' || context.payload.action === 'opened') && U.isLabeled(labels, [cfg.ROBOKIT_LABEL])) {
