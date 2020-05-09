@@ -50,7 +50,7 @@ class PipelineAPI {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  status (owner, repo, id, callback) {
+  status (id, callback) {
     const log = []
     let end = false
     let timer = setTimeout(() => {
@@ -64,7 +64,7 @@ class PipelineAPI {
         callback(log)
       }
     }, 180 * 1000)
-    const uri = `${process.env.SPINLESS_URL}/helm/deploy/${owner}/${repo}/${id}`
+    const uri = `${process.env.SPINLESS_URL}/helm/deploy/${id}`
     console.log('>>>>> TRIGGER STATUS:\n POST ' + uri)
     Stream.from(uri).on((event) => {
       const events = event.split('\n')

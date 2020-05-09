@@ -63,11 +63,11 @@ class Utils {
     }
   }
 
-  static targetNamespace (ctx) {
-    if (ctx.is_pull_request) {
-      return 'PR' + ctx.issue_number
+  static targetNamespace (deploy) {
+    if (deploy.is_pull_request) {
+      return `${deploy.repo}-${deploy.issue_number}`
     } else {
-      return ctx.branch_name
+      return deploy.branch_name
     }
   }
 
