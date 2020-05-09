@@ -311,11 +311,6 @@ class ApiGateway {
     let deploy = {}
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
-    } else if (context.payload.release) {
-      deploy = U.toReleaseDeployContext(context)
-    } else if (context.payload.pull_request) {
-      deploy = U.toPullRequestDeployContext(context)
-    } else if (deploy.is_pull_request && deploy.issue_number) {
       try {
         const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
         deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
@@ -323,8 +318,10 @@ class ApiGateway {
       } catch (e) {
         console.error(e)
       }
-    } else {
-      deploy.labeled = false
+    } else if (context.payload.release) {
+      deploy = U.toReleaseDeployContext(context)
+    } else if (context.payload.pull_request) {
+      deploy = U.toPullRequestDeployContext(context)
     }
 
     try {
