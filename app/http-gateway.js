@@ -7,6 +7,7 @@ const cfg = require('./config')
 const U = require('./utils')
 const githubAuth = require('./github/github-passport')
 const templates = require('./statuses/templates')
+const pipeline = require('./pipelines/pipeline')
 
 class ApiGateway {
   constructor (app, cache) {
@@ -23,9 +24,6 @@ class ApiGateway {
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
-
-    const Pipeline = require('./pipelines/pipeline')
-    this.pipeline = new Pipeline(this.githubService)
   }
 
   start () {
@@ -68,7 +66,7 @@ class ApiGateway {
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log('### checks status request: ' + JSON.stringify(request.body))
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
+      const ctx = pipeline.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
@@ -83,7 +81,7 @@ class ApiGateway {
     })
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
+      const ctx = pipeline.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
@@ -94,7 +92,7 @@ class ApiGateway {
     })
 
     this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
+      const ctx = pipeline.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
@@ -153,14 +151,26 @@ class ApiGateway {
         console.log(err)
       })
     })
-    this.pipeline.start()
+    pipeline.start()
   }
 
   async onRelease (context) {
     const release = await this.deployContext(context)
-    this.pipeline.release(release).then(resp => {
+    pipeline.release(release).then(resp => {
       // Create Deployment with log_url
     })
+  }
+
+  async closePullRequest (context, ctx) {
+    if (ctx.branch_name !== 'master' && ctx.branch_name !== 'develop') {
+      for (const i in ctx.robokit.kuberneteses) {
+        const k = ctx.robokit.kuberneteses[i]
+        const namespaces = await pipeline.getNamespaces(k.cluster)
+        if (namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
+          pipeline.deleteNamespace(k.cluster, ctx.namespace)
+        }
+      }
+    }
   }
 
   /**
@@ -215,22 +225,19 @@ class ApiGateway {
 
   async deploy (context, deploy) {
     console.log(deploy.check_run_name + ' :  ' + deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
-    let checkRunName = deploy.check_run_name
-    let conclusion = deploy.conclusion
-    let status = deploy.status
+    const checkRunName = deploy.check_run_name
+    const conclusion = deploy.conclusion
+    const status = deploy.status
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
-        this.pipeline.cancel(context.payload.check_run.external_id)
+        pipeline.cancel(context.payload.check_run.external_id)
           .then(res => {
             this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
           }).catch(err => {
             console.error(err)
           })
       }
-    } else if (deploy.check_run_name === 'pull_request' ||
-      context.user_action === 'deploy_now' ||
-      ((checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success') &&
-      U.on(deploy))) {
+    } else if (ApiGateway.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
       if (!U.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
@@ -250,6 +257,13 @@ class ApiGateway {
     return 'OK'
   }
 
+  static shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
+    return deploy.check_run_name === 'pull_request' ||
+      userAction === 'deploy_now' ||
+      ((checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success') &&
+        U.on(deploy))
+  }
+
   async spinlessDeploy (context, deploy) {
     const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
     deploy.check_run_id = res[0].data.id
@@ -258,10 +272,10 @@ class ApiGateway {
         deploy.deployment_id = res.data.id
         const trigger = ApiGateway.toTrigger(deploy)
         if (trigger.service || trigger.services.length > 0) {
-          this.pipeline.deploy(trigger).then(async resp => {
+          pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
-              this.pipeline.status(resp.data.id, async (log) => {
+              pipeline.status(resp.data.id, async (log) => {
                 deploy.details = log
                 const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
                 deploy.check_run_id = res[0].data.id
@@ -270,7 +284,7 @@ class ApiGateway {
                  The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
                  To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
                  */
-                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
+                this.deploymentStatus(context, deploy, ApiGateway.getState(U.tail(log).status))
               })
             } else {
               const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -279,7 +293,9 @@ class ApiGateway {
             }
           })
         } else {
-          const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
+          const cancel = cfg.deploy.check.canceled
+          cancel.text = cancel.text + '\n< Nothing to deploy! \n< service was not included in configuration file and no additional services configured'
+          const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
           deploy.check_run_id = res[0].data.id
           this.deploymentStatus(context, deploy, 'inactive')
         }
@@ -297,7 +313,7 @@ class ApiGateway {
       })
   }
 
-  getState (status) {
+  static getState (status) {
     let state = 'in_progress'
     if (status === 'ERROR') {
       state = 'error'
@@ -518,9 +534,7 @@ class ApiGateway {
         if (context.payload.action === 'created') {
           this.installCache(owner, repoName, context)
           this.installAppLabels(owner, repoName)
-          // this.installPipeline(owner, repoName)
         } else if (context.payload.action === 'deleted') {
-          // this.uninstallPipeline(owner, repoName)
         }
       })
     }
@@ -534,34 +548,6 @@ class ApiGateway {
     cfg.labels.forEach(label => {
       this.githubService.createLabel(owner, repo, label)
     })
-  }
-
-  installPipeline (owner, repo) {
-    console.log(`>> INSTALL APPLICATION: ${owner}/${repo}`)
-    this.pipeline.install(owner, repo).then(resp => {
-      console.log('<< INSTALL APPLICATION RESPONSE ' + JSON.stringify(resp))
-    })
-  }
-
-  uninstallPipeline (owner, repoName) {
-    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repoName}`)
-    this.pipeline.uninstall(owner, repoName).then(resp => {
-      console.log('<< UNINSTALL APPLICATION RESPONSE' + resp.status)
-    })
-  }
-
-  async onPullRequest (context) {
-    const owner = context.payload.repository.owner.login
-    const repo = context.payload.repository.name
-    const branch = context.payload.pull_request.head.ref
-    const labels = context.payload.pull_request.labels.map(e => e.name)
-    // Verify that the label removed is DEPLOY
-
-    if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
-      // delete pull request namespace
-    } else if ((context.payload.action === 'reopened' || context.payload.action === 'opened') && U.isLabeled(labels, [cfg.ROBOKIT_LABEL])) {
-      this.githubService.runChecks(owner, repo, branch)
-    }
   }
 
   thenResponse (p, response) {

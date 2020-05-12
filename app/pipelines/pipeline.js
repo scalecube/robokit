@@ -2,27 +2,6 @@ const axios = require('axios')
 const Stream = require('./stream')
 
 class PipelineAPI {
-  constructor (githubService) {
-    const Notifications = require('./notifications')
-    this.notifications = new Notifications(this, githubService)
-  }
-
-  install (owner, repo) {
-    return this.execute({
-      action_type: 'install',
-      owner: owner,
-      repo: repo
-    })
-  }
-
-  uninstall (owner, repo) {
-    return this.execute({
-      action_type: 'uninstall',
-      owner: owner,
-      repo: repo
-    })
-  }
-
   cancel (pipelineId) {
     const url = `${process.env.SPINLESS_URL}/helm/deploy/cancel/${pipelineId}`
     return this.get(url)
@@ -34,6 +13,28 @@ class PipelineAPI {
     return this.post(url, trigger).then((resp) => {
       console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
       return resp
+    })
+  }
+
+  deleteNamespace (clusterName, namespace) {
+    if (namespace === 'develop' || namespace === 'master') {
+      throw new Error('its not allowed to delete namespace:' + namespace)
+    }
+
+    const url = `${process.env.SPINLESS_URL}/clusters/${clusterName}/namespaces/${namespace}`
+    console.log('>>>>> DELETE NAMESPACE:\n DELETE ' + url)
+    return this.delete(url).then((resp) => {
+      console.log('<<<<< DELETED NAMESPACE: ' + JSON.stringify(resp.data.result))
+      return resp
+    })
+  }
+
+  getNamespaces (clusterName) {
+    const url = `${process.env.SPINLESS_URL}/clusters/${clusterName}/namespaces`
+    console.log('>>>>> GET NAMESPACE:\n POST ' + url)
+    return this.get(url).then((resp) => {
+      console.log('<<<<< GET NAMESPACE:\n ' + JSON.stringify(resp.data))
+      return resp.data.result
     })
   }
 
@@ -112,13 +113,16 @@ class PipelineAPI {
     return axios.get(url)
   }
 
+  delete (url) {
+    return axios.delete(url)
+  }
+
   post (url, data) {
     return axios.post(url, data)
   }
 
   start () {
-    this.notifications.start()
   }
 }
 
-module.exports = PipelineAPI
+module.exports = new PipelineAPI()

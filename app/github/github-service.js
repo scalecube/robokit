@@ -70,49 +70,6 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  async runChecks (owner, repo, branch) {
-    const github = this.cache.get(owner, repo)
-    // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
-    try {
-      // POST /repos/:owner/:repo/actions/runs/:run_id/rerun
-      // https://api.github.com/repos/scalecube/robokit/commits/develop/check-runs
-      // Accept: application/vnd.github.antiope-preview+json
-
-      const options = {
-        url: `https://api.github.com/repos/${owner}/${repo}/commits/${branch}/check-runs`,
-        headers: {
-          Accept: 'application/vnd.github.antiope-preview+json'
-        }
-      }
-      const runs = await github.request(options)
-      const robokitRuns = runs.data.check_runs.map(r => {
-        if (r.name === 'robokit-deploy') {
-          return r
-        } else return undefined
-      })
-
-      robokitRuns.forEach(async run => {
-        if (run) {
-          await this.createCheckRun(github, [{
-            owner: owner,
-            repo: repo,
-            head_sha: run.head_sha,
-            name: 'robokit-deploy',
-            status: 'completed',
-            conclusion: 'success',
-            output: {
-              title: 're-run',
-              summary: '',
-              text: ''
-            }
-          }])
-        }
-      })
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
   async deployYaml (owner, repo, branch) {
     const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
     if (yml) {
@@ -165,7 +122,7 @@ class GithubService {
           reject(err)
         })
       } else if (msg.url) { // create comment from external source
-        httpClient.get(msg.template_url).then(r => {
+        this.cache.get(msg.template_url).then(r => {
           msg.body = r
           msg.body = this._formatComment(msg)
           resolve(action(msg))
