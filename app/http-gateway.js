@@ -328,9 +328,11 @@ class ApiGateway {
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
       try {
-        const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
-        deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
-        deploy.labels = labels.map(i => i.name)
+        if (context.payload.check_run.pull_requests.length > 0) {
+          const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
+          deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
+          deploy.labels = labels.map(i => i.name)
+        }
       } catch (e) {
         console.error(e)
       }
