@@ -388,10 +388,11 @@ class ApiGateway {
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
               branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              image_tag: deployment.branch || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry
             }
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
-              service.branch = deploy.branch_name
+              service.image_tag = deploy.branch_name
               trigger.service = service
             } else {
               if (!deploy.config.include) {
