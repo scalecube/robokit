@@ -11,6 +11,7 @@ class Utils {
   }
 
   static isLabeled (labels, names) {
+
     let result = false
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
@@ -26,8 +27,8 @@ class Utils {
   }
 
   static isPullRequest (context) {
-    if (context.payload.check_suite) {
-      return (context.payload.check_run.check_suite && context.payload.check_suite.pull_requests > 0)
+    if (context.payload.check_run) {
+      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0)
     } else {
       return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0)
     }
@@ -45,6 +46,9 @@ class Utils {
         }
       }
     }
+    if (context.payload.pull_request) {
+      return context.payload.pull_request.number
+    }
   }
 
   static baseBranchName (context) {
@@ -52,6 +56,10 @@ class Utils {
       if (context.payload.check_run.check_suite.pull_requests.length > 0) {
         return context.payload.check_run.check_suite.pull_requests[0].base.ref
       }
+    }
+
+    if (context.payload.pull_request) {
+      return context.payload.pull_request.base.ref
     }
   }
 
@@ -61,13 +69,17 @@ class Utils {
     } else if (context.payload.check_run) {
       return context.payload.check_run.check_suite.head_branch
     }
+
+    if (context.payload.pull_request) {
+      return context.payload.pull_request.head.ref
+    }
   }
 
-  static targetNamespace (ctx) {
-    if (ctx.is_pull_request) {
-      return 'pr' + ctx.issue_number
+  static targetNamespace (deploy) {
+    if (deploy.is_pull_request) {
+      return `${deploy.repo}-${deploy.issue_number}`
     } else {
-      return ctx.branch_name
+      return deploy.branch_name
     }
   }
 
@@ -77,6 +89,26 @@ class Utils {
       repo: context.payload.repository.name
     }
     ctx = Object.assign(ctx, context.payload.release)
+    return ctx
+  }
+
+  static toPullRequestDeployContext (context) {
+    const ctx = {
+      owner: context.payload.repository.owner.login,
+      repo: context.payload.repository.name,
+      branch_name: Utils.branchName(context),
+      base_branch_name: Utils.baseBranchName(context),
+      sha: context.payload.pull_request.head.sha,
+      is_pull_request: true,
+      check_run_name: 'pull_request',
+      conclusion: null,
+      status: context.payload.action,
+      action: context.payload.action
+    }
+    if (ctx.is_pull_request) { ctx.issue_number = Utils.issueNumber(context) }
+    ctx.labels = context.payload.pull_request.labels.map(e => e.name)
+    ctx.labled = ctx.labels.length > 0
+    ctx.namespace = Utils.targetNamespace(ctx)
     return ctx
   }
 
@@ -119,19 +151,17 @@ class Utils {
     return all
   }
 
-  static on (deploy, checkRunName, state) {
-    if (deploy.check_run_name === checkRunName && deploy.conclusion === state) {
-      if (this.isFeatureBranch(deploy)) {
-        return true
-      } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {
-        return true
-      }
+  static on (deploy) {
+    if (this.isFeatureBranch(deploy)) {
+      return true
+    } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {
+      return true
     }
-    return false
   }
 
   static isFeatureBranch (deploy) {
-    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' && this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' &&
+      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
   static format (field, values) {

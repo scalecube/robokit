@@ -24,7 +24,7 @@ class GithubService {
       output.title = util.format(output.title, context)
       output.summary = util.format(output.summary, context)
       context.progress = Utils.getPrgress(context.status, context.conclusion)
-      if (output.template){
+      if (output.template) {
         if (context.stages) {
           context.details = util.toDetails(context)
         }
@@ -70,8 +70,8 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  async helmChart (owner, repo, branch) {
-    const yml = await this.content(owner, repo, branch, `charts/${repo}/Chart.yaml`, false)
+  async deployYaml (owner, repo, branch) {
+    const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {
@@ -79,8 +79,8 @@ class GithubService {
     }
   }
 
-  async deployYaml (owner, repo, branch) {
-    const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
+  async configYaml (owner, repo, branch, path) {
+    const yml = await this.content(owner, repo, branch, path, false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {
@@ -122,7 +122,7 @@ class GithubService {
           reject(err)
         })
       } else if (msg.url) { // create comment from external source
-        httpClient.get(msg.template_url).then(r => {
+        this.cache.get(msg.template_url).then(r => {
           msg.body = r
           msg.body = this._formatComment(msg)
           resolve(action(msg))
