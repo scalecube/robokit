@@ -328,7 +328,7 @@ class ApiGateway {
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
       try {
-        if (context.payload.check_run.pull_requests.length > 0) {
+        if (deploy.is_pull_request) {
           const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
           deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
           deploy.labels = labels.map(i => i.name)
