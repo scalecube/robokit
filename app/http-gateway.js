@@ -66,7 +66,7 @@ class ApiGateway {
 
     this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
       console.log('### checks status request: ' + JSON.stringify(request.body))
-      const ctx = pipeline.get(request.params.owner, request.params.repo)
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
@@ -81,7 +81,7 @@ class ApiGateway {
     })
 
     this.router.post('/comment/:owner/:repo/', (request, response) => {
-      const ctx = pipeline.get(request.params.owner, request.params.repo)
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
@@ -92,7 +92,7 @@ class ApiGateway {
     })
 
     this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
-      const ctx = pipeline.get(request.params.owner, request.params.repo)
+      const ctx = this.cache.get(request.params.owner, request.params.repo)
       if (ctx) {
         request.body.owner = request.params.owner
         request.body.repo = request.params.repo
