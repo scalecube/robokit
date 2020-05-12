@@ -48,6 +48,9 @@ class GithubService {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)
       if (ctx) {
+        if (!issue_number) {
+          console.log('issue_number is null')
+        }
         ctx.request(`GET /repos/${owner}/${repo}/issues/${issue_number}/labels`)
           .then(res => {
             resolve(res.data)
