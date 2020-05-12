@@ -391,6 +391,7 @@ class ApiGateway {
               registry: deployment.registry || deploy.robokit.registry
             }
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
+              service.branch = deploy.branch_name
               trigger.service = service
             } else {
               if (!deploy.config.include) {
