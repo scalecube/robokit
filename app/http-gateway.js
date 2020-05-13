@@ -162,7 +162,7 @@ class ApiGateway {
   }
 
   async closePullRequest (context, ctx) {
-    if (ctx.branch_name !== 'master' && ctx.branch_name !== 'develop') {
+    if (ctx.namespace !== 'master' && ctx.namespace !== 'develop') {
       for (const i in ctx.robokit.kuberneteses) {
         const k = ctx.robokit.kuberneteses[i]
         const namespaces = await pipeline.getNamespaces(k.cluster)
