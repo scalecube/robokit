@@ -50,6 +50,7 @@ const robokit = app => {
     } else if (context.payload.action === 'closed') {
       console.log('pull_request - closed')
       api.deployContext(context).then(ctx => {
+        console.log('pull_request - context: ' + JSON.stringify(ctx))
         api.closePullRequest(context, ctx)
       })
     }
