@@ -258,10 +258,15 @@ class ApiGateway {
   }
 
   shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    return (deploy.check_run_name === 'pull_request' && U.isFeatureBranch(deploy)) ||
+    return (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) ||
            (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') ||
            (userAction === 'deploy_now') ||
            (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy))
+  }
+
+  isFeatureBranch (deploy) {
+    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' &&
+      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
   isRobokitTrigger (checkRunName, status, conclusion) {

@@ -150,23 +150,7 @@ class Utils {
     }
     return all
   }
-
-  static on (deploy) {
-    if (this.isFeatureBranch(deploy)) {
-      return true
-    } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {
-      return true
-    } else {
-      return false
-    }
-  }
-
-
-  static isFeatureBranch (deploy) {
-    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' &&
-      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
-  }
-
+  
   static format (field, values) {
     Object.entries(values).forEach((e) => {
       field = field.replace('${' + e[0] + '}', e[1])
