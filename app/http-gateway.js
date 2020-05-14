@@ -238,7 +238,7 @@ class ApiGateway {
           })
       }
     } else if (this.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
-      if (!U.isFeatureBranch(deploy)) {
+      if (!this.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
         deployBranch.check_run_name = cfg.deploy.check.name
