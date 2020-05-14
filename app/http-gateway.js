@@ -237,7 +237,7 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (this.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
+    } else if (this.checkDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
       if (!this.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
@@ -257,11 +257,18 @@ class ApiGateway {
     return 'OK'
   }
 
-  shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    return (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) ||
-           (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') ||
-           (userAction === 'deploy_now') ||
-           (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy))
+  checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
+    if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
+      return true
+    } else if (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') {
+      return true
+    } else if (userAction === 'deploy_now') {
+      return true
+    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)){
+      return true
+    } else {
+      return true
+    }
   }
 
   isFeatureBranch (deploy) {
