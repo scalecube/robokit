@@ -258,10 +258,18 @@ class ApiGateway {
   }
 
   static shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    return deploy.check_run_name === 'pull_request' ||
-      userAction === 'deploy_now' ||
-      ((checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success') &&
-        U.on(deploy))
+    return (deploy.check_run_name === 'pull_request' && U.isFeatureBranch(deploy)) ||
+           (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') ||
+           (userAction === 'deploy_now') ||
+           (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy))
+  }
+
+  isRobokitTrigger (checkRunName, status, conclusion) {
+    return (checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success')
+  }
+
+  isKnownBranch (deploy) {
+    return (deploy.branch_name === 'develop' || deploy.branch_name === 'master')
   }
 
   async spinlessDeploy (context, deploy) {
