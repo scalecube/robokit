@@ -237,8 +237,8 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (ApiGateway.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
-      if (!U.isFeatureBranch(deploy)) {
+    } else if (this.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
+      if (!this.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
         deployBranch.check_run_name = cfg.deploy.check.name
@@ -257,11 +257,24 @@ class ApiGateway {
     return 'OK'
   }
 
-  static shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    return deploy.check_run_name === 'pull_request' ||
-      userAction === 'deploy_now' ||
-      ((checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success') &&
-        U.on(deploy))
+  shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
+    return (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) ||
+           (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') ||
+           (userAction === 'deploy_now') ||
+           (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy))
+  }
+
+  isFeatureBranch (deploy) {
+    return (deploy.is_pull_request && deploy.base_branch_name === 'develop' &&
+      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+  }
+
+  isRobokitTrigger (checkRunName, status, conclusion) {
+    return (checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success')
+  }
+
+  isKnownBranch (deploy) {
+    return (deploy.branch_name === 'develop' || deploy.branch_name === 'master')
   }
 
   async spinlessDeploy (context, deploy) {
