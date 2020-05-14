@@ -237,7 +237,7 @@ class ApiGateway {
             console.error(err)
           })
       }
-    } else if (ApiGateway.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
+    } else if (this.shouldDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
       if (!U.isFeatureBranch(deploy)) {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
@@ -257,7 +257,7 @@ class ApiGateway {
     return 'OK'
   }
 
-  static shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
+  shouldDeploy (deploy, userAction, checkRunName, status, conclusion) {
     return (deploy.check_run_name === 'pull_request' && U.isFeatureBranch(deploy)) ||
            (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') ||
            (userAction === 'deploy_now') ||
