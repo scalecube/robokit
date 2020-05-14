@@ -7,6 +7,7 @@ const cfg = require('./config')
 const U = require('./utils')
 const githubAuth = require('./github/github-passport')
 const templates = require('./statuses/templates')
+const pipeline = require('./pipelines/pipeline')
 
 class ApiGateway {
   constructor (app, cache) {
@@ -23,9 +24,6 @@ class ApiGateway {
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
-
-    const Pipeline = require('./pipelines/pipeline')
-    this.pipeline = new Pipeline(this.githubService)
   }
 
   start () {
@@ -153,24 +151,57 @@ class ApiGateway {
         console.log(err)
       })
     })
-    this.pipeline.start()
+    pipeline.start()
   }
 
   async onRelease (context) {
     const release = await this.deployContext(context)
-    this.pipeline.release(release).then(resp => {
-
+    pipeline.release(release).then(resp => {
       // Create Deployment with log_url
     })
   }
 
+  async closePullRequest (context, ctx) {
+    if (ctx.namespace !== 'master' && ctx.namespace !== 'develop') {
+      for (const i in ctx.robokit.kuberneteses) {
+        const k = ctx.robokit.kuberneteses[i]
+        const namespaces = await pipeline.getNamespaces(k.cluster)
+        if (namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
+          pipeline.deleteNamespace(k.cluster, ctx.namespace)
+        }
+      }
+    }
+  }
+
+  /**
+   ref string Required. The ref to deploy. This can be a branch, tag, or SHA.
+   task string Specifies a task to execute (e.g., deploy or deploy:migrations). Default: deploy
+   auto_merge boolean Attempts to automatically merge the default branch into the requested ref, if it's behind the default branch. Default: true
+   required_contexts array The status contexts to verify against commit status checks. If you omit this parameter, GitHub verifies all unique contexts before creating a deployment. To bypass checking entirely, pass an empty array. Defaults to all unique contexts.
+   payload string JSON payload with extra information about the deployment. Default: ""
+   environment string Name for the target deployment environment (e.g., production, staging, qa). Default: production
+   description string Short description of the deployment. Default: ""
+   transient_environment boolean Specifies if the given environment is specific to the deployment and will no longer exist at some point in the future. Default: false
+   Note: This parameter requires you to use the application/vnd.github.ant-man-preview+json custom media type.
+   production_environment boolean Specifies if the given environment is one that end-users directly interact with. Default: true when environment is production and false otherwise.
+   Note: This parameter requires you to use the application/vnd.github.ant-man-preview+json custom media type.
+   */
   createDeployment (context, deploy) {
     const deployment = ApiGateway.toDeployment(deploy)
     deployment.environment = deploy.namespace
     return context.github.repos.createDeployment(deployment)
   }
 
-  static toDeployment (deploy) {
+  deploymentStatus (context, deploy, state) {
+    const deployment = ApiGateway.toDeployment(deploy, state)
+    deployment.deployment_id = deploy.deployment_id
+    deployment.description = 'Deployment status: ' + state
+    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
+    deployment.environment_url = 'http://scalecube.io/'
+    return context.github.repos.createDeploymentStatus(deployment)
+  }
+
+  static toDeployment (deploy, state) {
     const deployment = {}
     deployment.task = 'deploy'
     deployment.auto_merge = false
@@ -179,50 +210,102 @@ class ApiGateway {
     deployment.repo = deploy.repo
     deployment.ref = deploy.branch_name
     deployment.required_contexts = []
-    deployment.headers = {
-      accept: 'application/vnd.github.ant-man-preview+json'
+    if (state) deployment.state = state
+    if (state === 'inactive') {
+      deployment.headers = {
+        accept: 'application/vnd.github.ant-man-preview+json'
+      }
+    } else if (state === 'in_progress' || state === 'queued') {
+      deployment.headers = {
+        accept: 'application/vnd.github.flash-preview+json'
+      }
     }
     return deployment
   }
 
-  deploymentStatus (context, deploy, status) {
-    const deployment = ApiGateway.toDeployment(deploy)
-    deployment.state = status
-    deployment.deployment_id = deploy.deployment_id
-    deployment.description = 'Deployment status: ' + status
-    deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
-    deployment.environment_url = 'http://scalecube.io/'
-    return context.github.repos.createDeploymentStatus(deployment)
-  }
-
-  async onCheckRun (context) {
-    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
-    const deploy = await this.deployContext(context)
-    console.log(deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+  async deploy (context, deploy) {
+    console.log(deploy.check_run_name + ' :  ' + deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+    const checkRunName = deploy.check_run_name
+    const conclusion = deploy.conclusion
+    const status = deploy.status
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
-        this.pipeline.cancel(context.payload.check_run.external_id)
+        pipeline.cancel(context.payload.check_run.external_id)
           .then(res => {
             this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
           }).catch(err => {
             console.error(err)
           })
       }
-    } else if (context.user_action === 'deploy_now' || U.on(deploy, cfg.ROBOKIT_DEPLOY, cfg.queued)) {
-      const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
-      deploy.check_run_id = res[0].data.id
-      this.createDeployment(context, deploy, 'in_progress')
-        .then(res => {
-          deploy.deployment_id = res.data.id
-          const trigger = ApiGateway.toTrigger(deploy)
-          this.pipeline.deploy(trigger).then(async resp => {
+    } else if (this.checkDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
+      if (!this.isFeatureBranch(deploy)) {
+        const deployBranch = this.clone(deploy)
+        deployBranch.is_pull_request = false
+        deployBranch.check_run_name = cfg.deploy.check.name
+        deployBranch.namespace = deploy.branch_name
+        delete deployBranch.issue_number
+        delete deployBranch.base_branch_name
+        this.spinlessDeploy(context, deployBranch)
+      }
+
+      if (deploy.is_pull_request) {
+        const deployPullRequest = this.clone(deploy)
+        deployPullRequest.check_run_name = cfg.deploy.check.name + ' (pull_request)'
+        this.spinlessDeploy(context, deployPullRequest)
+      }
+    }
+    return 'OK'
+  }
+
+  checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
+    if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
+      return true
+    } else if (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') {
+      return true
+    } else if (userAction === 'deploy_now') {
+      return true
+    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)){
+      return true
+    } else {
+      return true
+    }
+  }
+
+  isFeatureBranch (deploy) {
+    return (deploy.is_pull_request &&
+      deploy.base_branch_name === 'develop' &&
+      this.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+  }
+
+  isRobokitTrigger (checkRunName, status, conclusion) {
+    return (checkRunName === cfg.ROBOKIT_DEPLOY && status === 'completed' && conclusion === 'success')
+  }
+
+  isKnownBranch (deploy) {
+    return (deploy.branch_name === 'develop' || deploy.branch_name === 'master')
+  }
+
+  async spinlessDeploy (context, deploy) {
+    const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
+    deploy.check_run_id = res[0].data.id
+    this.createDeployment(context, deploy, 'in_progress')
+      .then(async res => {
+        deploy.deployment_id = res.data.id
+        const trigger = ApiGateway.toTrigger(deploy)
+        if (trigger.service || trigger.services.length > 0) {
+          pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
               deploy.external_id = resp.data.id
-              this.pipeline.status(deploy.owner, deploy.repo, resp.data.id, async (log) => {
+              pipeline.status(resp.data.id, async (log) => {
                 deploy.details = log
                 const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
                 deploy.check_run_id = res[0].data.id
-                this.deploymentStatus(context, deploy, this.getState(U.tail(log).status))
+                /**
+                 state string Required.
+                 The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+                 To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+                 */
+                this.deploymentStatus(context, deploy, ApiGateway.getState(U.tail(log).status))
               })
             } else {
               const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
@@ -230,23 +313,28 @@ class ApiGateway {
               this.deploymentStatus(context, deploy, 'inactive')
             }
           })
-        }).catch(err => {
-          if (err.code === 403 && err.message === 'Resource not accessible by integration') {
-            const cancel = cfg.deploy.check.canceled
-            const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
-            cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
-          } else {
-            const cancel = cfg.deploy.check.canceled
-            cancel.text = cancel.text + '\n error message: ' + err.message
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
-          }
-        })
-    }
-    return 'OK'
+        } else {
+          const cancel = cfg.deploy.check.canceled
+          cancel.text = cancel.text + '\n< Nothing to deploy! \n< service was not included in configuration file and no additional services configured'
+          const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+          deploy.check_run_id = res[0].data.id
+          this.deploymentStatus(context, deploy, 'inactive')
+        }
+      }).catch(err => {
+        if (err.code === 403 && err.message === 'Resource not accessible by integration') {
+          const cancel = cfg.deploy.check.canceled
+          const url = `https://github.com/${deploy.owner}/${deploy.repo}/settings/installations`
+          cancel.text = `Robokit Github Application requires permissions to create deployments\n ${url}\n ${err.request.url} \n ${err.documentation_url}`
+          this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+        } else {
+          const cancel = cfg.deploy.check.canceled
+          cancel.text = cancel.text + '\n error message: ' + err.message
+          this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
+        }
+      })
   }
 
-  getState (status) {
+  static getState (status) {
     let state = 'in_progress'
     if (status === 'ERROR') {
       state = 'error'
@@ -260,27 +348,28 @@ class ApiGateway {
     let deploy = {}
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
-    } else if (context.payload.release) {
-      deploy = U.toReleaseDeployContext(context)
-    }
-    if (deploy.is_pull_request && deploy.issue_number) {
       try {
-        const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
-        deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
-        deploy.labels = labels.map(i => i.name)
+        if (deploy.is_pull_request) {
+          const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
+          deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
+          deploy.labels = labels.map(i => i.name)
+        }
       } catch (e) {
         console.error(e)
       }
-    } else {
-      deploy.labeled = false
-    }
-    try {
-      deploy.robokit = await this.githubService.deployYaml(deploy.owner, deploy.repo)
-    } catch (e) {
+    } else if (context.payload.release) {
+      deploy = U.toReleaseDeployContext(context)
+    } else if (context.payload.pull_request) {
+      deploy = U.toPullRequestDeployContext(context)
     }
 
     try {
-      deploy.helm = await this.githubService.helmChart(deploy.owner, deploy.repo)
+      const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
+      deploy.config = yml
+      if (yml.source.github) {
+        const cfg = yml.source.github
+        deploy.robokit = await this.githubService.configYaml(cfg.owner, cfg.repo, cfg.branch, cfg.path)
+      }
     } catch (e) {
     }
 
@@ -294,84 +383,54 @@ class ApiGateway {
 
   static toTrigger (deploy) {
     const trigger = {
-      owner: deploy.owner,
-      repo: deploy.repo,
-      branch: deploy.branch_name,
-      version: deploy.branch_name,
-      environment_tags: deploy.branch_name,
-      sha: deploy.sha,
-      is_pull_request: deploy.is_pull_request,
-      issue_number: deploy.issue_number,
-      namespace: deploy.namespace,
-      labeled: deploy.labeled,
-      labels: deploy.labels,
-      user: deploy.user,
-      avatar: deploy.avatar,
       id: deploy.id,
-      node_id: deploy.node_id
+      node_id: deploy.node_id,
+      namespace: deploy.namespace,
+      sha: deploy.sha,
+      labels: deploy.labels,
+      user: {
+        id: deploy.user
+      }
     }
 
-    if (deploy.helm) {
-      trigger.helm = {}
-      trigger.helm.name = deploy.helm.name
-      trigger.helm.version = deploy.helm.version
+    if (deploy.issue_number) {
+      trigger.pr = deploy.issue_number
     }
 
     if (deploy.robokit) {
-      /*
-      dependencies:
-        - repo: scalecube-seed
-          version: 0.0.1
-      */
-      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
-        trigger.helm_charts = []
-        deploy.robokit.dependencies.forEach(dependency => {
-          trigger.helm_charts.push(dependency)
-        })
-      }
-
-      if (deploy.robokit.registry) {
-        trigger.registry = {}
-        if (deploy.robokit.registry.helm) {
-          trigger.registry.helm = deploy.robokit.registry.helm
-        }
-
-        if (deploy.robokit.registry.docker) {
-          trigger.registry.docker = deploy.robokit.registry.docker
-        }
-      }
-
-      if (deploy.robokit.dependencies && deploy.robokit.dependencies.length > 0) {
-        trigger.helm_charts = []
-        deploy.robokit.dependencies.forEach(dependency => {
-          trigger.helm_charts.push(dependency)
-        })
-        trigger.helm_charts.push({
-          repo: deploy.repo,
-          version: deploy.helm.version,
-          registry: trigger.registry
-        })
-      }
-
-      if (deploy.robokit.kubernetes) {
-        if (deploy.robokit.kubernetes.cluster_name) {
-          trigger.kubernetes = {
-            cluster_name: deploy.robokit.kubernetes.cluster_name
-          }
-        }
-
-        if (deploy.robokit.kubernetes.namespace) {
-          trigger.namespace = deploy.robokit.kubernetes.namespace
-        }
-
-        if (deploy.robokit.kubernetes.on) {
-          if (deploy.is_pull_request && deploy.robokit.kubernetes.on.pull_request) {
-            const item = deploy.robokit.kubernetes.on.pull_request.find(e => e[deploy.base_branch_name])
-            if (item && item[deploy.base_branch_name]) {
-              trigger.kubernetes.cluster_name = item[deploy.base_branch_name].cluster_name
+      if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
+        trigger.services = []
+        for (const i in deploy.robokit.kuberneteses) {
+          const kubernetes = deploy.robokit.kuberneteses[i]
+          for (const k in kubernetes.services) {
+            const deployment = kubernetes.services[k]
+            const service = {
+              cluster: kubernetes.cluster,
+              repo: deployment.repo,
+              owner: deployment.owner || deploy.owner,
+              branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              image_tag: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              registry: deployment.registry || deploy.robokit.registry
             }
-          } else if (deploy.robokit.kubernetes.on[deploy.branch_name]) {
-            trigger.kubernetes.cluster_name = deploy.robokit.kubernetes.on[deploy.branch_name].cluster_name
+            if (deploy.owner === service.owner && deploy.repo === service.repo) {
+              service.image_tag = deploy.branch_name
+              trigger.service = service
+            } else {
+              if (!deploy.config.include) {
+                trigger.services.push(service)
+              } else {
+                for (const inc in deploy.config.include.services) {
+                  const branch = deploy.config.include.services[inc].branch
+                  if (branch === '*') {
+                    trigger.services.push(service)
+                  } else if (deploy.is_pull_request && (branch === 'pull_request')) {
+                    trigger.services.push(service)
+                  } else if (deploy.branch_name === branch) {
+                    trigger.services.push(service)
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -383,7 +442,7 @@ class ApiGateway {
     const startDate = new Date(U.head(log).timestamp)
     const endDate = new Date(U.tail(log).timestamp)
     const check = {
-      name: cfg.deploy.check.name,
+      name: deploy.check_run_name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
@@ -432,7 +491,7 @@ class ApiGateway {
   }
 
   updateCheckRunStatus (context, deploy, status, output) {
-    const checkrun = ApiGateway.checkStatus(deploy, cfg.deploy.check.name, status)
+    const checkrun = ApiGateway.checkStatus(deploy, status)
     checkrun.output = output
     return this.githubService.createCheckRun(context.github, [checkrun], deploy)
   }
@@ -463,9 +522,9 @@ class ApiGateway {
    * @param status
    * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
    */
-  static checkStatus (deploy, name, status) {
+  static checkStatus (deploy, status) {
     const result = {
-      name: name,
+      name: deploy.check_run_name,
       owner: deploy.owner,
       repo: deploy.repo,
       head_sha: deploy.sha,
@@ -500,9 +559,7 @@ class ApiGateway {
         if (context.payload.action === 'created') {
           this.installCache(owner, repoName, context)
           this.installAppLabels(owner, repoName)
-          // this.installPipeline(owner, repoName)
         } else if (context.payload.action === 'deleted') {
-          // this.uninstallPipeline(owner, repoName)
         }
       })
     }
@@ -515,32 +572,6 @@ class ApiGateway {
   installAppLabels (owner, repo, context) {
     cfg.labels.forEach(label => {
       this.githubService.createLabel(owner, repo, label)
-    })
-  }
-
-  installPipeline (owner, repo) {
-    console.log(`>> INSTALL APPLICATION: ${owner}/${repo}`)
-    this.pipeline.install(owner, repo).then(resp => {
-      console.log('<< INSTALL APPLICATION RESPONSE ' + JSON.stringify(resp))
-    })
-  }
-
-  uninstallPipeline (owner, repoName) {
-    console.log(`>> UNINSTALL APPLICATION: ${owner}/${repoName}`)
-    this.pipeline.uninstall(owner, repoName).then(resp => {
-      console.log('<< UNINSTALL APPLICATION RESPONSE' + resp.status)
-    })
-  }
-
-  async onPullRequest (context) {
-    // Verify that the label removed is DEPLOY
-    if (context.payload.action === 'unlabeled' && context.payload.label.name !== cfg.deploy.label) {
-      return
-    }
-    const deploy = await this.deployContext(context)
-    console.log('>> TRIGGER DELETE >>> ' + JSON.stringify(deploy))
-    this.pipeline.execute(ApiGateway.toTrigger(deploy, 'delete')).then(resp => {
-      console.log('>> TRIGGER DELETE RESPONSE >>> ' + JSON.stringify(resp))
     })
   }
 
@@ -562,6 +593,10 @@ class ApiGateway {
       response.send(result)
     }
   };
+
+  clone (obj) {
+    return JSON.parse(JSON.stringify(obj))
+  }
 }
 
 module.exports = ApiGateway

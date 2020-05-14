@@ -1,13 +1,10 @@
-registry:
-  helm: nexus
-  docker: nexus
+source:
+  github:
+    owner: exberry-io
+    repo: exchange-robokit
+    branch: master
+    path: "robokit.yml"
 
-kubernetes:
-  cluster_name: minikube
-
-dependencies:
-  - repo: scalecube-seed
-    version: 0.0.1
-    registry:
-      helm: nexus
-      docker: nexus
+include:
+  services:
+    - branch: pull_request

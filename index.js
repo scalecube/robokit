@@ -21,7 +21,7 @@ const robokit = app => {
   })
 
   app.on('release', context => {
-    api.onRelease(context)
+    // api.onRelease(context)
   })
 
   app.on('check_run', context => {
@@ -29,18 +29,31 @@ const robokit = app => {
       const action = context.payload.requested_action.identifier
       context.user_action = action
     }
-    api.onCheckRun(context)
+    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
+    api.deployContext(context).then(ctx => {
+      api.deploy(context, ctx)
+    })
   })
 
   app.on([
-    // 'pull_request.synchronize',
-    // 'pull_request.labeled',
-    // 'pull_request.opened',
-    // 'pull_request.reopened',
+    'pull_request.synchronize',
+    'pull_request.labeled',
+    'pull_request.opened',
+    'pull_request.reopened',
     'pull_request.unlabeled',
     'pull_request.closed'
   ], context => {
-    return api.onPullRequest(context)
+    if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
+      api.deployContext(context).then(ctx => {
+        api.deploy(context, ctx)
+      })
+    } else if (context.payload.action === 'closed') {
+      console.log('pull_request - closed')
+      api.deployContext(context).then(ctx => {
+        console.log('pull_request - context: ' + JSON.stringify(ctx))
+        api.closePullRequest(context, ctx)
+      })
+    }
   })
 
   app.on([
