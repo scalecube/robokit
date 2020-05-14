@@ -156,6 +156,8 @@ class Utils {
       return true
     } else if (deploy.branch_name === 'develop' || deploy.branch_name === 'master') {
       return true
+    } else {
+      return false
     }
   }
 
