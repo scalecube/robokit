@@ -388,6 +388,7 @@ class ApiGateway {
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
               branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+
               image_tag: deployment.branch || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry
             }
