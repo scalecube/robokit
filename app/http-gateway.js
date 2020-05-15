@@ -266,6 +266,8 @@ class ApiGateway {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)) {
       return true
+    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isFeatureBranch(deploy)) {
+      return true
     } else {
       return false
     }
