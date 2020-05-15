@@ -166,7 +166,7 @@ class ApiGateway {
       for (const i in ctx.robokit.kuberneteses) {
         const k = ctx.robokit.kuberneteses[i]
         const namespaces = await pipeline.getNamespaces(k.cluster)
-        if (namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
+        if (namespaces && namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
           pipeline.deleteNamespace(k.cluster, ctx.namespace)
         }
       }
@@ -256,7 +256,7 @@ class ApiGateway {
     }
     return 'OK'
   }
-
+//
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
     if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
@@ -265,6 +265,8 @@ class ApiGateway {
     } else if (userAction === 'deploy_now') {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)) {
+      return true
+    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isFeatureBranch(deploy)) {
       return true
     } else {
       return false
@@ -362,6 +364,7 @@ class ApiGateway {
     } else if (context.payload.pull_request) {
       deploy = U.toPullRequestDeployContext(context)
     }
+    deploy.namespace = U.targetNamespace(deploy)
 
     try {
       const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
