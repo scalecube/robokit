@@ -76,9 +76,9 @@ class Utils {
   }
 
   static targetNamespace (deploy) {
-    if (deploy.is_pull_request) {
+    if (deploy.base_branch_name) {
       return `${deploy.repo}-${deploy.issue_number}`
-    } else {
+    } else if (deploy.branch_name === 'master' || deploy.branch_name === 'develop') {
       return deploy.branch_name
     }
   }
@@ -108,7 +108,6 @@ class Utils {
     if (ctx.is_pull_request) { ctx.issue_number = Utils.issueNumber(context) }
     ctx.labels = context.payload.pull_request.labels.map(e => e.name)
     ctx.labled = ctx.labels.length > 0
-    ctx.namespace = Utils.targetNamespace(ctx)
     return ctx
   }
 
@@ -127,8 +126,6 @@ class Utils {
       action: context.payload.action
     }
     if (ctx.is_pull_request) { ctx.issue_number = Utils.issueNumber(context) }
-
-    ctx.namespace = Utils.targetNamespace(ctx)
     return ctx
   }
 
@@ -150,7 +147,7 @@ class Utils {
     }
     return all
   }
-  
+
   static format (field, values) {
     Object.entries(values).forEach((e) => {
       field = field.replace('${' + e[0] + '}', e[1])

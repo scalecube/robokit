@@ -166,7 +166,7 @@ class ApiGateway {
       for (const i in ctx.robokit.kuberneteses) {
         const k = ctx.robokit.kuberneteses[i]
         const namespaces = await pipeline.getNamespaces(k.cluster)
-        if (namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
+        if (namespaces && namespaces.includes(`${k.cluster}/${ctx.namespace}`)) {
           pipeline.deleteNamespace(k.cluster, ctx.namespace)
         }
       }
@@ -362,6 +362,7 @@ class ApiGateway {
     } else if (context.payload.pull_request) {
       deploy = U.toPullRequestDeployContext(context)
     }
+    deploy.namespace = U.targetNamespace(deploy)
 
     try {
       const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
