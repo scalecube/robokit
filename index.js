@@ -60,7 +60,6 @@ const robokit = app => {
     }
   })
 
-
   app.on([
     'issue_comment',
     'issues',
