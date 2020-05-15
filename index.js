@@ -30,8 +30,10 @@ const robokit = app => {
       context.user_action = action
     }
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
-    api.deployContext(context).then(ctx => {
-      api.deploy(context, ctx)
+    api.deployContext(context).then(deploy => {
+      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
+        api.deploy(context, deploy)
+      }
     })
   })
 
@@ -44,8 +46,10 @@ const robokit = app => {
     'pull_request.closed'
   ], context => {
     if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
-      api.deployContext(context).then(ctx => {
-        api.deploy(context, ctx)
+      api.deployContext(context).then(deploy => {
+        if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
+          api.deploy(context, deploy)
+        }
       })
     } else if (context.payload.action === 'closed') {
       console.log('pull_request - closed')
