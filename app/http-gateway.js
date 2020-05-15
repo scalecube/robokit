@@ -256,7 +256,7 @@ class ApiGateway {
     }
     return 'OK'
   }
-
+//
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
     if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
