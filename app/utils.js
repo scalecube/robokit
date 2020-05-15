@@ -181,7 +181,7 @@ class Utils {
       return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
     } else if (conclusion === 'cancelled') {
       return ':no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  '
-    } else if (status === 'completed' && conclusion && conclusion != null) {
+    } else if (status === 'completed' && conclusion) {
       return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
     } else {
       console.log('Deploying ' + status + ' ' + conclusion)
