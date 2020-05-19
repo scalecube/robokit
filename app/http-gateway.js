@@ -197,7 +197,7 @@ class ApiGateway {
     deployment.deployment_id = deploy.deployment_id
     deployment.description = 'Deployment status: ' + state
     deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
-    deployment.environment_url = 'http://scalecube.io/'
+    deployment.environment_url = process.env.DEPLOYMENT_URL
     return context.github.repos.createDeploymentStatus(deployment)
   }
 
@@ -256,7 +256,7 @@ class ApiGateway {
     }
     return 'OK'
   }
-//
+
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
     if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
