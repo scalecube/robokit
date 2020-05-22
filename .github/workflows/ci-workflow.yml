@@ -41,13 +41,13 @@ jobs:
         cd ./charts
         echo "helm lint ./${{ secrets.REPO }}"
         helm lint ./${{ secrets.REPO }}
-        helm repo add nexus ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
+        helm repo add JF_helm ${{ secrets.HELM_URL }} --username ${{ secrets.HELM_USER }} --password ${{ secrets.HELM_PASSWORD }} 
         helm dep up ./${{ secrets.REPO }}
         echo "helm package ./${{ secrets.REPO }}"
         helm package ./${{ secrets.REPO }}
     - name: POST Helm package
       run: |
-        for helm_package in $(find . -name '*.tgz'); do curl -is -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} ${{ secrets.HELM_REGISTRY }} --upload-file $helm_package; done
+        for helm_package in $(find . -name '*.tgz'); do curl -sSf -u ${{ secrets.HELM_USER }}:${{ secrets.HELM_PASSWORD }} -X PUT -T $helm_package "${{ secrets.HELM_REGISTRY }}/$helm_package"; done
 
   robokit-deploy:
 
