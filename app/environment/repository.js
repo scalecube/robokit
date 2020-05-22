@@ -39,6 +39,7 @@ class Repository {
       - name: NAMESPACE
       - name: OWNER
    */
+
   environment (env) {
     const envName = `${env.OWNER}/${env.NAMESPACE}`
     return new Promise((resolve, reject) => {
@@ -50,25 +51,28 @@ class Repository {
             delete envRes.name
             resolve(envRes)
           } else {
-            this.collection.countDocuments({}).then(count => {
-              const nextCount = count + 1
-              this.collection.insertOne({
-                _id: nextCount,
-                name: envName,
-                ENV_ID: nextCount,
-                OWNER: env.OWNER,
-                NAMESPACE: env.NAMESPACE
-              }).then(r => {
-                if (r.result.ok && r.ops.length > 0) {
-                  const envRes = r.ops[0]
-                  delete envRes._id
-                  delete envRes.name
-                  resolve(envRes)
-                }
-              }).catch(e => {
-                reject(e)
+            this.collection.aggregate([
+              { $sort: { ENV_ID: -1 } },
+              { $limit: 1 }])
+              .toArray().then(array => {
+                const nextCount = array[0].ENV_ID + 1
+                this.collection.insertOne({
+                  _id: nextCount,
+                  name: envName,
+                  ENV_ID: nextCount,
+                  OWNER: env.OWNER,
+                  NAMESPACE: env.NAMESPACE
+                }).then(r => {
+                  if (r.result.ok && r.ops.length > 0) {
+                    const envRes = r.ops[0]
+                    delete envRes._id
+                    delete envRes.name
+                    resolve(envRes)
+                  }
+                }).catch(e => {
+                  reject(e)
+                })
               })
-            })
           }
         })
         .catch(e => {
@@ -77,5 +81,4 @@ class Repository {
     })
   }
 }
-
 module.exports = Repository

@@ -392,7 +392,9 @@ class ApiGateway {
     env.SHA = deploy.sha
     env.PR = deploy.issue_number
     env.BRANCH = deploy.branch_name
-    env.LABELS = deploy.labels
+    let labels = ''
+    deploy.labels.map(l => { labels += l + ';' })
+    env.LABELS = labels
     deploy.env = env
 
     return deploy
