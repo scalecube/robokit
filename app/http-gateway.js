@@ -413,7 +413,7 @@ class ApiGateway {
     if (deploy.issue_number) {
       trigger.pr = deploy.issue_number
     }
-
+    trigger.env = deploy.env
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
         trigger.services = []
