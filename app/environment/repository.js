@@ -55,7 +55,7 @@ class Repository {
               this.collection.insertOne({
                 _id: nextCount,
                 name: envName,
-                ENVID: nextCount,
+                ENV_ID: nextCount,
                 OWNER: env.OWNER,
                 NAMESPACE: env.NAMESPACE
               }).then(r => {
