@@ -54,8 +54,8 @@ class Repository {
             this.collection.aggregate([
               { $sort: { ENV_ID: -1 } },
               { $limit: 1 }])
-              .toArray().then(count => {
-                const nextCount = count + 1
+              .toArray().then(array => {
+                const nextCount = array[0].ENV_ID + 1
                 this.collection.insertOne({
                   _id: nextCount,
                   name: envName,
