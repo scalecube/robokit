@@ -51,25 +51,28 @@ class Repository {
             delete envRes.name
             resolve(envRes)
           } else {
-            this.collection.find().sort({ ENV_ID: -1 }).limit(1).then(count => {
-              const nextCount = count + 1
-              this.collection.insertOne({
-                _id: nextCount,
-                name: envName,
-                ENV_ID: nextCount,
-                OWNER: env.OWNER,
-                NAMESPACE: env.NAMESPACE
-              }).then(r => {
-                if (r.result.ok && r.ops.length > 0) {
-                  const envRes = r.ops[0]
-                  delete envRes._id
-                  delete envRes.name
-                  resolve(envRes)
-                }
-              }).catch(e => {
-                reject(e)
+            this.collection.aggregate([
+              { $sort: { ENV_ID: -1 } },
+              { $limit: 1 }])
+              .toArray().then(count => {
+                const nextCount = count + 1
+                this.collection.insertOne({
+                  _id: nextCount,
+                  name: envName,
+                  ENV_ID: nextCount,
+                  OWNER: env.OWNER,
+                  NAMESPACE: env.NAMESPACE
+                }).then(r => {
+                  if (r.result.ok && r.ops.length > 0) {
+                    const envRes = r.ops[0]
+                    delete envRes._id
+                    delete envRes.name
+                    resolve(envRes)
+                  }
+                }).catch(e => {
+                  reject(e)
+                })
               })
-            })
           }
         })
         .catch(e => {
