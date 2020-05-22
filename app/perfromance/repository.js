@@ -10,8 +10,8 @@ class Repository {
     return this
   }
 
-  connected(){
-    return this.collection != undefined
+  connected () {
+    return this.collection !== undefined
   }
 
   connect (collectionName) {
