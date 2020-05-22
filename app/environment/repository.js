@@ -50,7 +50,7 @@ class Repository {
             delete envRes.name
             resolve(envRes)
           } else {
-            this.collection.countDocuments({}).then(count => {
+            this.collection.find().sort({ ENV_ID: -1 }).limit(1).then(count => {
               const nextCount = count + 1
               this.collection.insertOne({
                 _id: nextCount,
