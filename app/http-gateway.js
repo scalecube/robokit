@@ -8,6 +8,7 @@ const U = require('./utils')
 const githubAuth = require('./github/github-passport')
 const templates = require('./statuses/templates')
 const pipeline = require('./pipelines/pipeline')
+const EnvironmentRepo = require('./environment/repository')
 
 class ApiGateway {
   constructor (app, cache) {
@@ -24,6 +25,8 @@ class ApiGateway {
 
     this.githubService = new GithubService(app, cache)
     this.performanceService = require('./perfromance/performance-service')
+    this.repo = new EnvironmentRepo('robokit')
+    this.repo.connect('environments')
   }
 
   start () {
@@ -197,7 +200,7 @@ class ApiGateway {
     deployment.deployment_id = deploy.deployment_id
     deployment.description = 'Deployment status: ' + state
     deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
-    deployment.environment_url = 'http://scalecube.io/'
+    deployment.environment_url = process.env.DEPLOYMENT_URL
     return context.github.repos.createDeploymentStatus(deployment)
   }
 
@@ -256,7 +259,7 @@ class ApiGateway {
     }
     return 'OK'
   }
-//
+
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
     if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
@@ -365,7 +368,6 @@ class ApiGateway {
       deploy = U.toPullRequestDeployContext(context)
     }
     deploy.namespace = U.targetNamespace(deploy)
-
     try {
       const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
       deploy.config = yml
@@ -380,6 +382,18 @@ class ApiGateway {
     deploy.user = context.payload.sender.login
     deploy.avatar = context.payload.sender.avatar_url
     deploy.node_id = context.payload.installation.node_id
+
+    const env = await this.repo.environment({
+      NAMESPACE: deploy.namespace,
+      OWNER: deploy.owner
+    })
+
+    env.REPO = deploy.repo
+    env.SHA = deploy.sha
+    env.PR = deploy.issue_number
+    env.BRANCH = deploy.branch_name
+    env.LABELS = deploy.labels
+    deploy.env = env
 
     return deploy
   }
@@ -399,7 +413,7 @@ class ApiGateway {
     if (deploy.issue_number) {
       trigger.pr = deploy.issue_number
     }
-
+    trigger.env = deploy.env
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
         trigger.services = []

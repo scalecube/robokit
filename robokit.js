@@ -8,7 +8,7 @@ async function start () {
     .then(token => {
       // eslint-disable-next-line no-undef
       vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
-        .then(values => {
+        .then(async values => {
           for (var key in values) {
             process.env[key] = values[key]
           }
@@ -19,7 +19,6 @@ async function start () {
             cert: process.env.PRIVATE_KEY,
             webhookProxy: process.env.WEBHOOK_PROXY_URL
           }
-
           const p = require('probot')
           const probot = p.createProbot(options)
           const robokit = require('./index.js')
