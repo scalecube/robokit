@@ -1,0 +1,10 @@
+registry:
+  helm: jfrog.exberry.io
+  docker: exberry-docker
+
+kuberneteses:
+  - cluster: exberry-cloud
+    services:  
+      - repo: robokit
+        owner: scalecube   
+      
