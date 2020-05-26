@@ -59,9 +59,7 @@ class Repository {
                 this.collection.insertOne({
                   _id: nextCount,
                   name: envName,
-                  ENV_ID: nextCount,
-                  OWNER: env.OWNER,
-                  NAMESPACE: env.NAMESPACE
+                  ENV_ID: nextCount
                 }).then(r => {
                   if (r.result.ok && r.ops.length > 0) {
                     const envRes = r.ops[0]

@@ -388,13 +388,9 @@ class ApiGateway {
       OWNER: deploy.owner
     })
 
-    env.REPO = deploy.repo
-    env.SHA = deploy.sha
-    env.PR = deploy.issue_number
-    env.BRANCH = deploy.branch_name
     let labels = ''
     if (deploy.labels) {
-      deploy.labels.map(l => { labels += l + ';' })
+      deploy.labels.map(l => { labels += l + ':' })
       env.LABELS = labels
     }
     deploy.env = env
