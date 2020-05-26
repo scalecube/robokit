@@ -412,7 +412,13 @@ class ApiGateway {
 
     if (deploy.issue_number) {
       trigger.pr = deploy.issue_number
+      trigger.base_namespace = deploy.base_branch_name
     }
+
+    if (deploy.base_branch_name && (deploy.base_branch_name === 'develop' || deploy.base_branch_name === 'master')) {
+      trigger.base_namespace = deploy.base_branch_name
+    }
+
     trigger.env = deploy.env
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
