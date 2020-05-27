@@ -388,11 +388,6 @@ class ApiGateway {
       OWNER: deploy.owner
     })
 
-    let labels = ''
-    if (deploy.labels) {
-      deploy.labels.map(l => { labels += l + ':' })
-      env.LABELS = labels
-    }
     deploy.env = env
 
     return deploy
