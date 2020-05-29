@@ -296,7 +296,7 @@ class ApiGateway {
     this.createDeployment(context, deploy, 'in_progress')
       .then(async res => {
         deploy.deployment_id = res.data.id
-        const trigger = ApiGateway.toTrigger(deploy)
+        const trigger = await this.toTrigger(deploy)
         if (trigger.service || trigger.services.length > 0) {
           pipeline.deploy(trigger).then(async resp => {
             if (resp.data) {
@@ -383,17 +383,10 @@ class ApiGateway {
     deploy.avatar = context.payload.sender.avatar_url
     deploy.node_id = context.payload.installation.node_id
 
-    const env = await this.repo.environment({
-      NAMESPACE: deploy.namespace,
-      OWNER: deploy.owner
-    })
-
-    deploy.env = env
-
     return deploy
   }
 
-  static toTrigger (deploy) {
+  async toTrigger (deploy) {
     const trigger = {
       id: deploy.id,
       node_id: deploy.node_id,
@@ -415,6 +408,7 @@ class ApiGateway {
     }
 
     trigger.env = deploy.env
+
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
         trigger.services = []
@@ -453,6 +447,11 @@ class ApiGateway {
         }
       }
     }
+    trigger.env = await this.repo.environment({
+      NAMESPACE: deploy.namespace,
+      OWNER: deploy.owner
+    })
+
     return trigger
   }
 
