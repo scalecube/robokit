@@ -6,5 +6,9 @@ kuberneteses:
   - cluster: exberry-cloud
     services:  
       - repo: robokit
-        owner: scalecube   
-      
+        owner: scalecube
+
+namespaces:
+  protected:
+    - master
+    - develop

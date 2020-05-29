@@ -7,23 +7,23 @@ class PipelineAPI {
     return this.get(url)
   }
 
-  deploy (trigger) {
-    const url = `${process.env.SPINLESS_URL}/helm/deploy`
-    console.log('>>>>> TRIGGER DEPLOY:\n POST ' + url + '\n' + JSON.stringify(trigger))
-    return this.post(url, trigger).then((resp) => {
+  deploy (data) {
+    const url = `${process.env.SPINLESS_URL}/helm/install`
+    console.log('>>>>> TRIGGER DEPLOY:\n POST ' + url + '\n' + JSON.stringify(data))
+    return this.post(url, data).then((resp) => {
       console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
       return resp
     })
   }
 
-  deleteNamespace (clusterName, namespace) {
-    if (namespace === 'develop' || namespace === 'master') {
-      throw new Error('its not allowed to delete namespace:' + namespace)
+  undeploy (data) {
+    if (data.namespace === 'develop' || data.namespace === 'master') {
+      throw new Error('its not allowed to delete namespace:' + data.namespace)
     }
 
-    const url = `${process.env.SPINLESS_URL}/clusters/${clusterName}/namespaces/${namespace}`
+    const url = `${process.env.SPINLESS_URL}/helm/uninstall`
     console.log('>>>>> DELETE NAMESPACE:\n DELETE ' + url)
-    return this.delete(url).then((resp) => {
+    return this.post(url, PipelineAPI.toDeleteRequest(data)).then((resp) => {
       console.log('<<<<< DELETED NAMESPACE: ' + JSON.stringify(resp.data.result))
       return resp
     })
@@ -102,6 +102,30 @@ class PipelineAPI {
       clearTimeout(timer)
       callback(log)
     })
+  }
+
+  static toDeleteRequest (deploy) {
+    const trigger = {
+      namespace: deploy.namespace
+    }
+    if (deploy.robokit) {
+      if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
+        trigger.services = []
+        for (const i in deploy.robokit.kuberneteses) {
+          const kubernetes = deploy.robokit.kuberneteses[i]
+          for (const k in kubernetes.services) {
+            const deployment = kubernetes.services[k]
+            const service = {
+              cluster: kubernetes.cluster,
+              repo: deployment.repo,
+              owner: deployment.owner || deploy.owner
+            }
+            trigger.services.push(service)
+          }
+        }
+      }
+    }
+    return trigger
   }
 
   redacted (message) {
