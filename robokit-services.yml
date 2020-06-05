@@ -8,6 +8,11 @@ kuberneteses:
       - repo: robokit
         owner: scalecube
 
+  - cluster: exberry-demo
+    services:
+      - repo: seed
+        owner: scalecube
+
 namespaces:
   protected:
     - master
