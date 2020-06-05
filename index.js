@@ -12,7 +12,6 @@ const robokit = app => {
 
   app.on('schedule.repository', async context => {
     cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.github)
-    // api.installPipeline(context.payload.repository.owner.login, context.payload.repository.name)
   })
 
   app.on('installation', context => {

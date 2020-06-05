@@ -8,7 +8,7 @@ class PipelineAPI {
   }
 
   deploy (data) {
-    const url = `${process.env.SPINLESS_URL}/helm/install`
+    const url = `${process.env.SPINLESS_URL}/helm/deploy`
     console.log('>>>>> TRIGGER DEPLOY:\n POST ' + url + '\n' + JSON.stringify(data))
     return this.post(url, data).then((resp) => {
       console.log('<<<<< TRIGGER DEPLOY RESPONSE:\n ' + JSON.stringify(resp.data))
@@ -21,7 +21,7 @@ class PipelineAPI {
       throw new Error('its not allowed to delete namespace:' + data.namespace)
     }
 
-    const url = `${process.env.SPINLESS_URL}/helm/uninstall`
+    const url = `${process.env.SPINLESS_URL}/helm/destroy`
     console.log('>>>>> DELETE NAMESPACE:\n DELETE ' + url)
     return this.post(url, PipelineAPI.toDeleteRequest(data)).then((resp) => {
       console.log('<<<<< DELETED NAMESPACE: ' + JSON.stringify(resp.data.result))
@@ -104,6 +104,20 @@ class PipelineAPI {
     })
   }
 
+  /*
+      {
+      "namespace": "removeme",
+      "owner": "exberry-io",
+      "services": [
+        "exchange-market-service",
+        "exchange-backoffice"
+      ],
+      "clusters": [
+        "exberry-demo",
+        "exberry-cloud"
+      ]
+    }
+   */
   static toDeleteRequest (deploy) {
     const trigger = {
       namespace: deploy.namespace
@@ -111,16 +125,19 @@ class PipelineAPI {
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
         trigger.services = []
+        trigger.clusters = []
         for (const i in deploy.robokit.kuberneteses) {
           const kubernetes = deploy.robokit.kuberneteses[i]
           for (const k in kubernetes.services) {
             const deployment = kubernetes.services[k]
             const service = {
-              cluster: kubernetes.cluster,
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner
             }
             trigger.services.push(service)
+            if (!trigger.clusters.includes(trigger.clusters)){
+              trigger.clusters.push(kubernetes.cluster)
+            }
           }
         }
       }

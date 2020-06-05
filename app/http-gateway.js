@@ -159,7 +159,7 @@ class ApiGateway {
 
   async onRelease (context) {
     const release = await this.deployContext(context)
-    pipeline.release(release).then(resp => {
+    pipeline.deploy(release).then(resp => {
       // Create Deployment with log_url
     })
   }
@@ -400,8 +400,6 @@ class ApiGateway {
     if (deploy.base_branch_name && (deploy.base_branch_name === 'develop' || deploy.base_branch_name === 'master')) {
       trigger.base_namespace = deploy.base_branch_name
     }
-
-    trigger.env = deploy.env
 
     if (deploy.robokit) {
       if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
