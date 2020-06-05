@@ -22,8 +22,9 @@ class PipelineAPI {
     }
 
     const url = `${process.env.SPINLESS_URL}/helm/destroy`
-    console.log('>>>>> DELETE NAMESPACE:\n DELETE ' + url)
-    return this.post(url, PipelineAPI.toDeleteRequest(data)).then((resp) => {
+    const trigger = PipelineAPI.toDeleteRequest(data)
+    console.log('>>>>> DELETE NAMESPACE:\n DELETE ' + url + ' ' + JSON.stringify(trigger))
+    return this.post(url, trigger).then((resp) => {
       console.log('<<<<< DELETED NAMESPACE: ' + JSON.stringify(resp.data.result))
       return resp
     })
@@ -135,9 +136,9 @@ class PipelineAPI {
               owner: deployment.owner || deploy.owner
             }
             trigger.services.push(service)
-            if (!trigger.clusters.includes(trigger.clusters)){
-              trigger.clusters.push(kubernetes.cluster)
-            }
+          }
+          if (!trigger.clusters.includes(kubernetes.cluster)) {
+            trigger.clusters.push(kubernetes.cluster)
           }
         }
       }
