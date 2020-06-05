@@ -12,3 +12,8 @@ kuberneteses:
     services:
       - repo: seed
         owner: scalecube
+
+namespaces:
+  protected:
+    - master
+    - develop
