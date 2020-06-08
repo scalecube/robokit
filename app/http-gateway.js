@@ -167,7 +167,7 @@ class ApiGateway {
   async closePullRequest (context, ctx) {
     if (ctx.namespace !== 'master' && ctx.namespace !== 'develop') {
       if (!(ctx.robokit.namespaces && ctx.robokit.namespaces.protected) || !ctx.robokit.namespaces.protected.includes(ctx.namespace)) {
-        pipeline.undeploy(ctx)
+        return pipeline.undeploy(ctx)
       }
     }
   }
