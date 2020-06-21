@@ -404,20 +404,25 @@ class ApiGateway {
     }
 
     if (deploy.robokit) {
-      if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
+      if (deploy.robokit.environments && deploy.robokit.environments.length > 0) {
         trigger.services = []
-        for (const i in deploy.robokit.kuberneteses) {
-          const kubernetes = deploy.robokit.kuberneteses[i]
-          for (const k in kubernetes.services) {
-            const deployment = kubernetes.services[k]
+        for (const i in deploy.robokit.environments) {
+          const environment = deploy.robokit.environments[i]
+          for (const k in environment.services) {
+            const deployment = environment.services[k]
             const service = {
-              cluster: kubernetes.cluster,
+              cluster: environment.cluster,
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
               branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
               image_tag: deployment.branch || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry
             }
+            service.env = await this.repo.environment({
+              NAMESPACE: deploy.namespace,
+              OWNER: deploy.owner
+            })
+            service.env.ENVIRONMENT = environment.environment
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
               service.image_tag = deploy.branch_name
               trigger.service = service
