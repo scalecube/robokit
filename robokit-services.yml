@@ -2,18 +2,14 @@ registry:
   helm: jfrog.exberry.io
   docker: exberry-docker
 
-kuberneteses:
-  - cluster: exberry-cloud
-    services:  
-      - repo: robokit
-        owner: scalecube
-
-  - cluster: exberry-demo
-    services:
-      - repo: seed
-        owner: scalecube
-
 namespaces:
   protected:
     - master
     - develop
+
+environments:
+  - environment: dev
+    services:  
+      - repo: robokit
+        owner: scalecube
+        cluster: exberry-cloud
