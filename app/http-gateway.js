@@ -411,7 +411,7 @@ class ApiGateway {
           for (const k in environment.services) {
             const deployment = environment.services[k]
             const service = {
-              cluster: environment.cluster,
+              cluster: deployment.cluster,
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
               branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
