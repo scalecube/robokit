@@ -425,7 +425,7 @@ class ApiGateway {
             service.env.ENVIRONMENT = environment.environment
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
               service.image_tag = deploy.branch_name
-              trigger.service = service
+              trigger.services.push(service)
             } else {
               if (!deploy.config.include) {
                 trigger.services.push(service)
