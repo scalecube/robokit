@@ -454,6 +454,7 @@ class ApiGateway {
     return trigger
   }
 
+
   toChecks (deploy, log, status) {
     const startDate = new Date(U.head(log).timestamp)
     const endDate = new Date(U.tail(log).timestamp)
