@@ -8,8 +8,74 @@ namespaces:
     - develop
 
 environments:
-  - environment: dev
-    services:  
-      - repo: robokit
-        owner: scalecube
+  - environment: old
+    services:
+      - repo: exchange-backoffice
+        owner: exberry-io
         cluster: exberry-cloud
+      - repo: exchange-history-service
+        owner: exberry-io
+        cluster: exberry-cloud
+      - repo: exchange-auth-service
+        owner: exberry-io
+        cluster: exberry-cloud
+
+      - repo: exchange-seed
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-event-publisher
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-gateway
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-operation-gateway
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-market-service
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-audit-service
+        owner: exberry-io
+        cluster: exberry-demo
+      - repo: exchange-cluster-manager
+        owner: exberry-io
+        cluster: exberry-demo
+
+      - repo: discovery
+        owner: exberry-io
+        cluster: nebula
+
+  - environment: dev
+    services:
+      - repo: exchange-backoffice
+        owner: exberry-io
+        cluster: dev-ops
+      - repo: exchange-history-service
+        owner: exberry-io
+        cluster: dev-ops
+      - repo: exchange-auth-service
+        owner: exberry-io
+        cluster: dev-ops
+
+      - repo: exchange-seed
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-event-publisher
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-gateway
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-operation-gateway
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-market-service
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-audit-service
+        owner: exberry-io
+        cluster: dev-exchange
+      - repo: exchange-cluster-manager
+        owner: exberry-io
+        cluster: dev-exchange
