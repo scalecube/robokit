@@ -8,7 +8,7 @@ namespaces:
     - develop
 
 environments:
-  - environment: old
+  - environment: old1
     services:
       - repo: exchange-backoffice
         owner: exberry-io
