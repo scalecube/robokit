@@ -5,9 +5,9 @@ metadata:
   name: {{.Values.owner}}-{{.Values.repo}}
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: {{.Values.repo}}
+#  selector:
+#    matchLabels:
+#      app: {{.Values.repo}}
   strategy:
     type: Recreate
   template:
@@ -21,17 +21,9 @@ spec:
         microservice: {{.Values.repo}}
     spec:
       serviceAccountName: {{.Values.owner}}-{{.Values.repo}}
-      {{- if .Values.nodeSelector }}
-      nodeSelector:
-        {{ toYaml .Values.nodeSelector | indent 8 }}
-      {{- end }}
       {{- if .Values.affinity }}
       affinity:
         {{ toYaml .Values.affinity | indent 8 }}
-      {{- end }}
-      {{- if .Values.tolerations }}
-      tolerations:
-        {{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}
       containers:
         - name: container-{{.Values.owner}}-{{.Values.repo}}
@@ -67,3 +59,17 @@ spec:
             {{- end }}
       imagePullSecrets:
         - name: gitsecret-{{.Values.repo}}
+      tolerations:
+        - effect: NoSchedule
+          key: type
+          operator: Equal
+          value: kubsystem
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+          tolerationSeconds: 300
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+          tolerationSeconds: 300
+
