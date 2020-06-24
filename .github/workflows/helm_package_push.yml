@@ -1,18 +1,13 @@
 name: Helm package CI
 
-#on:
-#  push:
-#    paths:
-#      - 'charts/**'
-#      - '.github/workflows/helm_package_push.yml'
-#    branches:
-#      - 'develop'
-#      - 'master'
-#
 on:
   push:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm_package_push.yml'
     branches:
-      - 'turn-me-off'
+      - 'develop'
+      - 'master'
 
 jobs:
   helm_package_push:
