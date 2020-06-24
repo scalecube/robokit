@@ -1,0 +1,23 @@
+name: Robokit
+
+on:
+  push:
+    paths-ignore:
+      - 'charts/**'
+      - '.github/workflows/**'
+      - 'README.md'
+    branches:
+      - 'develop'
+      - 'master'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ${{ github.repository }}/robokit
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
