@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Values.repo }}
+spec:
+  entryPoints:
+    - {{ .Values.traefik.web_entrypoint }}
+  routes:
+    - kind: Rule
+      match: Host(`{{ .Values.repo }}-{{ .Values.namespace }}.{{ .Values.traefik.dns_suffix }}`)
+      services:
+        - name: {{ .Values.repo }}
+          port: {{ .Values.ingress }}

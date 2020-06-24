@@ -1,42 +1,69 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: scalecube-robokit
-    release: {{ .Release.Name | quote }}
-    chart: robokit
-  name: robokit-depl
-  namespace: {{ .Release.Namespace }}
+  name: {{.Values.owner}}-{{.Values.repo}}
 spec:
   replicas: 1
-  revisionHistoryLimit: 5
   selector:
     matchLabels:
-      app: scalecube-robokit
-      release: {{ .Release.Name | quote }}
+      app: {{.Values.repo}}
+  strategy:
+    type: Recreate
   template:
     metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        timestamp: {{ default "" .Values.timestamp | quote }}
       labels:
-        app: scalecube-robokit
-        release: {{ .Release.Name | quote }}
+        app: {{.Values.repo}}
+        namespace: {{.Values.namespace}}
+        microservice: {{.Values.repo}}
     spec:
-      serviceAccount: scalecube-robokit
-      serviceAccountName: scalecube-robokit
+      serviceAccountName: {{.Values.owner}}-{{.Values.repo}}
+      {{- if .Values.nodeSelector }}
       nodeSelector:
-{{- range $key, $value := .Values.nodeSelector }}
-  {{ indent 6 $key }}: {{ $value }}
-{{- end }}
+        {{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
       containers:
-      - env:
-{{- range $pkey, $pval := .Values.env }}
-        - name: {{ $pkey }}
-          value: {{ $pval | quote }}
-{{- end }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ .Chart.Name }}
-        ports:
-        - containerPort: {{ .Values.env.PORT }}
-          name: port-{{ .Values.env.PORT  | toString }}
-          protocol: TCP
-      restartPolicy: Always
+        - name: container-{{.Values.owner}}-{{.Values.repo}}
+          image: {{ .Values.images.service.repo }}:{{ .Values.images.service.tag }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: {{.Values.resources.limits.memory}}
+            requests:
+              memory: {{.Values.resources.requests.memory}}
+              cpu: {{.Values.resources.requests.cpu}}
+          ports:
+            - name: port-{{.Values.serviceport}}
+              containerPort: {{.Values.serviceport}}
+          env:
+            - name: NAMESPACE
+              value: {{.Values.namespace}}
+            - name: OWNER
+              value: {{.Values.owner}}
+            - name: REPO
+              value: {{.Values.repo}}
+            - name: SHA
+              value: {{.Values.sha}}
+            - name: LABELS
+              value: {{.Values.labels}}
+            - name: TAG
+              value: {{ .Values.images.service.tag }}
+            - name: logLevel
+              value: {{ .Values.logging.level.root }}
+            {{- range $key, $val := unset .Values.env "sample_key"}}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+      imagePullSecrets:
+        - name: gitsecret-{{.Values.repo}}
