@@ -10,7 +10,7 @@ Continues delivey is important to speed up the development of your team. and its
 
 ## Setup
 
-> `robokit` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
+> `robokit` is a GitHub Application built with [Probot](https://github.com/probot/probot).
 
 ```sh
 # Install dependencies

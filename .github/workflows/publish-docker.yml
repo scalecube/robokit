@@ -20,3 +20,4 @@ jobs:
           name: ${{ github.repository }}/robokit
           username: ${{ github.actor }}
           password: ${{ github.token }}
+          registry: docker.pkg.github.com
