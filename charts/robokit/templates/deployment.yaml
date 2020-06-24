@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      release: {{ .Release.Name | quote }}
+      app: {{.Values.repo}}
   replicas: 1
   strategy:
     type: Recreate
