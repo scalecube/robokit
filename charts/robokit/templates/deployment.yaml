@@ -4,10 +4,10 @@ kind: Deployment
 metadata:
   name: {{.Values.owner}}-{{.Values.repo}}
 spec:
+  selector:
+    matchLabels:
+      release: {{ .Release.Name | quote }}
   replicas: 1
-#  selector:
-#    matchLabels:
-#      app: {{.Values.repo}}
   strategy:
     type: Recreate
   template:
