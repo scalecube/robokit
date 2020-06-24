@@ -16,9 +16,9 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
         timestamp: {{ default "" .Values.timestamp | quote }}
       labels:
-        labels:
-          app: {{ .Chart.Name }}
-          release: {{ .Release.Name | quote }}
+        app: {{.Values.repo}}
+        namespace: {{.Values.namespace}}
+        microservice: {{.Values.repo}}
     spec:
       serviceAccountName: {{.Values.owner}}-{{.Values.repo}}
       {{- if .Values.affinity }}
