@@ -10,7 +10,7 @@ spec:
     app: {{.Values.repo}}
   type: NodePort
   ports:
-    - name: port-{{ .Values.service.port }}
+    - name: port-{{ .Values.serviceport }}
       port: {{ .Values.serviceport }}
-      targetPort: {{ .Values.service.port }}
+      targetPort: {{ .Values.serviceport }}
       protocol: TCP
