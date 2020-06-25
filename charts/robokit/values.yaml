@@ -1,28 +1,54 @@
-image:
-  repository:
-    user: ""
-    name: ""
-  tag: master
-  pullPolicy: Always
+owner: scalecube
+repo: robokit
+sha: none
+labels: none
+namespace: none
+dockerjsontoken: none
+timestamp: none
+
+logging:
+  level:
+    root: DEBUG
+    exchange: DEBUG
+
+images:
+  service:
+    repo: docker.pkg.github.com/scalecube/robokit/robokit
+    tag: none
+
+vault:
+  addr: none
+  token: none
+  role: none
+  jwtprovider: kubernetes
+  engineversion: 1
+
+resources:
+  limits:
+    memory: 1024Mi
+  requests:
+    cpu: 0.1
+    memory: 1024Mi
+
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+ports:
+  port-4801: 4801
+  port-5678: 5678
+  port-7070: 7070
+
+serviceport: 7777
+
+ingress: 7070
+
+traefik:
+  dns_suffix: none
+  web_entrypoint: web
 
 env:
-  timestamp: 1111111
+  sample_key: sample_val
+  CLUSTER_NAME: cluster
   PORT: 7777
   VAR: ""
-
-podTemplate:
-  annotations: {}
-
-  labels: {}
-
-nodeSelector:
-  environment: dev
-
-service:
-  annotations: {}
-  type: NodePort
-
-ingress:
-  hostname: ""
-
-namespace: ""

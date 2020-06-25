@@ -8,6 +8,7 @@ async function start () {
     process.env.VAULT_JWT_PATH)
     .then(token => {
       // eslint-disable-next-line no-undef
+
       vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
         .then(async values => {
           for (var key in values) {

@@ -3,13 +3,14 @@
 Continues delivey is important to speed up the development of your team. and its more relevant with complex microservices architecture. the more microservices are added to your echo system the more hassle is invoved for creating a standard how to continuesly deploy these services without making them slow down your ability to deliver them.
 
 
+
 ## This solution
 
 `robokit` is a github application that track your git-flow development process and continuesly deploy the artifacts and triggers your continues delivery server pipelines. in such way that pull-requests, push events to develop, master branches continuesly delivered to your kubernetes evniroments.
 
 ## Setup
 
-> `robokit` is a GitHub Appication built with [Probot](https://github.com/probot/probot).
+> `robokit` is a GitHub Application built with [Probot](https://github.com/probot/probot).
 
 ```sh
 # Install dependencies
