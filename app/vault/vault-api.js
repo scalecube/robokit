@@ -33,5 +33,4 @@ class Vault {
     })
   }
 }
-
 module.exports = Vault
