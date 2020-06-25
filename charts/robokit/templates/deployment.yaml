@@ -43,6 +43,8 @@ spec:
             - name: port-{{.Values.serviceport}}
               containerPort: {{.Values.serviceport}}
           env:
+            - name: VAULT_JWT_PATH
+              value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
             - name: VAULT_SECRETS_PATH
               value: v1/secretv2/{{.Values.owner}}/{{.Values.repo}}/{{.Values.namespace}}/env
             - name: VAULT_ADDR
