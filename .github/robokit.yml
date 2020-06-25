@@ -2,5 +2,5 @@ source:
   github:
     owner: exberry-io
     repo: exchange-robokit
-    branch: develop
+    branch: master
     path: "nebula.yml"
