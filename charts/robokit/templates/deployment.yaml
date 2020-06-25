@@ -46,7 +46,7 @@ spec:
             - name: VAULT_JWT_PATH
               value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
             - name: VAULT_SECRETS_PATH
-              value: secretv2/{{.Values.owner}}/{{.Values.repo}}/{{.Values.namespace}}/env
+              value: secretv2/{{.Values.owner}}/{{.Values.repo}}/{{.Values.images.service.tag}}/env
             - name: VAULT_ADDR
               value: {{ .Values.vault.addr }}
             - name: VAULT_TOKEN
