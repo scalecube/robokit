@@ -1,6 +1,6 @@
 registry:
   helm: nebula
-  docker: exberry-docker
+  docker: scalecube
 
 namespaces:
   protected:
