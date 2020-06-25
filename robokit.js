@@ -1,3 +1,4 @@
+
 async function start () {
   require('dotenv').config()
   const vault = new (require('./app/vault/vault-api'))(process.env.VAULT_ADDR)
@@ -24,6 +25,11 @@ async function start () {
           const robokit = require('./index.js')
           probot.setup([robokit])
           probot.start()
+        }).catch(err => {
+          console.log(`ERROR reading variables from vault \n 
+          VAULT_SECRETS_PATH:${process.env.VAULT_SECRETS_PATH}\n
+          VAULT_ADDR:${process.env.VAULT_ADDR}
+          error:` + err.message)
         })
     })
 }

@@ -1,10 +1,6 @@
 source:
   github:
-    owner: scalecube
-    repo: robokit
+    owner: exberry-io
+    repo: exchange-robokit
     branch: develop
-    path: "robokit-services.yml"
-
-include:
-  services:
-    - branch: pull_request
+    path: "nebula.yml"
