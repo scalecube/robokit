@@ -43,6 +43,18 @@ spec:
             - name: port-{{.Values.serviceport}}
               containerPort: {{.Values.serviceport}}
           env:
+            - name: VAULT_SECRETS_PATH
+              value: v1/secretv2/{{.Values.owner}}/{{.Values.repo}}/{{.Values.namespace}}/env
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.addr }}
+            - name: VAULT_TOKEN
+              value: {{ .Values.vault.token }}
+            - name: VAULT_ROLE
+              value: {{ .Values.vault.role }}
+            - name: VAULT_JWT_PROVIDER
+              value: {{ .Values.vault.jwtprovider }}
+            - name: VAULT_ENGINE_VERSION
+              value: {{ .Values.vault.engineversion | quote }}
             - name: NAMESPACE
               value: {{.Values.namespace}}
             - name: OWNER
