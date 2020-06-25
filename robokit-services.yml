@@ -1,5 +1,5 @@
 registry:
-  helm: jfrog.exberry.io
+  helm: nebula
   docker: exberry-docker
 
 namespaces:
@@ -12,4 +12,4 @@ environments:
     services:
       - repo: robokit
         owner: scalecube
-        cluster: exberry-cloud
+        cluster: nebula
