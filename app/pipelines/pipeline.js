@@ -124,11 +124,11 @@ class PipelineAPI {
       namespace: deploy.namespace
     }
     if (deploy.robokit) {
-      if (deploy.robokit.kuberneteses && deploy.robokit.kuberneteses.length > 0) {
+      if (deploy.robokit.environments && deploy.robokit.environments.length > 0) {
         trigger.services = []
         trigger.clusters = []
-        for (const i in deploy.robokit.kuberneteses) {
-          const kubernetes = deploy.robokit.kuberneteses[i]
+        for (const i in deploy.robokit.environments) {
+          const kubernetes = deploy.robokit.environments[i]
           for (const k in kubernetes.services) {
             const deployment = kubernetes.services[k]
             const service = {
@@ -136,9 +136,9 @@ class PipelineAPI {
               owner: deployment.owner || deploy.owner
             }
             trigger.services.push(service)
-          }
-          if (!trigger.clusters.includes(kubernetes.cluster)) {
-            trigger.clusters.push(kubernetes.cluster)
+            if (!trigger.clusters.includes(deployment.cluster)) {
+              trigger.clusters.push(deployment.cluster)
+            }
           }
         }
       }
