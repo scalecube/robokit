@@ -7,6 +7,12 @@ namespaces:
     - master
     - develop
 
+  prerelease:
+    namespace: rc-t
+
+  release:
+    namespace: v1-t
+
 environments:
   - environment: dev
     services:
