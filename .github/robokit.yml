@@ -1,7 +1,7 @@
 source:
   github:
-    owner: exberry-io
-    repo: exchange-robokit
+    owner: scalecube
+    repo: robokit
     branch: develop
     path: "robokit-services.yml"
 
