@@ -2,8 +2,8 @@ source:
   github:
     owner: exberry-io
     repo: exchange-robokit
-    branch: master
-    path: "robokit.yml"
+    branch: develop
+    path: "robokit-services.yml"
 
 include:
   services:
