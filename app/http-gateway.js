@@ -439,7 +439,8 @@ class ApiGateway {
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
               image_tag: deploy.tag_name || deployment.branch || deploy.base_branch_name || deploy.branch_name,
-              registry: deployment.registry || deploy.robokit.registry
+              registry: deployment.registry || deploy.robokit.registry,
+              namespace: deployment.namespace || undefined
             }
             service.env = env
             service.env.ENVIRONMENT = environment.environment
