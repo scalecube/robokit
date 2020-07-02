@@ -19,10 +19,6 @@ const robokit = app => {
     console.log('installation event:' + JSON.stringify(context))
   })
 
-  app.on('release', context => {
-    // api.onRelease(context)
-  })
-
   app.on('check_run', context => {
     if (context.payload.requested_action) {
       const action = context.payload.requested_action.identifier
@@ -30,7 +26,7 @@ const robokit = app => {
     }
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     api.deployContext(context).then(deploy => {
-      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
+      if (deploy.is_pull_request || api.isKnownBranch(deploy) || deploy.release) {
         api.deploy(context, deploy)
       }
     })

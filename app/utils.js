@@ -76,7 +76,11 @@ class Utils {
   }
 
   static targetNamespace (deploy) {
-    if (deploy.base_branch_name) {
+    if (deploy.prerelease) {
+      return deploy.robokit.namespaces.prerelease.namespace
+    } else if (deploy.release) {
+      return deploy.robokit.namespaces.release.namespace
+    } else if (deploy.base_branch_name) {
       return `${deploy.repo}-${deploy.issue_number}`
     } else if (deploy.branch_name === 'master' || deploy.branch_name === 'develop') {
       return deploy.branch_name

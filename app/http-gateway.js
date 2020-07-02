@@ -241,7 +241,11 @@ class ApiGateway {
         const deployBranch = this.clone(deploy)
         deployBranch.is_pull_request = false
         deployBranch.check_run_name = cfg.deploy.check.name
-        deployBranch.namespace = deploy.branch_name
+        if (!deploy.release) {
+          deployBranch.namespace = deploy.branch_name
+        } else {
+          deployBranch.check_run_name = cfg.deploy.check.name + ' (release)'
+        }
         delete deployBranch.issue_number
         delete deployBranch.base_branch_name
         this.spinlessDeploy(context, deployBranch)
@@ -257,7 +261,9 @@ class ApiGateway {
   }
 
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
+    if (deploy.release && status === 'completed' && conclusion === 'success') {
+      return true
+    } else if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
     } else if (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') {
       return true
@@ -358,12 +364,24 @@ class ApiGateway {
       } catch (e) {
         console.error(e)
       }
+
+      try {
+        const release = await this.githubService.release(deploy.owner, deploy.repo, deploy.branch_name)
+        deploy.branch_name = release.target_commitish
+        deploy.release = true
+        deploy.prerelease = release.prerelease
+        deploy.tag_name = release.tag_name.replace(/^v/, '').toLowerCase()
+        deploy.draft = release.draft
+        deploy.release_id = release.id
+      } catch (e) {
+        deploy.release = false
+      }
     } else if (context.payload.release) {
       deploy = U.toReleaseDeployContext(context)
     } else if (context.payload.pull_request) {
       deploy = U.toPullRequestDeployContext(context)
     }
-    deploy.namespace = U.targetNamespace(deploy)
+
     try {
       const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
       deploy.config = yml
@@ -374,6 +392,7 @@ class ApiGateway {
     } catch (e) {
     }
 
+    deploy.namespace = U.targetNamespace(deploy)
     deploy.id = context.id
     deploy.user = context.payload.sender.login
     deploy.avatar = context.payload.sender.avatar_url
@@ -406,6 +425,11 @@ class ApiGateway {
     if (deploy.robokit) {
       if (deploy.robokit.environments && deploy.robokit.environments.length > 0) {
         trigger.services = []
+        const env = await this.repo.environment({
+          NAMESPACE: deploy.namespace,
+          OWNER: deploy.owner
+        })
+        if (trigger.pr) env.PR = trigger.pr
         for (const i in deploy.robokit.environments) {
           const environment = deploy.robokit.environments[i]
           for (const k in environment.services) {
@@ -414,18 +438,18 @@ class ApiGateway {
               cluster: deployment.cluster,
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
-              branch: deployment.branch || deploy.base_branch_name || deploy.branch_name,
-              image_tag: deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              image_tag: deploy.tag_name || deployment.branch || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry
             }
-            service.env = await this.repo.environment({
-              NAMESPACE: deploy.namespace,
-              OWNER: deploy.owner
-            })
+            service.env = env
             service.env.ENVIRONMENT = environment.environment
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
-              service.image_tag = deploy.branch_name
-              trigger.services.push(service)
+              if (deploy.release) {
+                trigger.services.push(service)
+              } else {
+                service.image_tag = deploy.branch_name
+                trigger.services.push(service)
+              }
             } else {
               if (!deploy.config.include) {
                 trigger.services.push(service)
@@ -446,14 +470,8 @@ class ApiGateway {
         }
       }
     }
-    trigger.env = await this.repo.environment({
-      NAMESPACE: deploy.namespace,
-      OWNER: deploy.owner
-    })
-
     return trigger
   }
-
 
   toChecks (deploy, log, status) {
     const startDate = new Date(U.head(log).timestamp)

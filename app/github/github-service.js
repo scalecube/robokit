@@ -61,6 +61,20 @@ class GithubService {
     })
   }
 
+  release (owner, repo, releaseId) {
+    return new Promise((resolve, reject) => {
+      const ctx = this.cache.get(owner, repo)
+      if (!ctx) { return }
+      // /repos/:owner/:repo/releases/tags/:tag
+      ctx.request(`GET /repos/${owner}/${repo}/releases/tags/${releaseId}`)
+        .then(res => {
+          resolve(res.data)
+        }).catch((err) => {
+          reject(err)
+        })
+    })
+  }
+
   //  POST /repos/:owner/:repo/labels
   //  Example:
   // {
