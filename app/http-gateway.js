@@ -440,8 +440,8 @@ class ApiGateway {
               owner: deployment.owner || deploy.owner,
               image_tag: deploy.tag_name || deployment.branch || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry,
-              namespace: deployment.namespace || undefined
             }
+            if (deployment.namespace) service.namespace = deployment.namespace
             service.env = env
             service.env.ENVIRONMENT = environment.environment
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
