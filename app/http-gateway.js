@@ -370,7 +370,7 @@ class ApiGateway {
         deploy.branch_name = release.target_commitish
         deploy.release = true
         deploy.prerelease = release.prerelease
-        deploy.tag_name = release.tag_name.replace(/^v/, '').toLowerCase()
+        deploy.tag_name = release.tag_name.replace(/^v/, '')
         deploy.draft = release.draft
         deploy.release_id = release.id
       } catch (e) {
