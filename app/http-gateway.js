@@ -229,12 +229,7 @@ class ApiGateway {
     const status = deploy.status
     if (context.user_action === 'cancel_deploy_now') {
       if (context.payload.check_run.external_id) {
-        pipeline.cancel(context.payload.check_run.external_id)
-          .then(res => {
-            this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-          }).catch(err => {
-            console.error(err)
-          })
+        this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
       }
     } else if (this.checkDeploy(deploy, context.user_action, checkRunName, status, conclusion)) {
       if (!this.isFeatureBranch(deploy)) {
@@ -425,45 +420,40 @@ class ApiGateway {
     if (deploy.robokit) {
       if (deploy.robokit.environments && deploy.robokit.environments.length > 0) {
         trigger.services = []
-        const env = await this.repo.environment({
-          NAMESPACE: deploy.namespace,
-          OWNER: deploy.owner
-        })
-        if (trigger.pr) env.PR = trigger.pr
         for (const i in deploy.robokit.environments) {
           const environment = deploy.robokit.environments[i]
           for (const k in environment.services) {
             const deployment = environment.services[k]
+
             const service = {
               cluster: deployment.cluster,
               repo: deployment.repo,
               owner: deployment.owner || deploy.owner,
-              image_tag: deploy.tag_name || deployment.branch || deploy.base_branch_name || deploy.branch_name,
+              image_tag: deployment.image_tag || deploy.tag_name || deploy.base_branch_name || deploy.branch_name,
               registry: deployment.registry || deploy.robokit.registry,
+              namespace: deployment.namespace || deploy.namespace
             }
-            if (deployment.namespace) service.namespace = deployment.namespace
+
+            // SETUP ENVIRONMENT VARS
+            const env = await this.repo.environment({
+              NAMESPACE: deploy.namespace,
+              OWNER: deploy.owner
+            })
+            if (trigger.pr) env.PR = trigger.pr
+            if (trigger.pr) env.BASE_NAMESPACE = deploy.base_branch_name
+            env.ENVIRONMENT = environment.environment
+            env.SHA = deploy.sha
             service.env = env
-            service.env.ENVIRONMENT = environment.environment
+
             if (deploy.owner === service.owner && deploy.repo === service.repo) {
-              if (deploy.release) {
-                trigger.services.push(service)
-              } else {
-                service.image_tag = deploy.branch_name
-                trigger.services.push(service)
-              }
+              trigger.services.push(service)
             } else {
-              if (!deploy.config.include) {
-                trigger.services.push(service)
-              } else {
-                for (const inc in deploy.config.include.services) {
-                  const branch = deploy.config.include.services[inc].branch
-                  if (branch === '*') {
-                    trigger.services.push(service)
-                  } else if (deploy.is_pull_request && (branch === 'pull_request')) {
-                    trigger.services.push(service)
-                  } else if (deploy.branch_name === branch) {
-                    trigger.services.push(service)
-                  }
+              for (const inc in deploy.config.include.services) {
+                const branch = deploy.config.include.services[inc].branch
+                if ((branch === '*') ||
+                  (deploy.is_pull_request && (branch === 'pull_request')) ||
+                  (deploy.branch_name === branch)) {
+                  trigger.services.push(service)
                 }
               }
             }
