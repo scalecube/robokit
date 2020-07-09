@@ -399,13 +399,7 @@ class ApiGateway {
   async toTrigger (deploy) {
     const trigger = {
       id: deploy.id,
-      node_id: deploy.node_id,
-      namespace: deploy.namespace,
-      sha: deploy.sha,
-      labels: deploy.labels,
-      user: {
-        id: deploy.user
-      }
+      node_id: deploy.node_id
     }
 
     if (deploy.issue_number) {
@@ -439,8 +433,11 @@ class ApiGateway {
               NAMESPACE: deploy.namespace,
               OWNER: deploy.owner
             })
+
             if (trigger.pr) env.PR = trigger.pr
             if (trigger.pr) env.BASE_NAMESPACE = deploy.base_branch_name
+            if (deploy.labels) env.LABELS = deploy.labels.map(label => label).join(':')
+            if (deploy.user) env.USER = deploy.user
             env.ENVIRONMENT = environment.environment
             env.SHA = deploy.sha
             service.env = env

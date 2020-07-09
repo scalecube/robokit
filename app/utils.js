@@ -163,13 +163,12 @@ class Utils {
     let details = ''
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
-      const startDate = new Date(log.timestamp).toISOString()
       const message = log.message
       let status = log.status
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      details += `${Utils.getMarker(status)} [${startDate}, ${log.status}] ${message} \n`
+      details += `${Utils.getMarker(status)} [${log.status}] ${message} \n`
     }
     return details
   }
