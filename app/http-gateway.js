@@ -424,6 +424,10 @@ class ApiGateway {
               namespace: deployment.namespace || deploy.namespace
             }
 
+            if (deployment.helm_version) {
+              service.helm_version = deployment.helm_version
+            }
+
             // SETUP ENVIRONMENT VARS
             const env = await this.repo.environment({
               NAMESPACE: deploy.namespace,

@@ -26,3 +26,4 @@ environments:
         owner: scalecube
         namespace: scalecube-robokit
         cluster: nebula
+        helm_version: 0.0.1
