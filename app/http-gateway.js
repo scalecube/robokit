@@ -260,8 +260,6 @@ class ApiGateway {
       return true
     } else if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
-    } else if (deploy.check_run_name === 'pull_request' && deploy.base_branch_name === 'master') {
-      return true
     } else if (userAction === 'deploy_now') {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)) {
@@ -274,9 +272,7 @@ class ApiGateway {
   }
 
   isFeatureBranch (deploy) {
-    return (deploy.is_pull_request &&
-      deploy.base_branch_name === 'develop' &&
-      U.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+    return (deploy.is_pull_request && U.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
   }
 
   isRobokitTrigger (checkRunName, status, conclusion) {

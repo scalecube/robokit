@@ -7,6 +7,12 @@ namespaces:
     - master
     - develop
 
+  develop:
+    namespace: develop
+
+  master:
+    namespace: master
+
   prerelease:
     namespace: rc-t
 
