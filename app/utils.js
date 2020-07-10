@@ -83,7 +83,13 @@ class Utils {
     } else if (deploy.base_branch_name) {
       return `${deploy.repo}-${deploy.issue_number}`
     } else if (deploy.branch_name === 'master' || deploy.branch_name === 'develop') {
-      return deploy.branch_name
+      if (deploy.robokit.namespaces &&
+        deploy.robokit.namespaces[deploy.branch_name] &&
+        deploy.robokit.namespaces[deploy.branch_name].namespace) {
+        return deploy.robokit.namespaces[deploy.branch_name].namespace
+      } else {
+        return deploy.branch_name
+      }
     }
   }
 

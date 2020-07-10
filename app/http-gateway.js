@@ -246,7 +246,7 @@ class ApiGateway {
         this.spinlessDeploy(context, deployBranch)
       }
 
-      if (deploy.is_pull_request) {
+      if (deploy.is_pull_request && U.isLabeled(deploy.labels, cfg.ROBOKIT_LABEL)) {
         const deployPullRequest = this.clone(deploy)
         deployPullRequest.check_run_name = cfg.deploy.check.name + ' (pull_request)'
         this.spinlessDeploy(context, deployPullRequest)

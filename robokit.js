@@ -36,6 +36,8 @@ async function start () {
           VAULT_ADDR:${process.env.VAULT_ADDR}
           error:` + err.message)
         })
+    }).catch(err => {
+      console.error(err)
     })
 }
 start()
