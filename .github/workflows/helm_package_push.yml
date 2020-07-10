@@ -25,10 +25,18 @@ jobs:
           for directory in `find ./charts -type d -maxdepth 1 -mindepth 1`
           do
               echo helm package for $directory
+              name=$(cat $directory/Chart.yaml | grep ^name: | cut -d: -f2 | cut -c 2- | tr -d '"')
+              chart_version=$(cat $directory/Chart.yaml | grep ^version: | cut -d: -f2 | cut -c 2- | tr -d '"')
+              release_version=$chart_version-develop
+              echo Release chart version $release_version
+              # change helm chart version in Chart.yaml
+              sed -i.bak 's/version:.*/version: '$release_version'/g' $directory/Chart.yaml
               helm lint --strict $directory || exit 42
               helm template --debug $directory
               helm package --debug $directory
-              name=$(cat $directory/Chart.yaml | grep ^name: | cut -d: -f2 | cut -c 2-)
-              pkg=$name-$(cat $directory/Chart.yaml | grep ^version: | cut -d: -f2 | cut -c 2-).tgz
-              curl -sSf -u ${{ secrets.HELM_REGISTRY_USER }}:${{ secrets.HELM_REGISTRY_PASSWORD }} -X PUT -T $pkg ${{ secrets.HELM_REGISTRY_URL }}/scalecube/$name/$pkg
+              pkg=$name-$release_version.tgz
+              curl -sSf -u ${{ secrets.HELM_REGISTRY_USER }}:${{ secrets.HELM_REGISTRY_PASSWORD }} -X PUT -T $pkg ${{ secrets.HELM_REGISTRY_URL }}/exberry-io/$name/$pkg
+              # revert changes of helm chart version and remove bak files
+              rm $directory/Chart.yaml
+              mv $directory/Chart.yaml.bak $directory/Chart.yaml
           done
