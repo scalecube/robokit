@@ -17,7 +17,7 @@ Pipeline stages:
 > (Trigger) robo-kit deployment pipeline was triggered successfully
 # (Trigger) pipeline was cancelled
 # -----------------------------------------------------------------------------------
-# This repository is not supported by Robokit or the installation was not completed.
+# The installation was not completed.
 # please verify service appears robokit.yml configuation or contact for support
 # -----------------------------------------------------------------------------------
 ```

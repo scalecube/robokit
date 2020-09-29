@@ -26,7 +26,7 @@ class Vault {
         role: role,
         jwt: token.toString('utf8')
       }
-      const url = utils.urlConcat([this.vaultAddress, '/v1/auth/kubernetes/login'])
+      const url = utils.urlConcat([this.vaultAddress, `/v1/auth/${process.env.VAULT_JWT_PROVIDER}/login`])
       axios.post(url, params).then(resp => {
         resolve(resp.data.auth)
       }).catch(err => reject(err))

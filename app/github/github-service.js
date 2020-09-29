@@ -15,7 +15,6 @@ class GithubService {
       console.log('>>>> UPDATE STATUS  >>>> ' + JSON.stringify(check))
       all.push(p)
     })
-
     return await Promise.all(all)
   }
 
@@ -66,6 +65,7 @@ class GithubService {
       const ctx = this.cache.get(owner, repo)
       if (!ctx) { return }
       // /repos/:owner/:repo/releases/tags/:tag
+      // /repos/{owner}/{repo}/releases/tags/{tag}
       ctx.request(`GET /repos/${owner}/${repo}/releases/tags/${releaseId}`)
         .then(res => {
           resolve(res.data)
@@ -89,6 +89,15 @@ class GithubService {
 
   async deployYaml (owner, repo, branch) {
     const yml = await this.content(owner, repo, branch, '.github/robokit.yml', false)
+    if (yml) {
+      return yaml.safeLoad(yml)
+    } else {
+      return {}
+    }
+  }
+
+  async enviromentsYaml (owner, repo, branch) {
+    const yml = await this.content(owner, repo, branch, 'sites.yml', false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {

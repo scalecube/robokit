@@ -1,4 +1,3 @@
-
 async function start () {
   require('dotenv').config()
   const vault = new (require('./app/vault/vault-api'))(process.env.VAULT_ADDR)
@@ -10,9 +9,7 @@ async function start () {
   vault.k8sLogin(
     process.env.VAULT_ROLE,
     process.env.VAULT_JWT_PATH)
-    .then(token => {
-      // eslint-disable-next-line no-undef
-
+    .then(async token => {
       vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
         .then(async values => {
           for (var key in values) {
