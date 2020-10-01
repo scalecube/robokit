@@ -1,4 +1,3 @@
-const cfg = require('./config')
 const url = require('url')
 
 class Utils {
@@ -77,19 +76,13 @@ class Utils {
 
   static targetNamespace (deploy) {
     if (deploy.prerelease) {
-      return deploy.robokit.namespaces.prerelease.namespace
+      return ''
     } else if (deploy.release) {
-      return deploy.robokit.namespaces.release.namespace
+      return ''
     } else if (deploy.base_branch_name) {
       return `${deploy.repo}-${deploy.issue_number}`
     } else if (deploy.branch_name === 'master' || deploy.branch_name === 'develop') {
-      if (deploy.robokit.namespaces &&
-        deploy.robokit.namespaces[deploy.branch_name] &&
-        deploy.robokit.namespaces[deploy.branch_name].namespace) {
-        return deploy.robokit.namespaces[deploy.branch_name].namespace
-      } else {
-        return deploy.branch_name
-      }
+      return deploy.branch_name
     }
   }
 

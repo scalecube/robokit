@@ -1,0 +1,142 @@
+const WebSocketClient = require('websocket').client
+const axios = require('axios')
+const vault = new (require('../vault/vault-api'))(process.env.VAULT_ADDR)
+const Rx = require('rxjs/Rx')
+
+class Environments {
+  constructor () {
+    this.responses = new Map()
+  }
+
+  getEnviromentServiceToken (clientToken) {
+    const role = 'exberry-io.nebula.master.environment-service.environment-operations'
+    const path = `${process.env.VAULT_ADDR}/v1/identity/oidc/token/${role}`
+    // curl -H "X-Vault-Token: $clientToken" path
+    return this.httpGet(path, clientToken)
+  }
+
+  connect (address) {
+    if (!address) {
+      address = process.env.ENV_SERVICE_ADDRESS
+    }
+    return new Promise((resolve, reject) => {
+      vault.k8sLogin(
+        process.env.VAULT_ROLE,
+        process.env.VAULT_JWT_PATH)
+        .then(async token => {
+          const res = await this.getEnviromentServiceToken(token.client_token)
+          resolve(this.openWebSocketConnection(address, res.data.data.token))
+        })
+    })
+  }
+
+  openWebSocketConnection (address, token) {
+    return new Promise((resolve, reject) => {
+      const client = new WebSocketClient()
+
+      client.on('connectFailed', (error) => {
+        console.log('Connect Error: ' + error.toString())
+      })
+
+      client.on('connect', (connection) => {
+        console.log('WebSocket Client Connected')
+        connection.on('error', (error) => {
+          console.log('Connection Error: ' + error.toString())
+          reject(error)
+        })
+
+        connection.on('close', async () => {
+          console.log('echo-protocol Connection Closed')
+          await this.connect()
+        })
+
+        connection.on('message', (message) => {
+          if (message.type === 'utf8') {
+            const json = JSON.parse(message.utf8Data)
+            const p = this.responses.get(json.sid)
+            if (p) {
+              if (json.sig) {
+                this.responses.delete(json.sid)
+              }
+              if (json.sig === 1) {
+                p.complete()
+              } else if (json.sig === 2) {
+                p.error(json)
+              } else if (json.sig === 3) {
+                p.error(json)
+              } else {
+                p.next(json)
+              }
+            }
+          }
+        })
+        this.connection = connection
+        resolve(connection)
+      })
+      client.connect(address, undefined, undefined, { 'X-Exberry-Token': token })
+    })
+  }
+
+  deploy (data) {
+    return this.deployService(this.toDeployRequest(data))
+  }
+
+  /*
+    branch:
+      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"develop"},"branch":"develop"}}
+    prerelease:
+      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"v1.2.3-rc1"},"isPrerelease":true}}
+    release:
+      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"v1.2.3"},"isPrerelease":false}}
+  */
+  toDeployRequest (data) {
+    const res = {
+      site: data.environments.site,
+      service: {
+        owner: data.owner,
+        repo: data.repo
+      }
+    }
+
+    if (data.release && data.prerelease) {
+      res.isPrerelease = true
+      res.service.version = data.tag_name
+    } else if (data.release) {
+      res.isPrerelease = false
+      res.service.version = data.tag_name
+    } else {
+      res.branch = data.branch_name
+    }
+    return res
+  }
+
+  deployService (deployRequest) {
+    return this.requestStream('deployments/deployService', deployRequest)
+  }
+
+  requestStream (qualifier, data) {
+    const sid = Date.now()
+    const subject = new Rx.Subject()
+    this.send(qualifier, data, sid)
+    this.responses.set(sid, subject)
+    return subject.asObservable()
+  }
+
+  send (qualifier, data, sid) {
+    const msg = {
+      q: qualifier,
+      sid: sid,
+      d: data
+    }
+    this.connection.sendUTF(JSON.stringify(msg))
+  }
+
+  httpGet (url, vaultToken) {
+    return axios.get(url, {
+      headers: {
+        'X-Vault-Token': vaultToken
+      }
+    })
+  }
+}
+module.exports = new Environments()
