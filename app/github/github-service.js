@@ -96,8 +96,8 @@ class GithubService {
     }
   }
 
-  async enviromentsYaml (owner, repo, branch) {
-    const yml = await this.content(owner, repo, branch, 'sites.yml', false)
+  async enviromentsYaml (owner, repo, branch, path) {
+    const yml = await this.content(owner, repo, branch, path, false)
     if (yml) {
       return yaml.safeLoad(yml)
     } else {

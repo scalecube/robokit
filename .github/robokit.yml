@@ -3,4 +3,4 @@ source:
     owner: scalecube
     repo: robokit
     branch: develop
-    path: "robokit-services.yml"
+    path: "sites.yml"

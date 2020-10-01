@@ -241,7 +241,8 @@ class ApiGateway {
         deploy.environments = await this.githubService.enviromentsYaml(
           deploy.config.source.github.owner,
           deploy.config.source.github.repo,
-          deploy.config.source.github.branch)
+          deploy.config.source.github.branch,
+          deploy.config.source.github.path)
       }
     } catch (e) {
     }
