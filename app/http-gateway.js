@@ -163,7 +163,7 @@ class ApiGateway {
           async error (err) {
             const output = cfg.deploy.check.canceled
             output.text = output.text + '\n reason: ' + err.d.errorMessage
-            const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', output)
+            const res = await self.updateCheckRunStatus(context, deploy, 'cancelled', output)
             deploy.check_run_id = res[0].data.id
             this.deploymentStatus(context, deploy, 'inactive')
           },
