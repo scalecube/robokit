@@ -1,14 +1,11 @@
 const GithubService = require('./github/github-service')
 const cors = require('cors')
 const path = require('path')
-const fs = require('fs')
 const express = require('express')
 const cfg = require('./config')
 const U = require('./utils')
-const githubAuth = require('./github/github-passport')
 const templates = require('./statuses/templates')
-const pipeline = require('./pipelines/pipeline')
-const EnvironmentRepo = require('./environment/repository')
+const envService = require('./pipelines/environments')
 
 class ApiGateway {
   constructor (app, cache) {
@@ -19,157 +16,23 @@ class ApiGateway {
     this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
     this.router.use(cors())
     this.router.use(express.json())
-    this.router.use(githubAuth.passport.initialize())
-    this.router.use(githubAuth.passport.session())
     this.router.use(require('cookie-parser')())
 
     this.githubService = new GithubService(app, cache)
-    this.performanceService = require('./perfromance/performance-service')
-    this.repo = new EnvironmentRepo('robokit')
-    this.repo.connect('environments')
+    envService.connect()
   }
 
   start () {
-    this.router.get('/namespaces/', async (request, response) => {
-      // eslint-disable-next-line no-undef
-      this.thenResponse(k8s.namespaces(), response)
-    })
-    this.router.get('/login', (request, response) => {
-      ApiGateway.sendResponse(response, { time: Date.now() })
-    })
-
-    this.router.get('/auth/github', githubAuth.authenticate('github'))
-
-    this.router.get('/auth/github/callback', (req, res) => {
-      // Successful authentication, redirect home.
-      // eslint-disable-next-line camelcase,node/no-deprecated-api
-      const rk_token = new Buffer(req.query.code + req.id).toString('base64')
-      res.cookie('rk_token', rk_token)
-      githubAuth.approve(rk_token)
-      res.redirect(302, '/ui/index.html')
-    })
-
     this.router.get('/server/ping/', (request, response) => {
       ApiGateway.sendResponse(response, { time: Date.now() })
     })
-
-    this.router.get('/items/*', githubAuth.isAuthenticated, (req, res) => {
-      const file = req.originalUrl.replace('/items/', '')
-      const fullPath = path.join(__dirname, file)
-      // eslint-disable-next-line handle-callback-err
-      fs.readFile(fullPath, (err, json) => {
-        try {
-          const obj = JSON.parse(json)
-          res.json(obj)
-        } catch (e) {
-          console.log(e)
-        }
-      })
-    })
-
-    this.router.post('/checks/status/:owner/:repo/:sha', (request, response) => {
-      console.log('### checks status request: ' + JSON.stringify(request.body))
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
-      if (ctx) {
-        request.body.owner = request.params.owner
-        request.body.repo = request.params.repo
-        request.body.sha = request.params.sha
-
-        this.githubService.createCheckRun(ctx, U.mapToChecks(request.body), response).then(res => {
-          response.send(res)
-        })
-      } else {
-        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
-      }
-    })
-
-    this.router.post('/comment/:owner/:repo/', (request, response) => {
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
-      if (ctx) {
-        request.body.owner = request.params.owner
-        request.body.repo = request.params.repo
-        this.thenResponse(this.githubService.updateComment(ctx, request.body), response)
-      } else {
-        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
-      }
-    })
-
-    this.router.post('/comment/:owner/:repo/:issue_number/', (request, response) => {
-      const ctx = this.cache.get(request.params.owner, request.params.repo)
-      if (ctx) {
-        request.body.owner = request.params.owner
-        request.body.repo = request.params.repo
-        request.body.issue_number = request.params.issue_number
-        this.thenResponse(this.githubService.createComment(ctx, request.body), response)
-      } else {
-        ApiGateway.sendResponse(response, 'no context was found for repo:' + request.body.owner + '/' + request.body.repo)
-      }
-    })
-
-    this.router.get('/templates/:template?', githubAuth.isAuthenticated, (request, response) => {
-      this.thenResponse(this.performanceService.getTemplates(request.params.template), response)
-    })
-
-    this.router.get('/commits/:owner/:repo/', githubAuth.isAuthenticated, (request, response) => {
-      this.performanceService.listCommits(
-        request.params.owner,
-        request.params.repo).then(commits => {
-        response.send(Array.from(commits.entries()))
-      })
-    })
-
-    this.router.get('/traces/:owner/:repo/:sha/:filter?', (request, response) => {
-      let filter
-      if (request.params.filter) filter = JSON.parse(request.params.filter)
-      this.performanceService.findReport(request.params.owner,
-        request.params.repo,
-        request.params.sha,
-        filter).then(r => {
-        const result = []
-        r.forEach(e => {
-          result.push(e.data)
-        })
-        response.send(result)
-      })
-    })
-
-    this.router.post('/traces/:owner/:repo/:sha/', (request, response) => {
-      request.body.owner = request.params.owner
-      request.body.repo = request.params.repo
-      request.body.sha = request.params.sha
-
-      this.thenResponse(this.performanceService.addReport(
-        request.body.owner,
-        request.body.repo,
-        request.body.sha,
-        request.body.traces),
-      response)
-    })
-
-    this.router.get('/commits/:owner?/:repo?/', githubAuth.isAuthenticated, (request, response) => {
-      this.performanceService.listCommits(request.params.owner,
-        request.params.repo).then((r) => {
-        this.writeResponse(r, response)
-      }).catch((err) => {
-        console.log(err)
-      })
-    })
-    pipeline.start()
   }
 
   async onRelease (context) {
     const release = await this.deployContext(context)
-    pipeline.deploy(release).then(resp => {
+    envService.deploy(release).then(resp => {
       // Create Deployment with log_url
     })
-  }
-
-  async closePullRequest (context, ctx) {
-    if (ctx.namespace !== 'master' && ctx.namespace !== 'develop') {
-      if (!(ctx.robokit.namespaces && ctx.robokit.namespaces.protected) || !ctx.robokit.namespaces.protected.includes(ctx.namespace)) {
-        return pipeline.undeploy(ctx)
-      }
-    }
   }
 
   /**
@@ -286,38 +149,36 @@ class ApiGateway {
   async spinlessDeploy (context, deploy) {
     const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
     deploy.check_run_id = res[0].data.id
+
     this.createDeployment(context, deploy, 'in_progress')
       .then(async res => {
         deploy.deployment_id = res.data.id
-        const trigger = await this.toTrigger(deploy)
-        if (trigger.service || trigger.services.length > 0) {
-          pipeline.deploy(trigger).then(async resp => {
-            if (resp.data) {
-              deploy.external_id = resp.data.id
-              pipeline.status(resp.data.id, async (log) => {
-                deploy.details = log
-                const res = await this.checkRunStatus(context, deploy, log, U.tail(log).status)
-                deploy.check_run_id = res[0].data.id
-                /**
-                 state string Required.
-                 The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
-                 To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
-                 */
-                this.deploymentStatus(context, deploy, ApiGateway.getState(U.tail(log).status))
-              })
-            } else {
-              const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cfg.deploy.check.canceled)
-              deploy.check_run_id = res[0].data.id
-              this.deploymentStatus(context, deploy, 'inactive')
-            }
-          })
-        } else {
-          const cancel = cfg.deploy.check.canceled
-          cancel.text = cancel.text + '\n< Nothing to deploy! \n< service was not included in configuration file and no additional services configured'
-          const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', cancel)
-          deploy.check_run_id = res[0].data.id
-          this.deploymentStatus(context, deploy, 'inactive')
-        }
+        const log = []
+        const self = this
+        envService.deploy(deploy).subscribe({
+          next (resp) {
+            log.push(resp.d)
+            deploy.details = log
+          },
+          async error (err) {
+            const output = cfg.deploy.check.canceled
+            output.text = output.text + '\n reason: ' + err.d.errorMessage
+            const res = await this.updateCheckRunStatus(context, deploy, 'cancelled', output)
+            deploy.check_run_id = res[0].data.id
+            this.deploymentStatus(context, deploy, 'inactive')
+          },
+          async complete () {
+            console.log('Stream completed updating status')
+            const res = await self.checkRunStatus(context, deploy, log, U.tail(log).status)
+            deploy.check_run_id = res[0].data.id
+            /**
+             state string Required.
+             The state of the status. Can be one of error, failure, inactive, in_progress, queued pending, or success.
+             To use the in_progress and queued states, you must provide the application/vnd.github.flash-preview+json custom media type.
+             */
+            self.deploymentStatus(context, deploy, ApiGateway.getState(U.tail(log).status))
+          }
+        })
       }).catch(err => {
         if (err.code === 403 && err.message === 'Resource not accessible by integration') {
           const cancel = cfg.deploy.check.canceled
@@ -377,8 +238,11 @@ class ApiGateway {
       const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
       deploy.config = yml
       if (yml.source.github) {
-        const cfg = yml.source.github
-        deploy.robokit = await this.githubService.configYaml(cfg.owner, cfg.repo, cfg.branch, cfg.path)
+        deploy.environments = await this.githubService.enviromentsYaml(
+          deploy.config.source.github.owner,
+          deploy.config.source.github.repo,
+          deploy.config.source.github.branch,
+          deploy.config.source.github.path)
       }
     } catch (e) {
     }
@@ -390,75 +254,6 @@ class ApiGateway {
     deploy.node_id = context.payload.installation.node_id
 
     return deploy
-  }
-
-  async toTrigger (deploy) {
-    const trigger = {
-      id: deploy.id,
-      node_id: deploy.node_id
-    }
-
-    if (deploy.issue_number) {
-      trigger.pr = deploy.issue_number
-      trigger.base_namespace = deploy.base_branch_name
-    }
-
-    if (deploy.base_branch_name && (deploy.base_branch_name === 'develop' || deploy.base_branch_name === 'master')) {
-      trigger.base_namespace = deploy.base_branch_name
-    }
-
-    if (deploy.robokit) {
-      if (deploy.robokit.environments && deploy.robokit.environments.length > 0) {
-        trigger.services = []
-        for (const i in deploy.robokit.environments) {
-          const environment = deploy.robokit.environments[i]
-          for (const k in environment.services) {
-            const deployment = environment.services[k]
-
-            const service = {
-              cluster: deployment.cluster,
-              repo: deployment.repo,
-              owner: deployment.owner || deploy.owner,
-              image_tag: deployment.image_tag || deploy.tag_name || deploy.base_branch_name || deploy.branch_name,
-              registry: deployment.registry || deploy.robokit.registry,
-              namespace: deployment.namespace || deploy.namespace
-            }
-
-            if (deployment.helm_version) {
-              service.helm_version = deployment.helm_version
-            }
-
-            // SETUP ENVIRONMENT VARS
-            const env = await this.repo.environment({
-              NAMESPACE: deploy.namespace,
-              OWNER: deploy.owner
-            })
-
-            if (trigger.pr) env.PR = trigger.pr
-            if (trigger.pr) env.BASE_NAMESPACE = deploy.base_branch_name
-            if (deploy.labels) env.LABELS = deploy.labels.map(label => label).join(':')
-            if (deploy.user) env.USER = deploy.user
-            env.ENVIRONMENT = environment.environment
-            env.SHA = deploy.sha
-            service.env = env
-
-            if (deploy.owner === service.owner && deploy.repo === service.repo) {
-              trigger.services.push(service)
-            } else {
-              for (const inc in deploy.config.include.services) {
-                const branch = deploy.config.include.services[inc].branch
-                if ((branch === '*') ||
-                  (deploy.is_pull_request && (branch === 'pull_request')) ||
-                  (deploy.branch_name === branch)) {
-                  trigger.services.push(service)
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return trigger
   }
 
   toChecks (deploy, log, status) {
