@@ -193,6 +193,7 @@ class ApiGateway {
       })
   }
 
+
   static getState (status) {
     let state = 'in_progress'
     if (status === 'ERROR') {
