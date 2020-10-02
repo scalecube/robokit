@@ -11,7 +11,6 @@ class ApiGateway {
   constructor (app, cache) {
     this.app = app
     this.cache = cache
-
     this.router = app.route()
     this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
     this.router.use(cors())
