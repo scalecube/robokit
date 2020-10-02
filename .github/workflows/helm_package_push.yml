@@ -35,7 +35,7 @@ jobs:
               helm template --debug $directory
               helm package --debug $directory
               pkg=$name-$release_version.tgz
-              curl -sSf -u ${{ secrets.HELM_REGISTRY_USER }}:${{ secrets.HELM_REGISTRY_PASSWORD }} -X PUT -T $pkg ${{ secrets.HELM_REGISTRY_URL }}/exberry-io/$name/$pkg
+              curl -sSf -u ${{ secrets.HELM_REGISTRY_USER }}:${{ secrets.HELM_REGISTRY_PASSWORD }} -X PUT -T $pkg ${{ secrets.HELM_REGISTRY_URL }}/scalecube/$name/$pkg
               # revert changes of helm chart version and remove bak files
               rm $directory/Chart.yaml
               mv $directory/Chart.yaml.bak $directory/Chart.yaml

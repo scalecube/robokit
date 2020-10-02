@@ -52,7 +52,7 @@ spec:
             - name: VAULT_TOKEN
               value: {{ .Values.vault.token }}
             - name: VAULT_ROLE
-              value: "scalecube-robokit"
+              value: {{ .Values.vault.role }}
             - name: VAULT_JWT_PROVIDER
               value: {{ .Values.vault.jwtprovider }}
             - name: VAULT_ENGINE_VERSION
