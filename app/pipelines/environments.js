@@ -3,6 +3,7 @@ const axios = require('axios')
 const vault = new (require('../vault/vault-api'))(process.env.VAULT_ADDR)
 const Rx = require('rxjs/Rx')
 
+var ws = null
 class Environments {
   constructor () {
     this.responses = new Map()
@@ -39,7 +40,7 @@ class Environments {
       })
 
       client.on('connect', (connection) => {
-        console.log('WebSocket Client Connected')
+        console.log('WebSocket Client Connected to Environment Service')
         connection.on('error', (error) => {
           console.log('Connection Error: ' + error.toString())
           reject(error)
@@ -47,7 +48,7 @@ class Environments {
 
         connection.on('close', async () => {
           console.log('echo-protocol Connection Closed')
-          await this.connect()
+          ws = null
         })
 
         connection.on('message', (message) => {
@@ -70,7 +71,7 @@ class Environments {
             }
           }
         })
-        this.connection = connection
+        ws = connection
         resolve(connection)
       })
       client.connect(address, undefined, undefined, { 'X-Exberry-Token': token })
@@ -91,7 +92,6 @@ class Environments {
   */
   toDeployRequest (data) {
     const res = {
-      site: data.environments.site,
       service: {
         owner: data.owner,
         repo: data.repo
@@ -122,13 +122,16 @@ class Environments {
     return subject.asObservable()
   }
 
-  send (qualifier, data, sid) {
+  async send (qualifier, data, sid) {
     const msg = {
       q: qualifier,
       sid: sid,
       d: data
     }
-    this.connection.sendUTF(JSON.stringify(msg))
+    if (!ws) {
+      await this.connect()
+      ws.sendUTF(JSON.stringify(msg))
+    }
   }
 
   httpGet (url, vaultToken) {

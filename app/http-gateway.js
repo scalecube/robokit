@@ -29,9 +29,7 @@ class ApiGateway {
 
   async onRelease (context) {
     const release = await this.deployContext(context)
-    envService.deploy(release).then(resp => {
-      // Create Deployment with log_url
-    })
+    envService.deploy(release)
   }
 
   /**
@@ -208,16 +206,6 @@ class ApiGateway {
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
       try {
-        if (deploy.is_pull_request) {
-          const labels = await this.githubService.labels(deploy.owner, deploy.repo, deploy.issue_number)
-          deploy.labeled = U.isLabeled(labels, cfg.deploy.on.pull_request.labeled)
-          deploy.labels = labels.map(i => i.name)
-        }
-      } catch (e) {
-        console.error(e)
-      }
-
-      try {
         const release = await this.githubService.release(deploy.owner, deploy.repo, deploy.branch_name)
         deploy.branch_name = release.target_commitish
         deploy.release = true
@@ -232,19 +220,6 @@ class ApiGateway {
       deploy = U.toReleaseDeployContext(context)
     } else if (context.payload.pull_request) {
       deploy = U.toPullRequestDeployContext(context)
-    }
-
-    try {
-      const yml = await this.githubService.deployYaml(deploy.owner, deploy.repo, deploy.branch_name)
-      deploy.config = yml
-      if (yml.source.github) {
-        deploy.environments = await this.githubService.enviromentsYaml(
-          deploy.config.source.github.owner,
-          deploy.config.source.github.repo,
-          deploy.config.source.github.branch,
-          deploy.config.source.github.path)
-      }
-    } catch (e) {
     }
 
     deploy.namespace = U.targetNamespace(deploy)
