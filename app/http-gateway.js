@@ -143,7 +143,7 @@ class ApiGateway {
     return (deploy.branch_name === 'develop' || deploy.branch_name === 'master')
   }
 
-  async spinlessDeploy (context, deploy) {
+  async enviromentDeploy (context, deploy) {
     const res = await this.updateCheckRunStatus(context, deploy, 'in_progress', cfg.deploy.check.starting)
     deploy.check_run_id = res[0].data.id
 
@@ -152,6 +152,7 @@ class ApiGateway {
         deploy.deployment_id = res.data.id
         const log = []
         const self = this
+        console.log('Enviroment Service Deploy Request: ' + JSON.stringify(deploy))
         envService.deploy(deploy).subscribe({
           next (resp) {
             log.push(resp.d)

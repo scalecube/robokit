@@ -131,8 +131,10 @@ class Environments {
     if (!ws) {
       console.log('Reconnect to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
       await this.connect()
-      ws.sendUTF(JSON.stringify(msg))
     }
+    const payload = JSON.stringify(msg)
+    console.log(payload)
+    ws.sendUTF(payload)
   }
 
   httpGet (url, vaultToken) {
