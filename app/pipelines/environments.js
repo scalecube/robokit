@@ -129,7 +129,7 @@ class Environments {
       d: data
     }
     if (!ws) {
-      console.log('Reconnect to: ' + process.env.ENV_SERVICE_ADDRESS)
+      console.log('Reconnect to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
       await this.connect()
       ws.sendUTF(JSON.stringify(msg))
     }
