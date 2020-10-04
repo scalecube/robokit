@@ -40,7 +40,7 @@ class Environments {
       })
 
       client.on('connect', (connection) => {
-        console.log('WebSocket Client Connected to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
+        console.log('WebSocket Connected to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
         connection.on('error', (error) => {
           console.log('Connection Error: ' + error.toString())
           reject(error)
@@ -129,6 +129,7 @@ class Environments {
       d: data
     }
     if (!ws) {
+      console.log('Reconnect to: ' + process.env.ENV_SERVICE_ADDRESS)
       await this.connect()
       ws.sendUTF(JSON.stringify(msg))
     }
