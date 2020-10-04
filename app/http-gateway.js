@@ -103,13 +103,13 @@ class ApiGateway {
         }
         delete deployBranch.issue_number
         delete deployBranch.base_branch_name
-        this.spinlessDeploy(context, deployBranch)
+        this.enviromentDeploy(context, deployBranch)
       }
 
       if (deploy.is_pull_request && U.isLabeled(deploy.labels, cfg.ROBOKIT_LABEL)) {
         const deployPullRequest = this.clone(deploy)
         deployPullRequest.check_run_name = cfg.deploy.check.name + ' (pull_request)'
-        this.spinlessDeploy(context, deployPullRequest)
+        this.enviromentDeploy(context, deployPullRequest)
       }
     }
     return 'OK'
