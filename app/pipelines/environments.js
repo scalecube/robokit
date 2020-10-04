@@ -40,7 +40,7 @@ class Environments {
       })
 
       client.on('connect', (connection) => {
-        console.log('WebSocket Client Connected to Environment Service')
+        console.log('WebSocket Client Connected to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
         connection.on('error', (error) => {
           console.log('Connection Error: ' + error.toString())
           reject(error)
