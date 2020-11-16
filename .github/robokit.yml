@@ -1,6 +1,0 @@
-source:
-  github:
-    owner: scalecube
-    repo: robokit
-    branch: develop
-    path: "sites.yml"

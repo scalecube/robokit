@@ -111,7 +111,7 @@ class Environments {
   }
 
   deployService (deployRequest) {
-    return this.requestStream('deployments/deployService', deployRequest)
+    return this.requestStream('v2/deployments/deployService', deployRequest)
   }
 
   requestStream (qualifier, data) {
