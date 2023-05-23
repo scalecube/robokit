@@ -3,12 +3,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.Values.repo}}
-  annotations:
-
 spec:
   selector:
     app: {{.Values.repo}}
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: port-{{ .Values.serviceport }}
       port: {{ .Values.serviceport }}

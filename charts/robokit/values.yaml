@@ -51,4 +51,5 @@ env:
   sample_key: sample_val
   CLUSTER_NAME: cluster
   PORT: 7777
+  REPO: robokit
   VAR: ""
