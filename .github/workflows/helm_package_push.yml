@@ -35,6 +35,7 @@ jobs:
               helm template --debug $directory
               helm package --debug $directory
               pkg=$name-$release_version.tgz
+              helm registry login -u ${{ secrets.GH_USER }} -p ${{ secrets.GH_TOKEN }} ghcr.io
               echo push to GitHub Helm Registry oci://ghcr.io/${{ secrets.GH_ORGANIZATION }}/${{ secrets.GH_HELM_REGISTRY_REPO }}
               helm push $pkg oci://ghcr.io/${{ secrets.GH_ORGANIZATION }}/${{ secrets.GH_HELM_REGISTRY_REPO }}
               echo push to JFrog Helm Registry
