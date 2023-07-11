@@ -10,8 +10,8 @@ class Environments {
   }
 
   getEnviromentServiceToken (clientToken) {
-    const role = 'exberry-io.nebula.master.environment-service.environment-operations'
-    const path = `${process.env.VAULT_ADDR}/v1/identity/oidc/token/${role}`
+    const path = `${process.env.VAULT_ADDR.trimEnd('/')}v1/identity/oidc/token/${process.env.ENV_SERVICE_ROLE}`
+    console.log('get Enviroment Service Token: ' + path)
     // curl -H "X-Vault-Token: $clientToken" path
     return this.httpGet(path, clientToken)
   }
@@ -20,6 +20,7 @@ class Environments {
     if (!address) {
       address = process.env.ENV_SERVICE_ADDRESS
     }
+    console.log('connect websocket: ' + address)
     return new Promise((resolve, reject) => {
       vault.k8sLogin(
         process.env.VAULT_ROLE,
@@ -131,6 +132,7 @@ class Environments {
     if (!ws) {
       console.log('Reconnect to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
       await this.connect()
+      console.log('Connected! to Environment Service: ' + process.env.ENV_SERVICE_ADDRESS)
     }
     const payload = JSON.stringify(msg)
     console.log(payload)

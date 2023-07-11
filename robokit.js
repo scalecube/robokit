@@ -34,6 +34,7 @@ async function start () {
           error:` + err.message)
         })
     }).catch(err => {
+      console.log('k8sLogin failed with error:')
       console.error(err)
     })
 }

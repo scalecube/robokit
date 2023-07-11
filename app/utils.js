@@ -121,7 +121,6 @@ class Utils {
       branch_name: Utils.branchName(context),
       base_branch_name: Utils.baseBranchName(context),
       sha: context.payload.check_run.head_sha,
-      is_pull_request: Utils.isPullRequest(context),
       check_run_name: context.payload.check_run.name,
 
       conclusion: context.payload.check_run.conclusion,

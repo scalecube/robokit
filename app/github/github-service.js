@@ -1,6 +1,5 @@
 const util = require('../utils')
 const templates = require('../statuses/templates')
-const yaml = require('js-yaml')
 
 class GithubService {
   constructor (app, cache) {
@@ -12,7 +11,7 @@ class GithubService {
     const all = []
     checks.forEach(async check => {
       const p = github.checks.create(check)
-      console.log('>>>> UPDATE STATUS  >>>> ' + JSON.stringify(check))
+      console.log('>>>> UPDATE STATUS  >>>> \n' + JSON.stringify(check))
       all.push(p)
     })
     return await Promise.all(all)
@@ -33,14 +32,6 @@ class GithubService {
       }
     }
     return output
-  }
-
-  updateComment (context, msg) {
-    return this.commentAction(msg, context.issues.updateComment)
-  }
-
-  createComment (context, msg) {
-    return this.commentAction(msg, context.issues.createComment)
   }
 
   labels (owner, repo, issue_number) {
@@ -85,24 +76,6 @@ class GithubService {
   createLabel (owner, repo, label) {
     const github = this.cache.get(owner, repo)
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
-  }
-
-  async enviromentsYaml (owner, repo, branch, path) {
-    const yml = await this.content(owner, repo, branch, path, false)
-    if (yml) {
-      return yaml.safeLoad(yml)
-    } else {
-      return {}
-    }
-  }
-
-  async configYaml (owner, repo, branch, path) {
-    const yml = await this.content(owner, repo, branch, path, false)
-    if (yml) {
-      return yaml.safeLoad(yml)
-    } else {
-      return {}
-    }
   }
 
   content (owner, repo, branch, path, base64) {

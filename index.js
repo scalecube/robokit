@@ -20,12 +20,14 @@ const robokit = app => {
   })
 
   app.on('check_run', context => {
+    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     if (context.payload.requested_action) {
       const action = context.payload.requested_action.identifier
       context.user_action = action
     }
-    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
+
     api.deployContext(context).then(deploy => {
+      console.log(deploy.check_run_name)
       if (deploy.is_pull_request || api.isKnownBranch(deploy) || deploy.release) {
         api.deploy(context, deploy)
       }
@@ -41,17 +43,10 @@ const robokit = app => {
     'pull_request.closed'
   ], context => {
     if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
-      api.deployContext(context).then(deploy => {
-        if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
-          api.deploy(context, deploy)
-        }
-      })
-    } else if (context.payload.action === 'closed') {
-      console.log('pull_request - closed')
-      api.deployContext(context).then(ctx => {
-        console.log('pull_request - context: ' + JSON.stringify(ctx))
-        // api.closePullRequest(context, ctx)
-      })
+      const deploy = api.deployContext(context)
+      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
+        api.deploy(context, deploy)
+      }
     }
   })
 

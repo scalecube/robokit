@@ -27,11 +27,6 @@ class ApiGateway {
     })
   }
 
-  async onRelease (context) {
-    const release = await this.deployContext(context)
-    envService.deploy(release)
-  }
-
   /**
    ref string Required. The ref to deploy. This can be a branch, tag, or SHA.
    task string Specifies a task to execute (e.g., deploy or deploy:migrations). Default: deploy
@@ -83,7 +78,7 @@ class ApiGateway {
   }
 
   async deploy (context, deploy) {
-    console.log(deploy.check_run_name + ' :  ' + deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user)
+    console.log(deploy.check_run_name + ' :  ' + deploy.owner + '/' + deploy.repo + '/' + deploy.namespace + ' - ' + deploy.user + ' - ' + deploy.status + ' - ' + deploy.conclusion)
     const checkRunName = deploy.check_run_name
     const conclusion = deploy.conclusion
     const status = deploy.status
@@ -99,7 +94,7 @@ class ApiGateway {
         if (!deploy.release) {
           deployBranch.namespace = deploy.branch_name
         } else {
-          deployBranch.check_run_name = cfg.deploy.check.name + ' (release)'
+          // deployBranch.check_run_name = cfg.deploy.check.name + ' (release)'
         }
         delete deployBranch.issue_number
         delete deployBranch.base_branch_name
@@ -116,15 +111,21 @@ class ApiGateway {
   }
 
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
-    if (deploy.release && status === 'completed' && conclusion === 'success') {
-      return true
-    } else if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
+    if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
+      console.log("robokit deploy job finished successfully")
+    }
+
+    if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
     } else if (userAction === 'deploy_now') {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)) {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isFeatureBranch(deploy)) {
+      return true
+    } else if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
+      return deploy.release || deploy.prerelease
+    } else if (this.isRobokitRelease(checkRunName, status, conclusion)) {
       return true
     } else {
       return false
@@ -133,6 +134,10 @@ class ApiGateway {
 
   isFeatureBranch (deploy) {
     return (deploy.is_pull_request && U.isLabeled(deploy.labels, [cfg.ROBOKIT_LABEL]))
+  }
+
+  isRobokitRelease (checkRunName, status, conclusion) {
+    return (checkRunName === 'Robokit CD (release)' && status === 'completed' && conclusion === 'success')
   }
 
   isRobokitTrigger (checkRunName, status, conclusion) {
@@ -206,17 +211,7 @@ class ApiGateway {
     let deploy = {}
     if (context.payload.check_run) {
       deploy = U.toCheckRunDeployContext(context)
-      try {
-        const release = await this.githubService.release(deploy.owner, deploy.repo, deploy.branch_name)
-        deploy.branch_name = release.target_commitish
-        deploy.release = true
-        deploy.prerelease = release.prerelease
-        deploy.tag_name = release.tag_name.replace(/^v/, '')
-        deploy.draft = release.draft
-        deploy.release_id = release.id
-      } catch (e) {
-        deploy.release = false
-      }
+      await this.tryReleaseVersion(deploy)
     } else if (context.payload.release) {
       deploy = U.toReleaseDeployContext(context)
     } else if (context.payload.pull_request) {
@@ -230,6 +225,21 @@ class ApiGateway {
     deploy.node_id = context.payload.installation.node_id
 
     return deploy
+  }
+
+  async tryReleaseVersion (deploy) {
+    try {
+      const release = await this.githubService.release(deploy.owner, deploy.repo, deploy.branch_name)
+      deploy.branch_name = release.target_commitish
+      deploy.release = true
+      deploy.prerelease = release.prerelease
+      deploy.tag_name = release.tag_name.replace(/^v/, '')
+      deploy.draft = release.draft
+      deploy.release_id = release.id
+      console.log('Release Version')
+    } catch (e) {
+      deploy.release = false
+    }
   }
 
   toChecks (deploy, log, status) {
