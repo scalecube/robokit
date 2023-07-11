@@ -21,8 +21,7 @@ class Vault {
   k8sLogin (role, jwtPath) {
     if (!jwtPath) jwtPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
     return new Promise((resolve, reject) => {
-      var currentDir = process.cwd()
-      const token = fs.readFileSync(currentDir + "\\" + jwtPath)
+      const token = fs.readFileSync(jwtPath)
       const params = {
         role: role,
         jwt: token.toString('utf8')
