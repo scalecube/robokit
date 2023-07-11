@@ -53,3 +53,4 @@ env:
   PORT: 7777
   REPO: robokit
   VAR: ""
+  TAG: none
