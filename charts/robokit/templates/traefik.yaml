@@ -7,7 +7,7 @@ spec:
     - web
   routes:
     - kind: Rule
-      match: Host(`robokit.nebula.exberry.io`)
+      match: Host(`{{ .Values.env.REPO }}.{{ .Values.traefik.dns_suffix }}`)
       services:
         - name: {{ .Values.repo }}
           port: {{ .Values.serviceport  }}
