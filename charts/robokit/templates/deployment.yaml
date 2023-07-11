@@ -31,7 +31,7 @@ spec:
       {{- end }}
       containers:
         - name: container-{{.Values.owner}}-{{.Values.repo}}
-          image: {{ .Values.images.service.repo }}:{{ .Values.images.service.tag }}
+          image: {{ .Values.images.service.repo }}:{{ .Values.env.TAG }}
           imagePullPolicy: Always
           resources:
             limits:
