@@ -43,34 +43,6 @@ spec:
             - name: port-{{.Values.serviceport}}
               containerPort: {{.Values.serviceport}}
           env:
-            - name: VAULT_JWT_PATH
-              value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
-            - name: VAULT_SECRETS_PATH
-              value: secretv2/{{.Values.owner}}/{{.Values.repo}}/{{.Values.images.service.tag}}/env
-            - name: VAULT_ADDR
-              value: {{ .Values.vault.addr }}
-            - name: VAULT_TOKEN
-              value: {{ .Values.vault.token }}
-            - name: VAULT_ROLE
-              value: {{ .Values.vault.role }}
-            - name: VAULT_JWT_PROVIDER
-              value: {{ .Values.vault.jwtprovider }}
-            - name: VAULT_ENGINE_VERSION
-              value: {{ .Values.vault.engineversion | quote }}
-            - name: NAMESPACE
-              value: {{.Values.namespace}}
-            - name: OWNER
-              value: {{.Values.owner}}
-            - name: REPO
-              value: {{.Values.repo}}
-            - name: SHA
-              value: {{.Values.sha}}
-            - name: LABELS
-              value: {{.Values.labels}}
-            - name: TAG
-              value: {{ .Values.images.service.tag }}
-            - name: logLevel
-              value: {{ .Values.logging.level.root }}
             {{- range $key, $val := unset .Values.env "sample_key"}}
             - name: {{ $key }}
               value: {{ $val | quote }}
