@@ -13,7 +13,7 @@ logging:
 
 images:
   service:
-    repo: docker.pkg.github.com/scalecube/robokit/robokit
+    repo: ghcr.io/scalecube/robokit/robokit
     tag: none
 
 vault:
