@@ -10,7 +10,7 @@ class Environments {
   }
 
   getEnviromentServiceToken (clientToken) {
-    const path = `${process.env.VAULT_ADDR.trimEnd('/')}v1/identity/oidc/token/${process.env.ENV_SERVICE_ROLE}`
+    const path = `${process.env.VAULT_ADDR}/v1/identity/oidc/token/${process.env.ENV_SERVICE_ROLE}`
     console.log('get Enviroment Service Token: ' + path)
     // curl -H "X-Vault-Token: $clientToken" path
     return this.httpGet(path, clientToken)
