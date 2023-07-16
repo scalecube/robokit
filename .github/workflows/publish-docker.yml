@@ -25,4 +25,4 @@ jobs:
     steps:
       - name: Deploy
         run: |
-          echo ${{ github.actor }} 
+          echo 'Robokit Deploy Trigger.'
