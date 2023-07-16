@@ -1,23 +1,14 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    chart: robokit
-    app: scalecube-robokit
-    release: {{ .Release.Name }}
-  name: robokit-svc
-  namespace: {{ .Release.Namespace }}
-{{- if .Values.service.annotations }}
-  annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
-{{- end }}
+  name: {{.Values.repo}}
 spec:
-  ports:
-  - name: port-{{ .Values.env.PORT  | toString }}
-    port: {{ .Values.env.PORT }}
-    protocol: TCP
-    targetPort: port-{{ .Values.env.PORT  | toString }}
   selector:
-    app: scalecube-robokit
-  sessionAffinity: None
-  type: {{ .Values.service.type }}
+    app: {{.Values.repo}}
+  type: ClusterIP
+  ports:
+    - name: port-{{ .Values.serviceport }}
+      port: {{ .Values.serviceport }}
+      targetPort: {{ .Values.serviceport }}
+      protocol: TCP

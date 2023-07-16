@@ -1,4 +1,3 @@
-const cfg = require('./config')
 const url = require('url')
 
 class Utils {
@@ -76,7 +75,11 @@ class Utils {
   }
 
   static targetNamespace (deploy) {
-    if (deploy.base_branch_name) {
+    if (deploy.prerelease) {
+      return ''
+    } else if (deploy.release) {
+      return ''
+    } else if (deploy.base_branch_name) {
       return `${deploy.repo}-${deploy.issue_number}`
     } else if (deploy.branch_name === 'master' || deploy.branch_name === 'develop') {
       return deploy.branch_name
@@ -118,7 +121,6 @@ class Utils {
       branch_name: Utils.branchName(context),
       base_branch_name: Utils.baseBranchName(context),
       sha: context.payload.check_run.head_sha,
-      is_pull_request: Utils.isPullRequest(context),
       check_run_name: context.payload.check_run.name,
 
       conclusion: context.payload.check_run.conclusion,
@@ -159,13 +161,16 @@ class Utils {
     let details = ''
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
-      const startDate = new Date(log.timestamp).toISOString()
       const message = log.message
       let status = log.status
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      details += `${Utils.getMarker(status)} [${startDate}, ${log.status}] ${message} \n`
+      for (const line of message.split(/\r?\n/)) {
+        line.replaceAll("\r", "")
+        line.replaceAll("\n", "")
+        details += `${Utils.getMarker(status)} ${line} \n`
+      }
     }
     return details
   }

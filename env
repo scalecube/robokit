@@ -1,3 +1,7 @@
-PORT=7777
-# Use `trace` to get verbose logging or `info` to show less
-LOG_LEVEL=info
+VAULT_ADDR=
+VAULT_SECRETS_PATH=
+VAULT_ROLE=scalecube-robokit-role
+VAULT_JWT_PROVIDER=
+VAULT_JWT_PATH=
+DEPLOYMENT_URL=https://sandbox.exberry.io/
+ENV_SERVICE_ROLE=exberry-io.nebula.master.environment-service.environment-operations

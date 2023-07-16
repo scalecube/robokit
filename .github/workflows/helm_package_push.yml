@@ -1,0 +1,46 @@
+name: Helm package CI
+
+on:
+  push:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/helm_package_push.yml'
+    branches:
+      - 'develop'
+      - 'master'
+
+jobs:
+  helm_package_push:
+    name: Helm Package and Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download Helm
+        run: |
+          curl -L https://get.helm.sh/helm-v3.0.2-linux-amd64.tar.gz | tar -xzf - --strip-component=1 linux-amd64/helm
+          chmod +x helm
+      - name: Package and publish to helm registry
+        run: |
+          for directory in `find ./charts -type d -maxdepth 1 -mindepth 1`
+          do
+              echo helm package for $directory
+              name=$(cat $directory/Chart.yaml | grep ^name: | cut -d: -f2 | cut -c 2- | tr -d '"')
+              chart_version=$(cat $directory/Chart.yaml | grep ^version: | cut -d: -f2 | cut -c 2- | tr -d '"')
+              release_version=$chart_version-develop
+              echo Release chart version $release_version
+              # change helm chart version in Chart.yaml
+              sed -i.bak 's/version:.*/version: '$release_version'/g' $directory/Chart.yaml
+              helm lint --strict $directory || exit 42
+              helm template --debug $directory
+              helm package --debug $directory
+              pkg=$name-$release_version.tgz
+              helm registry login -u ${{ secrets.GH_USER }} -p ${{ secrets.GH_TOKEN }} ghcr.io
+              echo push to GitHub Helm Registry oci://ghcr.io/${{ secrets.GH_ORGANIZATION }}/${{ secrets.GH_HELM_REGISTRY_REPO }}
+              helm push $pkg oci://ghcr.io/${{ secrets.GH_ORGANIZATION }}/${{ secrets.GH_HELM_REGISTRY_REPO }}
+              echo push to JFrog Helm Registry
+              curl -sSf -u ${{ secrets.HELM_REGISTRY_USER }}:${{ secrets.HELM_REGISTRY_PASSWORD }} -X PUT -T $pkg ${{ secrets.HELM_REGISTRY_URL }}/scalecube/$name/$pkg
+              # revert changes of helm chart version and remove bak files
+              rm $directory/Chart.yaml
+              mv $directory/Chart.yaml.bak $directory/Chart.yaml
+          done

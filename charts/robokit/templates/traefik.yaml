@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: robokit
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`{{ .Values.env.REPO }}.{{ .Values.traefik.dns_suffix }}`)
+      services:
+        - name: {{ .Values.repo }}
+          port: {{ .Values.serviceport  }}
