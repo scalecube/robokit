@@ -22,7 +22,7 @@
     "watch": "watchify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ @babel/preset-env @babel/preset-react ]  ]"
   },
   "dependencies": {
-    "axios": "^1.0.0",
+    "axios": "^1.4.0",
     "body-parser": "^1.18.3",
     "lodash": "^4.17.20",
     "probot": "^12.3.1",
