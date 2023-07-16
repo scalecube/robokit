@@ -2,7 +2,7 @@ name: robokit
 version: "1.0"
 description: Helm chart robokit
 maintainers:
-  - name: Serhii Lypnytskyi
-    email: serhii.lypnytskiy@jivygroup.com
+  - name: scalecube
+    email: info@scalecube.io
 appVersion: "1.0"
 apiVersion: v2
