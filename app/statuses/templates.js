@@ -16,8 +16,11 @@ class Templates {
   }
 
   env (data) {
+    // eslint-disable-next-line no-template-curly-in-string
     data = data.replace('${GRAPHANA_URL}', process.env.GRAPHANA_URL)
+    // eslint-disable-next-line no-template-curly-in-string
     data = data.replace('${ROBOKIT_URL}', process.env.ROBOKIT_URL)
+    // eslint-disable-next-line no-template-curly-in-string
     data = data.replace('${VAULT_URL}', process.env.VAULT_URL)
     return data
   }

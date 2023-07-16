@@ -166,7 +166,11 @@ class Utils {
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      details += `${Utils.getMarker(status)} [${log.status}] ${message} \n`
+      for (const line of message.split(/\r?\n/)) {
+        line.replaceAll("\r", "")
+        line.replaceAll("\n", "")
+        details += `${Utils.getMarker(status)} ${line} \n`
+      }
     }
     return details
   }
