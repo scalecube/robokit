@@ -1,9 +1,0 @@
-[
-  {
-    "traces": "https://scalecube-7777.exchange.om2.com/traces/jivygroup/exchange/:sha/{\"data.group\":\"throughput\"}",
-    "template": "https://raw.githubusercontent.com/jivygroup/exchange-benchmarks/master/throughput.json"
-  },{
-    "traces": "https://scalecube-7777.exchange.om2.com/traces/jivygroup/exchange/:sha/{\"data.group\":\"latency\"}",
-    "template": "https://raw.githubusercontent.com/jivygroup/exchange-benchmarks/master/latency.json"
-  }
-]

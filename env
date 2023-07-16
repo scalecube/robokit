@@ -1,3 +1,0 @@
-PORT=7777
-# Use `trace` to get verbose logging or `info` to show less
-LOG_LEVEL=info
