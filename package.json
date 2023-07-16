@@ -23,8 +23,6 @@
     "watch": "watchify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ @babel/preset-env @babel/preset-react ]  ]"
   },
   "dependencies": {
-    "@material-ui/core": "^4.9.5",
-    "@material-ui/icons": "^4.9.1",
     "@octokit/auth": "^1.1.1",
     "api-key-auth": "^0.2.2",
     "auth-routes": "0.0.1",
@@ -43,8 +41,6 @@
     "jquery": "^3.5.1",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.20",
-    "material-table": "^1.57.2",
-    "material-ui-table-edit": "^3.0.3",
     "mongodb": "^3.4.1",
     "mui-datatables": "^2.14.0",
     "node-vault": "^0.9.13",
