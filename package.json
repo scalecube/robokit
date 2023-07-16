@@ -30,6 +30,7 @@
     "rxjs-compat": "^6.6.3",
     "websocket": "^1.0.32"
   },
+
   "devDependencies": {
     "@babel/core": "^7.8.7",
     "@babel/preset-env": "^7.8.7",
