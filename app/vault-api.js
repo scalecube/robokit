@@ -1,5 +1,5 @@
-const fs = require('fs')
 const axios = require('axios')
+const fs = require('fs')
 const utils = require('./utils')
 
 class Vault {
