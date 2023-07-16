@@ -1,6 +1,6 @@
 const WebSocketClient = require('websocket').client
 const axios = require('axios')
-const vault = new (require('../vault/vault-api'))(process.env.VAULT_ADDR)
+const vault = new (require('./vault-api'))(process.env.VAULT_ADDR)
 const Rx = require('rxjs/Rx')
 
 var ws = null
@@ -10,7 +10,7 @@ class Environments {
   }
 
   getEnviromentServiceToken (clientToken) {
-    const path = `${process.env.VAULT_ADDR}/v1/identity/oidc/token/${process.env.ENV_SERVICE_ROLE}`
+    const path = `${process.env.VAULT_ADDR.replace(/\/$/, '')}/v1/identity/oidc/token/${process.env.ENV_SERVICE_ROLE}`
     console.log('get Enviroment Service Token: ' + path)
     // curl -H "X-Vault-Token: $clientToken" path
     return this.httpGet(path, clientToken)
@@ -85,11 +85,11 @@ class Environments {
 
   /*
     branch:
-      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"develop"},"branch":"develop"}}
+      {"site":"site","service":{"owner":"scalecube","repo":"abc-service","version":"develop"},"branch":"develop"}}
     prerelease:
-      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"v1.2.3-rc1"},"isPrerelease":true}}
+      {"site":"site","service":{"owner":"scalecube","repo":"abc-service","version":"v1.2.3-rc1"},"isPrerelease":true}}
     release:
-      {"site":"site","service":{"owner":"exberry-io","repo":"abc-service","version":"v1.2.3"},"isPrerelease":false}}
+      {"site":"site","service":{"owner":"scalecube","repo":"abc-service","version":"v1.2.3"},"isPrerelease":false}}
   */
   toDeployRequest (data) {
     const res = {

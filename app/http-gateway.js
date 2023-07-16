@@ -1,30 +1,15 @@
-const GithubService = require('./github/github-service')
-const cors = require('cors')
-const path = require('path')
-const express = require('express')
+const GithubService = require('./github-service')
 const cfg = require('./config')
 const U = require('./utils')
 const templates = require('./statuses/templates')
-const envService = require('./pipelines/environments')
+const envService = require('./environments')
 
 class ApiGateway {
   constructor (app, cache) {
     this.app = app
     this.cache = cache
-    this.router = app.route()
-    this.router.use('/ui/', express.static(path.join(__dirname, 'views')))
-    this.router.use(cors())
-    this.router.use(express.json())
-    this.router.use(require('cookie-parser')())
-
     this.githubService = new GithubService(app, cache)
     envService.connect()
-  }
-
-  start () {
-    this.router.get('/server/ping/', (request, response) => {
-      ApiGateway.sendResponse(response, { time: Date.now() })
-    })
   }
 
   /**
@@ -43,7 +28,7 @@ class ApiGateway {
   createDeployment (context, deploy) {
     const deployment = ApiGateway.toDeployment(deploy)
     deployment.environment = deploy.namespace
-    return context.github.repos.createDeployment(deployment)
+    return context.octokit.repos.createDeployment(deployment)
   }
 
   deploymentStatus (context, deploy, state) {
@@ -52,7 +37,7 @@ class ApiGateway {
     deployment.description = 'Deployment status: ' + state
     deployment.log_url = `https://github.com/${deploy.owner}/${deploy.repo}/runs/${deploy.check_run_id}`
     deployment.environment_url = process.env.DEPLOYMENT_URL
-    return context.github.repos.createDeploymentStatus(deployment)
+    return context.octokit.repos.createDeploymentStatus(deployment)
   }
 
   static toDeployment (deploy, state) {
@@ -93,8 +78,6 @@ class ApiGateway {
         deployBranch.check_run_name = cfg.deploy.check.name
         if (!deploy.release) {
           deployBranch.namespace = deploy.branch_name
-        } else {
-          // deployBranch.check_run_name = cfg.deploy.check.name + ' (release)'
         }
         delete deployBranch.issue_number
         delete deployBranch.base_branch_name
@@ -112,19 +95,15 @@ class ApiGateway {
 
   checkDeploy (deploy, userAction, checkRunName, status, conclusion) {
     if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
-      console.log("robokit deploy job finished successfully")
+      console.log('robokit deploy job finished successfully')
     }
 
     if (deploy.check_run_name === 'pull_request' && this.isFeatureBranch(deploy)) {
       return true
     } else if (userAction === 'deploy_now') {
       return true
-    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isKnownBranch(deploy)) {
-      return true
-    } else if (this.isRobokitTrigger(checkRunName, status, conclusion) && this.isFeatureBranch(deploy)) {
-      return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
-      return deploy.release || deploy.prerelease
+      return deploy.release || deploy.prerelease || this.isKnownBranch(deploy) || this.isFeatureBranch(deploy)
     } else if (this.isRobokitRelease(checkRunName, status, conclusion)) {
       return true
     } else {
@@ -157,7 +136,7 @@ class ApiGateway {
         deploy.deployment_id = res.data.id
         const log = []
         const self = this
-        console.log('Enviroment Service Deploy Request: ' + JSON.stringify(deploy))
+        console.log('Environment Service Deploy Request: ' + JSON.stringify(deploy))
         envService.deploy(deploy).subscribe({
           next (resp) {
             log.push(resp.d)
@@ -195,7 +174,6 @@ class ApiGateway {
         }
       })
   }
-
 
   static getState (status) {
     let state = 'in_progress'
@@ -279,8 +257,11 @@ class ApiGateway {
       md = md.split('${' + e[0] + '}').join(e[1])
     })
 
+    // eslint-disable-next-line no-template-curly-in-string
     md = md.split('${progress}').join(status)
+    // eslint-disable-next-line no-template-curly-in-string
     md = md.split('${duration}').join(duration + 's')
+    // eslint-disable-next-line no-template-curly-in-string
     md = md.split('${log_details}').join(U.toDetails(log))
 
     if (md.includes('object')) {
@@ -289,6 +270,7 @@ class ApiGateway {
 
     return {
       title: status,
+      // eslint-disable-next-line no-template-curly-in-string
       summary: template.summary.replace('${conclusion}', U.getStatus(status).conclusion),
       text: md
     }
@@ -297,20 +279,12 @@ class ApiGateway {
   updateCheckRunStatus (context, deploy, status, output) {
     const checkrun = ApiGateway.checkStatus(deploy, status)
     checkrun.output = output
-    return this.githubService.createCheckRun(context.github, [checkrun], deploy)
+    return this.githubService.createCheckRun(context.octokit, [checkrun], deploy)
   }
 
   checkRunStatus (context, deploy, log, status) {
     const checks = this.toChecks(deploy, log, status)
-    return this.githubService.createCheckRun(context.github, checks, deploy)
-  }
-
-  createPullRequest (ctx) {
-    this.githubService.createPullRequest(ctx)
-  }
-
-  route (owner, repo, context) {
-    return this.githubService.route(owner, repo, context)
+    return this.githubService.createCheckRun(context.octokit, checks, deploy)
   }
 
   /**
@@ -370,7 +344,7 @@ class ApiGateway {
   }
 
   installCache (owner, repo, context) {
-    this.cache.set(owner, repo, context.github)
+    this.cache.set(owner, repo, context.octokit)
   }
 
   installAppLabels (owner, repo, context) {
@@ -378,16 +352,6 @@ class ApiGateway {
       this.githubService.createLabel(owner, repo, label)
     })
   }
-
-  thenResponse (p, response) {
-    p.then((r) => {
-      response.send(r)
-    }).catch((err) => {
-      console.error(err)
-      response.status(500)
-      response.send(err.message)
-    })
-  };
 
   static sendResponse (response, result) {
     if (result === 'ok') {
