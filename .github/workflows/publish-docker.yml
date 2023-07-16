@@ -21,6 +21,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
   robokit-deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
