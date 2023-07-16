@@ -1,15 +1,15 @@
-# This is a basic workflow that is manually triggered
+# This is a workflow that is manually triggered robokit_manual_deploy.yml
 name: Robokit Manual Deploy
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   robokit-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        run: echo 'Robokit Deploy Trigger'
+        run: echo 'Robokit Manual Deploy Trigger'

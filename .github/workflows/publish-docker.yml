@@ -15,11 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: ${{ github.repository }}/robokit
           username: ${{ github.actor }}
           password: ${{ github.token }}
+          registry: ghcr.io
+
   robokit-deploy:
     needs: build
     runs-on: ubuntu-latest
