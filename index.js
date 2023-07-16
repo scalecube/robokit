@@ -1,25 +1,22 @@
+const cache = require('./app/cache')
 /**
  * This is the main entrypoint to your Probot app
  * @param {import('probot').Application} app
  */
 const robokit = app => {
   const ApiGateway = require('./app/http-gateway')
-  const Cache = require('./app/cache')
-  const cache = new Cache(app)
-
+  const cache = require('./app/cache')
   app.log('Starting the TxBot service.')
   const api = new ApiGateway(app, cache)
 
-  app.on('schedule.repository', async context => {
-    cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.github)
-  })
-
   app.on('installation', context => {
+    cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.octokit)
     api.onAppInstall(context)
     console.log('installation event:' + JSON.stringify(context))
   })
 
   app.on('check_run', context => {
+    cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.octokit)
     console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
     if (context.payload.requested_action) {
       const action = context.payload.requested_action.identifier
@@ -58,9 +55,7 @@ const robokit = app => {
   })
 
   console.log('Server Started.')
-
-  api.start()
-  //smee()
+  // smee()
 }
 function smee () {
   if (global.env.WEBHOOK_PROXY_URL) {
