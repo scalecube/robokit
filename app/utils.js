@@ -167,9 +167,8 @@ class Utils {
         status = 'SUCCESS'
       }
       for (const line of message.split(/\r?\n/)) {
-        line.replaceAll("\r", "")
-        line.replaceAll("\n", "")
-        details += `${Utils.getMarker(status)} ${line} \n`
+        const str = line.replace(/(\r\n|\r|\n)/g, ' ')
+        details += `${Utils.getMarker(status)} ${str} \n`
       }
     }
     return details
