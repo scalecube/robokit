@@ -103,7 +103,7 @@ class ApiGateway {
     } else if (userAction === 'deploy_now') {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
-      return deploy.release || deploy.prerelease || this.isKnownBranch(deploy) || this.isFeatureBranch(deploy)
+      return deploy.release || this.isKnownBranch(deploy) || this.isFeatureBranch(deploy)
     } else if (this.isRobokitRelease(checkRunName, status, conclusion)) {
       return true
     } else {

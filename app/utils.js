@@ -166,9 +166,11 @@ class Utils {
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      for (const line of message.split(/\r?\n/)) {
-        const str = line.replace(/(\r\n|\r|\n)/g, ' ')
-        details += `${Utils.getMarker(status)} ${str} \n`
+      if (message !== undefined) {
+        for (const line of message.split(/\r?\n/)) {
+          const str = line.replace(/(\r\n|\r|\n)/g, ' ')
+          details += `${Utils.getMarker(status)} ${str} \n`
+        }
       }
     }
     return details
