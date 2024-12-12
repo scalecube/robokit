@@ -4,8 +4,6 @@ LABEL maintainer="http://scalecube.io"
 
 WORKDIR /usr/
 
-#SHELL ["/bin/sh", "-o", "pipefail", "-c"]
-
 COPY app /usr/app/
 COPY package.json /usr/
 COPY index.js /usr/
