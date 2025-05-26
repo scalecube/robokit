@@ -2,11 +2,12 @@ const url = require('url')
 
 class Utils {
   static urlConcat (array) {
-    let uri = array[0]
-    for (let i = 0; i < array.length - 1; i++) {
-      uri = url.resolve(uri, array[i + 1])
+    //let uri = array[0]
+    let baseUrl = new URL(array[0])
+    for (let i = 1; i < array.length; i++) {
+      baseUrl = new URL(array[i], baseUrl)
     }
-    return uri
+    return baseUrl.toString()
   }
 
   static isLabeled (labels, names) {
@@ -23,6 +24,18 @@ class Utils {
       })
     }
     return result
+  }
+
+  static printError (message, error) {
+    console.error(message)
+    console.dir({
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      message: error.message,
+      config: error.config,
+    }, { depth: null, colors: true })
   }
 
   static isPullRequest (context) {
@@ -166,9 +179,11 @@ class Utils {
       if (i < logs.length - 1) {
         status = 'SUCCESS'
       }
-      for (const line of message.split(/\r?\n/)) {
-        const str = line.replace(/(\r\n|\r|\n)/g, ' ')
-        details += `${Utils.getMarker(status)} ${str} \n`
+      if (message !== undefined) {
+        for (const line of message.split(/\r?\n/)) {
+          const str = line.replace(/(\r\n|\r|\n)/g, ' ')
+          details += `${Utils.getMarker(status)} ${str} \n`
+        }
       }
     }
     return details
