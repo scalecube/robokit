@@ -25,6 +25,8 @@ class Utils {
 
   static printError (message, error) {
     console.error(message)
+    if (!error) return
+    if (!error.response) return
     console.dir({
       status: error.response.status,
       statusText: error.response.statusText,
