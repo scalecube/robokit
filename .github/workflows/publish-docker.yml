@@ -22,8 +22,9 @@ jobs:
           name: ${{ github.repository }}/robokit
           username: ${{ github.actor }}
           password: ${{ github.token }}
-          registry: ghcr.io        
-          
+          registry: ghcr.io
+          platforms: linux/amd64,linux/arm64
+
   robokit-deploy:
     needs: build
     runs-on: ubuntu-latest
