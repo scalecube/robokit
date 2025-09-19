@@ -14,7 +14,7 @@ async function start () {
 
           const { Server, Probot } = require('probot')
           const app = require('./index.js')
-
+          console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
           async function startServer () {
             const server = new Server({
               port: process.env.PORT || 3000,
