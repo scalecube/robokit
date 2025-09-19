@@ -22,7 +22,7 @@ async function start () {
               port: process.env.PORT || 3000,
               webhookProxy: process.env.WEBHOOK_PROXY_URL,
               webhooks: {
-                path: '/',
+                path: '/api/github/webhooks',
                 secret: process.env.WEBHOOK_SECRET
               },
               Probot: Probot.defaults({
@@ -31,7 +31,6 @@ async function start () {
                 secret: process.env.WEBHOOK_SECRET
               })
             })
-
             await server.load(app)
             await server.start()
           }
