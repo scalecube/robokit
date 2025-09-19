@@ -25,7 +25,7 @@ class Utils {
 
   static printError (message, err) {
     console.error(message)
-
+    console.error(err)
     const out = {
       message: err?.message,
       name: err?.name,
