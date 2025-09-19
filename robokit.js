@@ -14,11 +14,17 @@ async function start () {
 
           const { Server, Probot } = require('probot')
           const app = require('./index.js')
+
           console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
+
           async function startServer () {
             const server = new Server({
               port: process.env.PORT || 3000,
               webhookProxy: process.env.WEBHOOK_PROXY_URL,
+              webhooks: {
+                path: '/',
+                secret: process.env.WEBHOOK_SECRET
+              },
               Probot: Probot.defaults({
                 appId: process.env.APP_ID,
                 privateKey: process.env.PRIVATE_KEY,
@@ -27,10 +33,13 @@ async function start () {
             })
 
             await server.load(app)
-
-            server.start()
+            await server.start()
           }
-          await startServer()
+
+          startServer().catch(err => {
+            console.error(err)
+            process.exit(1)
+          })
         }).catch(err => {
           U.printError(`ERROR reading variables from vault \n 
           VAULT_SECRETS_PATH:${process.env.VAULT_SECRETS_PATH}\n
