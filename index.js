@@ -27,7 +27,7 @@ const robokit = app => {
 
     api.deployContext(context).then(deploy => {
       console.log(deploy.check_run_name)
-      if (deploy.is_pull_request || api.isKnownBranch(deploy) || deploy.release) {
+      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
         api.deploy(context, deploy)
       }
     })
