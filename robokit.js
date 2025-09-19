@@ -4,10 +4,6 @@ async function start () {
   require('dotenv').config()
   const vault = new (require('./app/vault-api'))(process.env.VAULT_ADDR)
 
-  process.on('uncaughtException', (err) => {
-    console.error(err)
-  })
-
   vault.k8sLogin(process.env.VAULT_ROLE, process.env.VAULT_JWT_PATH)
     .then(async token => {
       vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
