@@ -25,7 +25,7 @@
     "axios": "^0.19.2",
     "body-parser": "^1.18.3",
     "lodash": "^4.17.20",
-    "probot": "^v13.4.5",
+    "probot": "^v13.4.0",
     "rxjs": "^6.6.3",
     "rxjs-compat": "^6.6.3",
     "websocket": "^1.0.32"
