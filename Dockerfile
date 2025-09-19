@@ -1,4 +1,4 @@
-FROM node:12.3.1
+FROM node:22-bullseye-slim
 
 LABEL maintainer="http://scalecube.io"
 
