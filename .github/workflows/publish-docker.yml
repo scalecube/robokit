@@ -1,6 +1,7 @@
 name: Robokit
 
 on:
+  workflow_dispatch:
   push:
     paths-ignore:
       - 'charts/**'
