@@ -14,9 +14,6 @@ async function start () {
 
           const { Server, Probot } = require('probot')
           const app = require('./index.js')
-
-          console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
-
           async function startServer () {
             const serverOptions = {
               port: process.env.PORT || 3000,
@@ -34,6 +31,7 @@ async function start () {
             // only add webhookProxy if defined
             if (process.env.WEBHOOK_PROXY_URL) {
               serverOptions.webhookProxy = process.env.WEBHOOK_PROXY_URL
+              console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
             }
 
             const server = new Server(serverOptions)
