@@ -18,9 +18,8 @@ async function start () {
           console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
 
           async function startServer () {
-            const server = new Server({
+            const serverOptions = {
               port: process.env.PORT || 3000,
-              webhookProxy: process.env.WEBHOOK_PROXY_URL,
               webhooks: {
                 path: '/api/github/webhooks',
                 secret: process.env.WEBHOOK_SECRET
@@ -30,7 +29,15 @@ async function start () {
                 privateKey: process.env.PRIVATE_KEY,
                 secret: process.env.WEBHOOK_SECRET
               })
-            })
+            }
+
+            // only add webhookProxy if defined
+            if (process.env.WEBHOOK_PROXY_URL) {
+              serverOptions.webhookProxy = process.env.WEBHOOK_PROXY_URL
+            }
+
+            const server = new Server(serverOptions)
+
             await server.load(app)
             await server.start()
           }
