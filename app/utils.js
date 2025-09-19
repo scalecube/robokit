@@ -1,8 +1,6 @@
-const url = require('url')
 
 class Utils {
   static urlConcat (array) {
-    //let uri = array[0]
     let baseUrl = new URL(array[0])
     for (let i = 1; i < array.length; i++) {
       baseUrl = new URL(array[i], baseUrl)
@@ -11,7 +9,6 @@ class Utils {
   }
 
   static isLabeled (labels, names) {
-
     let result = false
     if (labels && Array.isArray(labels)) {
       labels.forEach(label => {
@@ -34,7 +31,7 @@ class Utils {
       data: error.response.data,
       headers: error.response.headers,
       message: error.message,
-      config: error.config,
+      config: error.config
     }, { depth: null, colors: true })
   }
 
