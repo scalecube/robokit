@@ -11,7 +11,7 @@ async function start () {
           for (var key in values) {
             process.env[key] = values[key]
           }
-
+          console.log('process.env.PORT:' + process.env.PORT)
           const { Server, Probot } = require('probot')
           const app = require('./index.js')
           async function startServer () {
