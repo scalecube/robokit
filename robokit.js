@@ -18,7 +18,7 @@ async function start () {
             const serverOptions = {
               port: process.env.PORT || 3000,
               webhooks: {
-                path: '/api/github/webhooks',
+                path: '/',
                 secret: process.env.WEBHOOK_SECRET
               },
               Probot: Probot.defaults({
