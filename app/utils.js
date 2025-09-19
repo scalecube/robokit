@@ -23,18 +23,37 @@ class Utils {
     return result
   }
 
-  static printError (message, error) {
+  static printError (message, err) {
     console.error(message)
-    if (!error) return
-    if (!error.response) return
-    console.dir({
-      status: error.response.status,
-      statusText: error.response.statusText,
-      data: error.response.data,
-      headers: error.response.headers,
-      message: error.message,
-      config: error.config
-    }, { depth: null, colors: true })
+
+    const out = {
+      message: err?.message,
+      name: err?.name,
+      code: err?.code, // ECONNREFUSED, ETIMEDOUT, etc.
+      errno: err?.errno,
+      syscall: err?.syscall,
+      isAxiosError: !!err?.isAxiosError,
+      request: {
+        method: err?.config?.method,
+        url: err?.config?.url || err?.config?.baseURL,
+        timeout: err?.config?.timeout
+      }
+    }
+
+    if (err?.response) {
+      out.response = {
+        status: err.response.status,
+        statusText: err.response.statusText,
+        headers: err.response.headers,
+        data: err.response.data
+      }
+    } else if (err?.request) {
+      out.response = null // request made, no response
+    } else {
+      out.response = undefined // failed before sending
+    }
+
+    console.dir(out, { depth: null, colors: true })
   }
 
   static isPullRequest (context) {
