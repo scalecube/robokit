@@ -29,10 +29,10 @@ class Utils {
   static printError (message, error) {
     console.error(message)
     console.dir({
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      headers: error.response?.headers,
+      status: error.response.status,
+      statusText: error.response.statusText,
+      data: error.response.data,
+      headers: error.response.headers,
       message: error.message,
       config: error.config,
     }, { depth: null, colors: true })
