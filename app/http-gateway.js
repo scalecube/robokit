@@ -104,11 +104,7 @@ class ApiGateway {
       return true
     } else if (this.isRobokitTrigger(checkRunName, status, conclusion)) {
       return deploy.release || this.isKnownBranch(deploy) || this.isFeatureBranch(deploy)
-    } else if (this.isRobokitRelease(checkRunName, status, conclusion)) {
-      return true
-    } else {
-      return false
-    }
+    } else return !!this.isRobokitRelease(checkRunName, status, conclusion)
   }
 
   isFeatureBranch (deploy) {
@@ -263,7 +259,7 @@ class ApiGateway {
     // eslint-disable-next-line no-template-curly-in-string
     md = md.split('${duration}').join(duration + 's')
     // eslint-disable-next-line no-template-curly-in-string
-    md = md.split('${log_details}').join(U.toDetails(log))
+    md = md.split('${log_details}').join('> DATE: ' + startDate + '\n' + U.toDetails(log))
 
     if (md.includes('object')) {
       console.log(md)
@@ -297,7 +293,6 @@ class ApiGateway {
    * When the conclusion is action_required, additional details should be provided on the site specified by details_url.
    *   Note: Providing conclusion will automatically set the status parameter to completed.
    * @param deploy
-   * @param name
    * @param status
    * @returns {{owner: *, repo: *, name: *, sha: (*|number), status: *}}
    */
@@ -348,7 +343,7 @@ class ApiGateway {
     this.cache.set(owner, repo, context.octokit)
   }
 
-  installAppLabels (owner, repo, context) {
+  installAppLabels (owner, repo) {
     cfg.labels.forEach(label => {
       this.githubService.createLabel(owner, repo, label)
     })

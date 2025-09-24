@@ -192,7 +192,7 @@ class Utils {
     let details = ''
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
-      const message = log.message
+      const message = JSON.stringify(log.data, null, 2)
       let status = log.status
       if (i < logs.length - 1) {
         status = 'SUCCESS'
