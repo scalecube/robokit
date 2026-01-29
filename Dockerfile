@@ -13,9 +13,7 @@ WORKDIR /usr/
 # Install deps first for better caching
 COPY package*.json /usr/
 # Prefer npm ci when lockfile exists
-#RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi \
-# && apk del .build-deps
-RUN npm ci --omit=dev \
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi \
  && apk del .build-deps
 
 # App sources
