@@ -30,7 +30,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ github.ref_name }}
-            latest
 
   robokit-deploy:
     needs: build
