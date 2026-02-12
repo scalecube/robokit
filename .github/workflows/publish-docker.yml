@@ -9,6 +9,9 @@ on:
     branches:
       - 'develop'
       - 'master'
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -25,6 +28,8 @@ jobs:
           password: ${{ github.token }}
           registry: ghcr.io
           platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ github.ref_name }}
 
   robokit-deploy:
     needs: build
