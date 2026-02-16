@@ -1,5 +1,5 @@
-# Node 25.5.0 on Alpine 3.23
-FROM node:25.5.0-alpine3.23
+# Node 25.6.1 on Alpine 3.23
+FROM node:25.6.1-alpine3.23
 
 LABEL maintainer="http://scalecube.io"
 
