@@ -1,13 +1,12 @@
-# Node 23 on Alpine
-FROM node:23.11.0-alpine3.20
+# Node 25.5.0 on Alpine 3.23
+FROM node:25.5.0-alpine3.23
 
 LABEL maintainer="http://scalecube.io"
 
 # Build tools for native addons like bufferutil, utf-8-validate
 RUN apk add --no-cache --virtual .build-deps \
       python3 make g++ \
- && ln -sf python3 /usr/bin/python \
- && node -v && npm -v
+ && ln -sf python3 /usr/bin/python
 
 WORKDIR /usr/
 
@@ -23,6 +22,5 @@ COPY index.js /usr/
 COPY robokit.js /usr/
 COPY env /usr/.env
 
-RUN npm install
 EXPOSE 7777
 CMD ["npm", "run-script", "robokit"]

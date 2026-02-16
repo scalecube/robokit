@@ -9,6 +9,9 @@ on:
     branches:
       - 'develop'
       - 'master'
+  release:
+    types:
+      - published
 
 jobs:
   helm_package_push:
@@ -28,7 +31,7 @@ jobs:
               echo helm package for $directory
               name=$(cat $directory/Chart.yaml | grep ^name: | cut -d: -f2 | cut -c 2- | tr -d '"')
               chart_version=$(cat $directory/Chart.yaml | grep ^version: | cut -d: -f2 | cut -c 2- | tr -d '"')
-              release_version=$chart_version-develop
+              release_version=$chart_version-${{ github.ref_name }}
               echo Release chart version $release_version
               # change helm chart version in Chart.yaml
               sed -i.bak 's/version:.*/version: '$release_version'/g' $directory/Chart.yaml
