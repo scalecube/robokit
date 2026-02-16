@@ -8,25 +8,22 @@
   "repository": "https://github.com/scalecube/robokit.git",
   "homepage": "https://github.com/scalecube/robolit",
   "bugs": "https://github.com/scalecube/robokit/issues",
-  "keywords": [
-    "probot",
-    "github",
-    "probot-app"
-  ],
+  "keywords": ["probot", "github", "probot-app"],
   "scripts": {
     "dev": "./node_modules/.bin/nodemon",
     "robokit": "node ./robokit.js",
     "start": "./node_modules/.bin/probot run ./index.js",
     "lint": "./node_modules/.bin/standard --fix",
-    "build": "browserify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ @babel/preset-env @babel/preset-react ]  ]",
-    "watch": "watchify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ @babel/preset-env @babel/preset-react ]  ]"
+    "build": "browserify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ \"@babel/preset-env\" \"@babel/preset-react\" ] ]",
+    "watch": "watchify ./app/views/main.js -o ./app/views/bundle.js --debug -t [ babelify --presets [ \"@babel/preset-env\" \"@babel/preset-react\" ] ]"
   },
   "dependencies": {
     "axios": "^1.8.2",
     "body-parser": "^1.20.2",
     "lodash": "^4.17.21",
     "probot": "^13.4.5",
-    "rxjs": "^7.8.1",
+    "rxjs": "^6.6.7",
+    "rxjs-compat": "^6.6.7",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
@@ -40,19 +37,14 @@
     "standard": "^17.1.2"
   },
   "engines": {
-    "node": ">= 8.3.0"
+    "node": ">= 18"
   },
   "standard": {
-    "env": [
-      "jest"
-    ]
+    "env": ["jest"]
   },
   "nodemonConfig": {
     "exec": "npm start",
-    "watch": [
-      ".env",
-      "."
-    ]
+    "watch": [".env", "."]
   },
   "jest": {
     "testEnvironment": "node"
