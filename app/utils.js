@@ -56,14 +56,6 @@ class Utils {
     console.dir(out, { depth: null, colors: true })
   }
 
-  static isPullRequest (context) {
-    if (context.payload.check_run) {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0)
-    } else {
-      return (context.payload.check_run.pull_requests && context.payload.check_run.pull_requests.length > 0)
-    }
-  }
-
   static issueNumber (context) {
     if (context.payload.check_run) {
       if (context.payload.check_run.check_suite) {
@@ -162,32 +154,6 @@ class Utils {
     return ctx
   }
 
-  static mapToChecks (req) {
-    const all = []
-    for (let i = 0; i < req.checks.length; i++) {
-      const check = {
-        owner: req.owner,
-        repo: req.repo,
-        head_sha: req.sha,
-        name: req.checks[i].name,
-        status: req.checks[i].status,
-        output: req.checks[i].output
-      }
-      if (req.checks[i].conclusion && req.checks[i].conclusion != null) {
-        check.conclusion = req.checks[i].conclusion
-      }
-      all.push(check)
-    }
-    return all
-  }
-
-  static format (field, values) {
-    Object.entries(values).forEach((e) => {
-      field = field.replace('${' + e[0] + '}', e[1])
-    })
-    return field
-  }
-
   static toDetails (logs) {
     let details = ''
     for (let i = 0; i < logs.length; i++) {
@@ -205,38 +171,6 @@ class Utils {
       }
     }
     return details
-  }
-
-  static time (t) {
-    if (t) {
-      return new Date(t).toISOString()
-    } else return '....-..-..T..:..:.....z'
-  }
-
-  static getPrgress (status, conclusion) {
-    if (conclusion === 'success') {
-      return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
-    } else if (conclusion === 'cancelled') {
-      return ':no_entry_sign: &nbsp;&nbsp;&nbsp; CANCELLED!  '
-    } else if (status === 'completed' && conclusion) {
-      return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
-    } else {
-      console.log('Deploying ' + status + ' ' + conclusion)
-      return '<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...'
-    }
-  }
-
-  static toPrgress (status) {
-    if (status === 'SUCCEEDED') {
-      return ':heavy_check_mark: &nbsp;&nbsp;&nbsp; Deployed!  '
-    } else if (status === 'TERMINAL' || status === 'FAILED_CONTINUE') {
-      return ':x: &nbsp;&nbsp;&nbsp; FAILED!  '
-    } else if (status === 'NOT_STARTED' || status === 'RUNNING') {
-      console.log('Deploying ' + status)
-      return '<img align="left" width="22" src="https://tinyurl.com/re3r65s"> Deploying...'
-    } else if (status === 'CANCELED' || status === 'PAUSED' || status === 'SUSPENDED') {
-      return `:no_entry_sign: &nbsp;&nbsp;&nbsp; ${status}!`
-    }
   }
 
   static getMarker (status) {

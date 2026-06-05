@@ -15,20 +15,6 @@ class GithubService {
     return await Promise.all(all)
   }
 
-  labels (owner, repo, issueNumber) {
-    return new Promise((resolve, reject) => {
-      const ctx = this.cache.get(owner, repo)
-      if (ctx) {
-        ctx.request(`GET /repos/${owner}/${repo}/issues/${issueNumber}/labels`)
-          .then(res => {
-            resolve(res.data)
-          }).catch((err) => {
-            reject(err)
-          })
-      }
-    })
-  }
-
   release (owner, repo, releaseId) {
     return new Promise((resolve, reject) => {
       const ctx = this.cache.get(owner, repo)
@@ -56,23 +42,6 @@ class GithubService {
     return github.request(`POST /repos/${owner}/${repo}/labels`, label)
   }
 
-  content (owner, repo, branch, path, base64) {
-    return new Promise((resolve, reject) => {
-      const ctx = this.cache.get(owner, repo)
-      if (ctx) {
-        ctx.repos.getContents({ owner: owner, repo: repo, ref: branch, path: path })
-          .then(res => {
-            if (!base64) {
-              resolve(Buffer.from(res.data.content, 'base64').toString('ascii'))
-            } else {
-              resolve(res.data.content)
-            }
-          }).catch((err) => {
-            reject(err)
-          })
-      }
-    })
-  }
 }
 
 module.exports = GithubService

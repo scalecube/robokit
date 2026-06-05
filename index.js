@@ -1,10 +1,3 @@
-const cache = require('./app/cache')
-const { Webhooks } = require('@octokit/webhooks')
-const { Probot } = require('probot')
-/**
- * This is the main entrypoint to your Probot app
- * @param {import('probot').Application} app
- */
 const robokit = app => {
   const ApiGateway = require('./app/http-gateway')
   const cache = require('./app/cache')
@@ -49,33 +42,6 @@ const robokit = app => {
     }
   })
 
-  app.on([
-    'issue_comment',
-    'issues',
-    'push'], async context => {
-    // api.route(context);
-  })
-
   console.log('Server Started.')
-  // smee()
-}
-function smee () {
-  if (process.env.WEBHOOK_PROXY_URL) {
-    const SmeeClient = require('smee-client')
-    const smee = new SmeeClient({
-      source: process.env.WEBHOOK_PROXY_URL,
-      target: `http://localhost:${global.env.PORT}`,
-      logger: console
-    })
-
-    smee.start()
-  }
 }
 module.exports = robokit
-
-// For more information on building apps:
-// https://probot.github.io/docs/
-
-// To get your app running against GitHub, see:
-// https://probot.github.io/docs/development/
-// Authenticate as the App

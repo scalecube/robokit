@@ -349,15 +349,6 @@ class ApiGateway {
     })
   }
 
-  static sendResponse (response, result) {
-    if (result === 'ok') {
-      response.send(result)
-    } else {
-      response.status(500)
-      response.send(result)
-    }
-  };
-
   clone (obj) {
     return JSON.parse(JSON.stringify(obj))
   }

@@ -99,13 +99,7 @@ class Environments {
       }
     }
 
-    if (data.release && data.prerelease) {
-      // res.isPrerelease = true
-      // res.service.version = data.tag_name
-    } else if (data.release) {
-      // res.isPrerelease = false
-      // res.service.version = data.tag_name
-    } else {
+    if (!data.release) {
       res.branch = data.branch_name
     }
     return res
