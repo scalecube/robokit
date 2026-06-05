@@ -17,6 +17,10 @@ class Environments {
   }
 
   connect (address) {
+    if (process.env.LOCAL_DEV) {
+      console.log('LOCAL_DEV mode: skipping env service connection')
+      return Promise.resolve()
+    }
     if (!address) {
       address = process.env.ENV_SERVICE_ADDRESS
     }
@@ -80,7 +84,26 @@ class Environments {
   }
 
   deploy (data) {
+    if (process.env.LOCAL_DEV) {
+      return this.mockDeploy(data)
+    }
     return this.deployService(this.toDeployRequest(data))
+  }
+
+  mockDeploy (data) {
+    console.log('LOCAL_DEV mode: mock deploy for ' + data.owner + '/' + data.repo)
+    const subject = new Rx.Subject()
+    const id = 'mock-' + Date.now()
+    const event = (status, message) => ({
+      d: { status, id, timestamp: new Date().toISOString(), data: { message } }
+    })
+    setTimeout(() => subject.next(event('RUNNING', 'Preparing deployment (mock)')), 200)
+    setTimeout(() => subject.next(event('RUNNING', 'Deploying (mock)...')), 1200)
+    setTimeout(() => {
+      subject.next(event('SUCCEEDED', 'Deployment complete (mock)'))
+      subject.complete()
+    }, 2500)
+    return subject.asObservable()
   }
 
   /*
