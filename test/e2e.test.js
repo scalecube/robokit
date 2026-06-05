@@ -81,6 +81,13 @@ describe('Robokit e2e', () => {
     expect(res.status).not.toBe(0)
   })
 
+  test('GET /health returns ok', async () => {
+    const res = await axios.get(`${BASE_URL}/health`, { validateStatus: () => true })
+    expect(res.status).toBe(200)
+    expect(res.data.status).toBe('ok')
+    expect(typeof res.data.uptime).toBe('number')
+  })
+
   test('rejects webhook with invalid signature', async () => {
     const body = JSON.stringify(checkRunPayload())
     const res = await axios.post(BASE_URL + WEBHOOK_PATH, body, {
