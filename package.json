@@ -15,23 +15,24 @@
   ],
   "scripts": {
     "dev": "./node_modules/.bin/nodemon",
-    "robokit": "node ./robokit.js",
-    "start": "./node_modules/.bin/probot run ./index.js",
+    "robokit": "node ./src/server.js",
+    "start": "./node_modules/.bin/probot run ./src/webhook.js",
     "lint": "./node_modules/.bin/standard --fix",
     "test": "jest --testPathPattern=test/unit",
     "test:e2e": "jest --testPathPattern=test/e2e"
   },
   "dependencies": {
     "axios": "^1.8.2",
+    "pino": "^9.14.0",
     "probot": "^13.4.5",
     "rxjs": "^6.6.7",
-    "rxjs-compat": "^6.6.7",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "nock": "^11.4.0",
     "nodemon": "^2.0.0",
+    "smee-client": "^5.0.0",
     "standard": "^17.1.2"
   },
   "engines": {

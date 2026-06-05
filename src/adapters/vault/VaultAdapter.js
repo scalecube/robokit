@@ -7,7 +7,7 @@ function urlConcat (parts) {
   return url.toString()
 }
 
-class Vault {
+class VaultAdapter {
   constructor (addr = process.env.VAULT_ADDR) {
     this.addr = addr
   }
@@ -22,10 +22,9 @@ class Vault {
   async k8sLogin (role, jwtPath = '/var/run/secrets/kubernetes.io/serviceaccount/token') {
     const jwt = await readFile(jwtPath, 'utf8')
     const url = urlConcat([this.addr, `/v1/auth/${process.env.VAULT_JWT_PROVIDER}/login`])
-    console.log(url)
     const res = await axios.post(url, { role, jwt })
     return res.data.auth
   }
 }
 
-module.exports = Vault
+module.exports = VaultAdapter

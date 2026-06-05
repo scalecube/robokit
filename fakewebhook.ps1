@@ -1,18 +1,22 @@
-# Sends a signed check_run webhook that triggers the Robokit deploy flow.
+# Sends a signed check_run webhook to test Robokit locally.
 # Reads WEBHOOK_SECRET and PORT from .ronen automatically.
 #
-# Required params (GitHub-side values not in .ronen):
-#   -Owner          GitHub org/user  (e.g. "scalecube")
-#   -Repo           Repository name  (e.g. "my-service")
-#   -Sha            A real commit SHA in that repo  (git rev-parse HEAD)
-#   -InstallationId GitHub App installation ID for that repo
-#                   GitHub -> Settings -> Developer settings ->
-#                   GitHub Apps -> [app] -> Install App -> gear -> URL has the ID
+# Modes (use -Mode):
+#   deploy    (default) Simulates robokit-deploy job completing — triggers auto-deploy
+#   redeploy            Simulates user clicking the Re-Deploy button on Robokit CD
+#
+# Required params:
+#   -Owner          GitHub org/user        (e.g. "scalecube")
+#   -Repo           Repository name        (e.g. "my-service")
+#   -Sha            A real commit SHA       (git rev-parse HEAD)
+#   -InstallationId GitHub App install ID
 #
 # Usage:
 #   .\fakewebhook.ps1 -Owner scalecube -Repo my-service -Sha abc123 -InstallationId 12345678
+#   .\fakewebhook.ps1 -Mode redeploy -Owner scalecube -Repo my-service -Sha abc123 -InstallationId 12345678
 
 param(
+    [string]$Mode           = "deploy",
     [string]$Owner          = "scalecube",
     [string]$Repo           = "robokit",
     [string]$Branch         = "develop",
@@ -48,35 +52,51 @@ if ($InstallationId -eq 0) {
 }
 
 # --- build payload ---
-$delivery = [System.Guid]::NewGuid().ToString()
-$payload = @{
-    action = "completed"
-    installation = @{
-        id      = $InstallationId
-        node_id = "MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9u$InstallationId"
-    }
-    sender = @{
-        login      = "local-dev"
-        avatar_url = "https://github.com/ghost.png"
-    }
-    repository = @{
-        name  = $Repo
-        owner = @{ login = $Owner }
-    }
-    check_run = @{
-        id          = [int](Get-Date -UFormat "%s")
-        name        = "robokit-deploy"
-        head_sha    = $Sha
-        status      = "completed"
-        conclusion  = "success"
-        external_id = ""
-        pull_requests = @()
-        check_suite = @{
-            head_branch   = $Branch
+$delivery  = [System.Guid]::NewGuid().ToString()
+$checkId   = [int](Get-Date -UFormat "%s")
+$installId = @{ id = $InstallationId; node_id = "MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9u$InstallationId" }
+$sender    = @{ login = "local-dev"; avatar_url = "https://github.com/ghost.png" }
+$repo      = @{ name = $Repo; owner = @{ login = $Owner } }
+$suite     = @{ head_branch = $Branch; pull_requests = @() }
+
+if ($Mode -eq "redeploy") {
+    # Simulates user clicking Re-Deploy on an existing Robokit CD check run
+    $payload = @{
+        action           = "requested_action"
+        requested_action = @{ identifier = "deploy_now" }
+        installation     = $installId
+        sender           = $sender
+        repository       = $repo
+        check_run        = @{
+            id            = $checkId
+            name          = "Robokit CD"
+            head_sha      = $Sha
+            status        = "completed"
+            conclusion    = "success"
+            external_id   = ""
             pull_requests = @()
+            check_suite   = $suite
         }
-    }
-} | ConvertTo-Json -Depth 10 -Compress
+    } | ConvertTo-Json -Depth 10 -Compress
+} else {
+    # Simulates robokit-deploy GitHub Actions job completing successfully
+    $payload = @{
+        action       = "completed"
+        installation = $installId
+        sender       = $sender
+        repository   = $repo
+        check_run    = @{
+            id            = $checkId
+            name          = "robokit-deploy"
+            head_sha      = $Sha
+            status        = "completed"
+            conclusion    = "success"
+            external_id   = ""
+            pull_requests = @()
+            check_suite   = $suite
+        }
+    } | ConvertTo-Json -Depth 10 -Compress
+}
 
 # --- sign ---
 $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
@@ -86,11 +106,11 @@ $hmac.Key  = $keyBytes
 $hashBytes = $hmac.ComputeHash($bodyBytes)
 $signature = "sha256=" + (($hashBytes | ForEach-Object { $_.ToString("x2") }) -join "")
 
-Write-Host "POST $url"
-Write-Host "Owner/Repo:    $Owner/$Repo  branch=$Branch"
-Write-Host "Sha:           $Sha"
-Write-Host "InstallId:     $InstallationId"
-Write-Host "Signature:     $signature"
+Write-Host "POST $url  [$Mode]"
+Write-Host "Owner/Repo:  $Owner/$Repo  branch=$Branch"
+Write-Host "Sha:         $Sha"
+Write-Host "InstallId:   $InstallationId"
+Write-Host "Signature:   $signature"
 Write-Host ""
 
 # --- send ---

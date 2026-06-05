@@ -2,8 +2,8 @@
  * E2E tests — requires the server to be running first:
  *   npm run robokit
  *
- * All config is read from .env automatically.
- * Set GITHUB_INSTALLATION_ID in .env for GitHub API calls (check run creation) to succeed.
+ * All config is read from .env-local automatically.
+ * Set GITHUB_INSTALLATION_ID in .env-local for GitHub API calls (check run creation) to succeed.
  *
  * Run:
  *   npm run test:e2e
@@ -13,7 +13,7 @@ const crypto = require('crypto')
 const axios = require('axios')
 const path = require('path')
 
-require('dotenv').config({ path: path.join(__dirname, '../.env') })
+require('dotenv').config({ path: path.join(__dirname, '../.env-local') })
 
 const SECRET = process.env.WEBHOOK_SECRET
 const PORT = process.env.PORT || '7777'
