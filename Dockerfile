@@ -17,9 +17,7 @@ RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit
  && apk del .build-deps
 
 # App sources
-COPY app /usr/app/
-COPY index.js /usr/
-COPY robokit.js /usr/
+COPY src /usr/src/
 COPY env /usr/.env
 
 EXPOSE 7777
