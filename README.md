@@ -38,24 +38,40 @@ Users can also manually trigger or cancel a deployment by clicking the **Re-Depl
 
 ## Architecture
 
+Hexagonal (ports & adapters) layout with a pure domain layer:
+
 ```
-robokit.js          Startup: Vault auth (prod) or .env (LOCAL_DEV)
-index.js            Probot event routing — check_run, installation
+src/
+  domain/
+    DeploymentContext.js    Immutable value object — all deploy state
+    DeploymentPolicy.js     Pure trigger / user-action evaluation (no I/O)
+    PipelineStatus.js       CD status → GitHub status/conclusion/marker mapping
 
-app/
-  coordinator.js    Orchestration: decide, sequence, error handling
-  context.js        Pure transforms: webhook payload → deploy object
-  check-run.js      GitHub Check Run adapter (create / update)
-  deployment.js     GitHub Deployments adapter (create / status)
-  environment.js    Environment Service WebSocket adapter
-  config.js         Constants and check run templates
-  cache.js          Octokit instance cache (owner/repo → client)
-  vault-api.js      HashiCorp Vault HTTP client
+  application/
+    DeploymentOrchestrator.js  Use-case: run the full deploy pipeline
+    deploymentLock.js          Per-repo concurrency guard (no parallel deploys)
 
-  statuses/
-    starting.md     Check run output template — deployment starting
-    canceled.md     Check run output template — deployment canceled
-    status.md       Check run output template — deployment log
+  adapters/
+    cd-service/
+      CdServiceClient.js    CD service WebSocket adapter (real)
+      CdServiceMock.js      In-process mock for LOCAL_DEV
+    github/
+      CheckRunAdapter.js    GitHub Check Run adapter (create / update)
+      DeploymentAdapter.js  GitHub Deployments adapter (create / status)
+      OctokitRegistry.js    Octokit instance cache (owner/repo → client)
+    vault/
+      VaultAdapter.js       HashiCorp Vault HTTP client
+
+  templates/
+    renderer.js             Safe markdown template renderer
+    starting.md             Check run output — deployment starting
+    canceled.md             Check run output — deployment canceled
+    status.md               Check run output — deployment log
+
+  config.js     Validates and exposes all env-var config
+  logger.js     Structured pino logger (child loggers per deploy)
+  server.js     Entry point: Vault auth (prod) or .env (LOCAL_DEV)
+  webhook.js    Probot event routing — check_run, installation
 ```
 
 ---
@@ -155,37 +171,27 @@ At startup, Robokit logs into Vault using the pod's service account JWT, reads a
 ### 1. Create `.env`
 
 ```env
+# ── Server ────────────────────────────────────────────────────────────────────
 LOCAL_DEV=true
-
-# GitHub App — required
-APP_ID=
-PRIVATE_KEY=-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----
-WEBHOOK_SECRET=
-
-# Server
 PORT=7777
 LOG_LEVEL=debug
 
-# smee.io proxy — get a URL from https://smee.io/new
-WEBHOOK_PROXY_URL=https://smee.io/your-channel
+# ── GitHub App ────────────────────────────────────────────────────────────────
+APP_ID=
+PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+WEBHOOK_SECRET=
+WEBHOOK_PROXY_URL=https://smee.io/your-channel   # get a URL from https://smee.io/new
 
-# Environment service
+# ── Continuous Deployment Service ─────────────────────────────────────────────
 ENV_SERVICE_ADDRESS=wss://env-service.example.com
 ENV_SERVICE_ROLE=your-oidc-role
 
-# Vault — only needed when LOCAL_DEV is not set
+# ── Vault (production only — ignored when LOCAL_DEV=true) ─────────────────────
 VAULT_ADDR=
 VAULT_SECRETS_PATH=
 VAULT_ROLE=
 VAULT_JWT_PROVIDER=
 VAULT_JWT_PATH=
-
-# E2E tests
-GITHUB_OWNER=scalecube
-GITHUB_REPO=robokit
-GITHUB_SHA=
-GITHUB_INSTALLATION_ID=
-WEBHOOKS_PATH=/api/github/webhooks
 ```
 
 ### 2. Install dependencies
@@ -317,29 +323,19 @@ The e2e suite sends real signed HTTP requests to the running server and verifies
 
 All config is read from `.env` automatically — no hardcoded values in the test file.
 
-### Manual webhook — PowerShell
+### Health check
 
-`fakewebhook.ps1` sends a signed `check_run` webhook from the command line, simulating what GitHub sends after a CI job completes. It reads `WEBHOOK_SECRET` and `PORT` from `.ronen` (a local JSON secrets file, not committed to git).
-
-```powershell
-.\fakewebhook.ps1 `
-  -Owner         scalecube `
-  -Repo          my-service `
-  -Branch        develop `
-  -Sha           <commit-sha> `
-  -InstallationId <installation-id>
+```
+GET /health
 ```
 
-| Parameter | Default | Description |
-|---|---|---|
-| `-Owner` | `scalecube` | GitHub organisation or user |
-| `-Repo` | `robokit` | Repository name |
-| `-Branch` | `develop` | Branch name — use `develop` or `master` to trigger a deploy |
-| `-Sha` | _(required)_ | A real commit SHA in the target repo (`git rev-parse HEAD`) |
-| `-InstallationId` | `0` | GitHub App installation ID — required for check run creation to succeed |
+Returns `200` with:
 
-The installation ID can be found in GitHub under:
-**Settings → Developer settings → GitHub Apps → [app] → Install App → gear icon → the URL contains the ID**
+```json
+{ "status": "ok", "uptime": 42.3, "cdService": "connected" }
+```
+
+`cdService` is `"connected"` or `"disconnected"` depending on the WebSocket state (always `"connected"` in `LOCAL_DEV` mode).
 
 ---
 
