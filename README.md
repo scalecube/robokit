@@ -349,3 +349,7 @@ Returns `200` with:
 | `npm test` | Run unit tests |
 | `npm run test:e2e` | Run e2e tests (server must already be running) |
 | `npm run lint` | Lint and auto-fix with StandardJS |
+
+---
+
+![Robokit](https://user-images.githubusercontent.com/1706296/73777078-7ceda300-4791-11ea-9095-2bc58cdf7d61.png)
