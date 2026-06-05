@@ -8,12 +8,18 @@
   "repository": "https://github.com/scalecube/robokit.git",
   "homepage": "https://github.com/scalecube/robolit",
   "bugs": "https://github.com/scalecube/robokit/issues",
-  "keywords": ["probot", "github", "probot-app"],
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
   "scripts": {
     "dev": "./node_modules/.bin/nodemon",
     "robokit": "node ./robokit.js",
     "start": "./node_modules/.bin/probot run ./index.js",
-    "lint": "./node_modules/.bin/standard --fix"
+    "lint": "./node_modules/.bin/standard --fix",
+    "test": "jest --testPathPattern=test/unit",
+    "test:e2e": "jest --testPathPattern=test/e2e"
   },
   "dependencies": {
     "axios": "^1.8.2",
@@ -23,6 +29,7 @@
     "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nock": "^11.4.0",
     "nodemon": "^2.0.0",
     "standard": "^17.1.2"
@@ -31,11 +38,16 @@
     "node": ">= 18"
   },
   "standard": {
-    "env": ["jest"]
+    "env": [
+      "jest"
+    ]
   },
   "nodemonConfig": {
     "exec": "npm start",
-    "watch": [".env", "."]
+    "watch": [
+      ".env",
+      "."
+    ]
   },
   "jest": {
     "testEnvironment": "node"

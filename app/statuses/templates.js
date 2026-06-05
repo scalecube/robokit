@@ -1,19 +1,12 @@
 const fs = require('fs')
 const path = require('path')
 
-class Templates {
-  constructor () {
-    this.statusContent = new Map()
-    this.statusContent.set('running', fs.readFileSync(path.resolve(__dirname, './running.md'), 'utf8'))
-    this.statusContent.set('starting', fs.readFileSync(path.resolve(__dirname, './starting.md'), 'utf8'))
-    this.statusContent.set('waiting', fs.readFileSync(path.resolve(__dirname, './waiting.md'), 'utf8'))
-    this.statusContent.set('canceled', fs.readFileSync(path.resolve(__dirname, './canceled.md'), 'utf8'))
-    this.statusContent.set('status', fs.readFileSync(path.resolve(__dirname, './status.md'), 'utf8'))
-  }
+const load = name => fs.readFileSync(path.join(__dirname, `${name}.md`), 'utf8')
 
-  get (key) {
-    return this.statusContent.get(key)
-  }
-}
+const templates = new Map([
+  ['starting', load('starting')],
+  ['canceled', load('canceled')],
+  ['status', load('status')]
+])
 
-module.exports = new Templates()
+module.exports = { get: key => templates.get(key) }

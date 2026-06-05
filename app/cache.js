@@ -1,16 +1,7 @@
-const contexts = new Map()
+const store = new Map()
+const key = (owner, repo) => `${owner}/${repo}`
 
-class Cache {
-  set (owner, repo, ctx) {
-    contexts.set(owner + '/' + repo, ctx)
-  }
-
-  get (owner, repo) {
-    return contexts.get(owner + '/' + repo)
-  }
-
-  keys () {
-    return contexts.keys()
-  }
+module.exports = {
+  set: (owner, repo, ctx) => store.set(key(owner, repo), ctx),
+  get: (owner, repo) => store.get(key(owner, repo))
 }
-module.exports = new Cache()

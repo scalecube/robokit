@@ -1,47 +1,24 @@
-const robokit = app => {
-  const ApiGateway = require('./app/http-gateway')
-  const cache = require('./app/cache')
-  console.log('Starting the TxBot service.')
-  const api = new ApiGateway(app, cache)
+const coordinator = require('./app/coordinator')
+const cache = require('./app/cache')
 
+const robokit = app => {
   app.on('installation', context => {
-    cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.octokit)
-    api.onAppInstall(context)
-    console.log('installation event:' + JSON.stringify(context))
+    coordinator.onInstall(context)
   })
 
   app.on('check_run', context => {
-    cache.set(context.payload.repository.owner.login, context.payload.repository.name, context.octokit)
-    console.log(context.payload.check_run.name + ' - ' + context.payload.check_run.status + ' - ' + context.payload.check_run.conclusion)
+    cache.set(
+      context.payload.repository.owner.login,
+      context.payload.repository.name,
+      context.octokit
+    )
     if (context.payload.requested_action) {
-      const action = context.payload.requested_action.identifier
-      context.user_action = action
+      context.user_action = context.payload.requested_action.identifier
     }
-
-    api.deployContext(context).then(deploy => {
-      console.log(deploy.check_run_name)
-      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
-        api.deploy(context, deploy)
-      }
-    })
-  })
-
-  app.on([
-    'pull_request.synchronize',
-    'pull_request.labeled',
-    'pull_request.opened',
-    'pull_request.reopened',
-    'pull_request.unlabeled',
-    'pull_request.closed'
-  ], context => {
-    if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
-      const deploy = api.deployContext(context)
-      if (deploy.is_pull_request || api.isKnownBranch(deploy)) {
-        api.deploy(context, deploy)
-      }
-    }
+    coordinator.handle(context)
   })
 
   console.log('Server Started.')
 }
+
 module.exports = robokit

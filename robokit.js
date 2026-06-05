@@ -1,13 +1,14 @@
-const U = require('./app/utils')
+require('dotenv').config()
+
+const { Server, Probot } = require('probot')
+const app = require('./index.js')
+const Vault = require('./app/vault-api')
 
 async function startServer () {
-  const { Server, Probot } = require('probot')
-  const app = require('./index.js')
-
   const serverOptions = {
     port: process.env.PORT || 3000,
     webhooks: {
-      path: '/',
+      path: '/api/github/webhooks',
       secret: process.env.WEBHOOK_SECRET
     },
     Probot: Probot.defaults({
@@ -19,7 +20,7 @@ async function startServer () {
 
   if (process.env.WEBHOOK_PROXY_URL) {
     serverOptions.webhookProxy = process.env.WEBHOOK_PROXY_URL
-    console.log('process.env.WEBHOOK_PROXY_URL: ' + process.env.WEBHOOK_PROXY_URL)
+    console.log('Webhook proxy: ' + process.env.WEBHOOK_PROXY_URL)
   }
 
   const server = new Server(serverOptions)
@@ -28,38 +29,23 @@ async function startServer () {
 }
 
 async function start () {
-  require('dotenv').config()
-
   if (process.env.LOCAL_DEV) {
     console.log('LOCAL_DEV mode: skipping Vault auth, using .env credentials')
-    startServer().catch(err => {
-      console.error(err)
-      process.exit(1)
-    })
+    await startServer()
     return
   }
 
-  const vault = new (require('./app/vault-api'))(process.env.VAULT_ADDR)
-  vault.k8sLogin(process.env.VAULT_ROLE, process.env.VAULT_JWT_PATH)
-    .then(async token => {
-      vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
-        .then(async values => {
-          for (var key in values) {
-            process.env[key] = values[key]
-          }
-          console.log('process.env.PORT:' + process.env.PORT)
-          startServer().catch(err => {
-            console.error(err)
-            process.exit(1)
-          })
-        }).catch(err => {
-          U.printError(`ERROR reading variables from vault \n
-          VAULT_SECRETS_PATH:${process.env.VAULT_SECRETS_PATH}\n
-          VAULT_ADDR:${process.env.VAULT_ADDR}
-          error:`, err)
-        })
-    }).catch(err => {
-      U.printError('k8sLogin failed with error:', err)
-    })
+  try {
+    const vault = new Vault()
+    const token = await vault.k8sLogin(process.env.VAULT_ROLE, process.env.VAULT_JWT_PATH)
+    const values = await vault.read(token.client_token, process.env.VAULT_SECRETS_PATH)
+    Object.assign(process.env, values)
+    console.log('PORT: ' + process.env.PORT)
+    await startServer()
+  } catch (err) {
+    console.error('Startup failed:', err)
+    process.exit(1)
+  }
 }
+
 start()
