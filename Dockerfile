@@ -12,9 +12,10 @@ WORKDIR /usr/
 
 # Install deps first for better caching
 COPY package*.json /usr/
-# Prefer npm ci when lockfile exists
+# Prefer npm ci when lockfile exists; npm is removed afterwards since it's not needed at runtime
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi \
- && apk del .build-deps
+ && apk del .build-deps \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /root/.npm
 
 # App sources
 COPY app /usr/app/
@@ -23,4 +24,4 @@ COPY robokit.js /usr/
 COPY env /usr/.env
 
 EXPOSE 7777
-CMD ["npm", "run-script", "robokit"]
+CMD ["node", "./robokit.js"]
