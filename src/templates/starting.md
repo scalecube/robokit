@@ -1,4 +1,4 @@
-## Robokit Continues Delivery
+## Robokit Continuous Delivery
 
 <img align="left" width="120" src="https://tinyurl.com/rootojr">
 
@@ -7,7 +7,7 @@ ${progress}
 :black_circle: Details:
 ```
 Namespace: ${namespace}
-branch: ${branch_name}
+branch: ${branch}
 sha: ${sha}
 ```
 
