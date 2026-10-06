@@ -1,5 +1,5 @@
-# Node 25.6.1 on Alpine 3.23
-FROM node:25.6.1-alpine3.23
+# Node 26.10.0 on Alpine 3.24
+FROM node:26.10.0-alpine3.24
 
 LABEL maintainer="http://scalecube.io"
 
@@ -12,9 +12,10 @@ WORKDIR /usr/
 
 # Install deps first for better caching
 COPY package*.json /usr/
-# Prefer npm ci when lockfile exists
+# Prefer npm ci when lockfile exists; npm is removed afterwards since it's not needed at runtime
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi \
- && apk del .build-deps
+ && apk del .build-deps \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /root/.npm
 
 # App sources
 COPY app /usr/app/
@@ -23,4 +24,4 @@ COPY robokit.js /usr/
 COPY env /usr/.env
 
 EXPOSE 7777
-CMD ["npm", "run-script", "robokit"]
+CMD ["node", "./robokit.js"]
