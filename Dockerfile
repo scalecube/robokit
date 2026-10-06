@@ -18,10 +18,8 @@ RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit
  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /root/.npm
 
 # App sources
-COPY app /usr/app/
-COPY index.js /usr/
-COPY robokit.js /usr/
+COPY src /usr/src/
 COPY env /usr/.env
 
 EXPOSE 7777
-CMD ["node", "./robokit.js"]
+CMD ["node", "./src/server.js"]

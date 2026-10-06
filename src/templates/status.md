@@ -8,7 +8,7 @@ ${owner}/${repo}@${sha}
 ```
 user: ${user}
 namespace: ${namespace}
-branch: ${branch_name}
+branch: ${branch}
 sha: ${sha}
 duration: ${duration}
 ```
@@ -21,4 +21,3 @@ Pipeline stages:
 > (Trigger) robo-kit deployment pipeline was triggered successfully  
 ${log_details}
 ```
-
